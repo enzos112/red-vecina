@@ -17,6 +17,7 @@ from app.modulos.equilibrio.rutas import router as cupos
 from app.modulos.parametros.rutas import router as parametros
 from app.modulos.reportes.rutas import router as reportes
 from app.modulos.vecinos.rutas import router as vecinos
+from app.servicios.lector import crear_lector
 from app.tareas.rutas import router as tareas
 
 # Orden de los módulos en /docs.
@@ -78,6 +79,8 @@ def crear_app(
     app.state.fabrica_sesiones = fabrica_sesiones
     app.state.limites = crear_limites(config)
     app.state.tareas_dia = None
+    # Proveedor elegido por LECTOR_PROVEEDOR; las pruebas lo reemplazan por uno simulado.
+    app.state.lector = crear_lector(config)
     errores.instalar(app)
 
     api = APIRouter(prefix="/api")

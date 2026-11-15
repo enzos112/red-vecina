@@ -1,0 +1,12 @@
+{
+  "_nota": "Palabras que marcan una línea de la boleta como producto que no suma (A12 y A13). Se comparan como palabras completas, sin tildes ni mayúsculas.",
+  "palabras": [
+    "cigarro", "cigarros", "cigarrillo", "cigarrillos", "tabaco", "tabacos",
+    "papelillo", "papelillos", "belmont", "marlboro", "lucky strike", "pall mall", "kent", "derby", "viceroy",
+    "recarga", "recargas", "carga bip", "recarga bip",
+    "pago de cuenta", "pago cuenta", "pago de servicios", "pago servicio",
+    "giro", "giros", "caja vecina",
+    "loto", "kino", "polla gol", "raspe", "raspa", "loteria", "boleto loto",
+    "gift card", "giftcard", "tarjeta de regalo", "tarjeta regalo"
+  ]
+}

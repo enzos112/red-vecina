@@ -1,7 +1,11 @@
-import { Inbox, Settings2, Store, Ticket, TrendingUp, Users, type LucideIcon } from 'lucide-react'
-import { NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router'
+import { Inbox, LogOut, Settings2, Store, Ticket, TrendingUp, Users, type LucideIcon } from 'lucide-react'
+import { Navigate, NavLink, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
 import { Logo } from '@/components/marca/Logo'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
+  SidebarFooter,
+  SidebarMenuBadge,
   Sidebar,
   SidebarContent,
   SidebarGroup,
@@ -16,6 +20,8 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { sinSesion, useResumenCola, useSalir, useYo } from '@/features/admin/consultas'
+import { numero } from '@/lib/formato'
 
 type Seccion = { a: string; texto: string; icono: LucideIcon; descripcion: string }
 
@@ -61,6 +67,14 @@ const SECCIONES_ADMIN: Seccion[] = [
   },
 ]
 
+/** Pendientes de la cola, siempre a la vista en el menú. */
+function ContadorPendientes() {
+  const resumen = useResumenCola()
+  const n = resumen.data?.pendientes
+  if (!n) return null
+  return <SidebarMenuBadge aria-label={`${n} pendientes`}>{numero(n)}</SidebarMenuBadge>
+}
+
 function Grupo({ titulo, secciones }: { titulo: string; secciones: Seccion[] }) {
   const { pathname } = useLocation()
   return (
@@ -76,6 +90,7 @@ function Grupo({ titulo, secciones }: { titulo: string; secciones: Seccion[] }) 
                   <span>{texto}</span>
                 </NavLink>
               </SidebarMenuButton>
+              {a === '/admin/boletas' && <ContadorPendientes />}
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -87,7 +102,32 @@ function Grupo({ titulo, secciones }: { titulo: string; secciones: Seccion[] }) 
 /** Zona del equipo (operador y admin): computador, con menú lateral. */
 export function LayoutAdmin() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const yo = useYo()
+  const salir = useSalir()
   const actual = [...SECCIONES_OPERADOR, ...SECCIONES_ADMIN].find((s) => pathname.startsWith(s.a))
+
+  if (yo.isPending) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col gap-4 px-4 py-16">
+        <Skeleton className="h-10 w-2/3" />
+        <Skeleton className="h-40" />
+      </div>
+    )
+  }
+  if ((yo.isError && sinSesion(yo.error)) || yo.data?.rol === 'comercio') {
+    return <Navigate to="/admin/entrar" replace state={{ desde: pathname }} />
+  }
+  if (yo.isError) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-16 text-lg">
+        <p className="mb-4">{yo.error.message}</p>
+        <Button onClick={() => yo.refetch()}>Reintentar</Button>
+      </div>
+    )
+  }
+  const esAdmin = yo.data.rol === 'admin'
+
   return (
     <TooltipProvider>
       <SidebarProvider>
@@ -97,8 +137,21 @@ export function LayoutAdmin() {
           </SidebarHeader>
           <SidebarContent>
             <Grupo titulo="Operación" secciones={SECCIONES_OPERADOR} />
-            <Grupo titulo="Administración" secciones={SECCIONES_ADMIN} />
+            {esAdmin && <Grupo titulo="Administración" secciones={SECCIONES_ADMIN} />}
           </SidebarContent>
+          <SidebarFooter className="gap-2 p-4">
+            <p className="truncate text-sm text-muted-foreground">
+              {yo.data.nombre} · {esAdmin ? 'Administración' : 'Operación'}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => salir.mutate(undefined, { onSettled: () => navigate('/admin/entrar', { replace: true }) })}
+            >
+              <LogOut aria-hidden="true" />
+              Salir
+            </Button>
+          </SidebarFooter>
         </Sidebar>
         <SidebarInset className="bg-background">
           <header className="flex h-18 items-center gap-3 border-b border-border bg-card px-4 lg:px-8">

@@ -12,6 +12,8 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "pwdlib[argon2]>=0.2",
     "tzdata>=2025.1",
+    "anthropic>=2.8",
+    "google-genai>=3.3",
 ]
 
 [project.optional-dependencies]

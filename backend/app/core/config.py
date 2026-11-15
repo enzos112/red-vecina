@@ -29,6 +29,14 @@ class Configuracion(BaseSettings):
     LECTOR_PROVEEDOR: Literal["manual", "gemini", "anthropic"] = "manual"
     GEMINI_API_KEY: str | None = None
     ANTHROPIC_API_KEY: str | None = None
+    # Modelos de visión (sección 4 de construccion.md). Se cambian sin tocar el código.
+    LECTOR_GEMINI_MODELO: str = "gemini-3.8-flash"
+    LECTOR_ANTHROPIC_MODELO: str = "claude-opus-5-5"
+    # Si el proveedor tarda más, la boleta queda para digitación manual.
+    LECTOR_TIMEOUT_SEGUNDOS: float = 30
+    # Bajo esta confianza (0 a 1) un campo leído se marca en ámbar para que el operador lo
+    # mire. Es una calibración del lector, no una regla de negocio.
+    LECTOR_CONFIANZA_MINIMA: float = 0.8
 
     FRONTEND_DIST: Path = RAIZ_REPO / "frontend" / "dist"
 

@@ -65,10 +65,26 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    path: '/admin/entrar',
+    lazy: async () => ({ Component: (await import('@/features/admin/PaginaEntrar')).PaginaEntrar }),
+  },
+  {
     path: '/admin',
     lazy: async () => ({ Component: (await import('@/app/layouts/LayoutAdmin')).LayoutAdmin }),
     children: [
       { index: true, lazy: async () => ({ Component: (await import('@/features/admin/PaginaSeccion')).IrAlInicioAdmin }) },
+      { path: 'boletas', lazy: async () => ({ Component: (await import('@/features/admin/boletas/PaginaCola')).PaginaCola }) },
+      {
+        path: 'boletas/:id',
+        lazy: async () => ({ Component: (await import('@/features/admin/boletas/PaginaRevision')).PaginaRevision }),
+      },
+      { path: 'vecinos', lazy: async () => ({ Component: (await import('@/features/admin/vecinos/PaginaVecinos')).PaginaVecinos }) },
+      {
+        path: 'vecinos/:id',
+        lazy: async () => ({ Component: (await import('@/features/admin/vecinos/PaginaVecino')).PaginaVecino }),
+      },
+      { path: 'canjes', lazy: async () => ({ Component: (await import('@/features/admin/canjes/PaginaCanjes')).PaginaCanjes }) },
+      // Comercios, red y parámetros llegan en la fase 7.
       { path: ':seccion', lazy: async () => ({ Component: (await import('@/features/admin/PaginaSeccion')).PaginaSeccion }) },
     ],
   },

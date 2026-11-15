@@ -6,5 +6,7 @@
   {"clave": "codigo_emitido", "momento": "Código emitido", "texto": "Tu código es {codigo}. Muéstralo en la caja de {comercio} antes de pagar. Vale hasta el {vence}. Compra mínima: {minimo}."},
   {"clave": "canje_usado", "momento": "Canje usado", "texto": "Canje usado en {comercio}. Saldo: {saldo} puntos. Sube la boleta de esta compra y suma más."},
   {"clave": "puntos_por_vencer", "momento": "Puntos por vencer", "texto": "{nombre}, tienes {puntos} puntos que vencen el {fecha}. Te alcanzan para {beneficio} en {comercio}."},
-  {"clave": "cupo_agotado", "momento": "Cupo agotado", "texto": "{comercio} ya entregó sus beneficios de esta semana. Desde el {proxima_liberacion} vuelve a estar disponible. Hoy puedes canjear en {alternativas}."}
+  {"clave": "cupo_agotado", "momento": "Cupo agotado", "texto": "{comercio} ya entregó sus beneficios de esta semana. Desde el {proxima_liberacion} vuelve a estar disponible. Hoy puedes canjear en {alternativas}."},
+  {"clave": "sugerencia_alcanza", "momento": "Boleta aprobada: ya alcanza para un beneficio", "texto": "Ya te alcanza para un descuento de {descuento}: pídelo en tu tarjeta."},
+  {"clave": "sugerencia_faltan", "momento": "Boleta aprobada: lo que falta para un beneficio", "texto": "Te faltan {faltan} puntos para un descuento de {descuento}."}
 ]

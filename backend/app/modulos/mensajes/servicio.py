@@ -21,11 +21,25 @@ def inicializar(sesion: Session) -> int:
 
 def texto(sesion: Session, clave: str) -> str:
     plantilla = sesion.scalar(select(PlantillaMensaje).where(PlantillaMensaje.clave == clave))
-    if plantilla is None:
+    if plantilla is not None:
+        return plantilla.texto
+    # Una plantilla nueva que aún no se carga en esta base: vale el texto base.
+    base = next((t for t in reglas.leer_plantillas() if t["clave"] == clave), None)
+    if base is None:
         raise ValueError(f"No existe la plantilla {clave}.")
-    return plantilla.texto
+    return base["texto"]
 
 
 def armar(sesion: Session, clave: str, datos: dict[str, Any]) -> str:
     """La plantilla vigente con sus variables reemplazadas."""
     return reglas.armar(texto(sesion, clave), datos)
+
+
+def para_whatsapp(sesion: Session, clave: str, datos: dict[str, Any], telefono: str) -> dict:
+    """Mensaje listo para copiar o abrir en el chat del vecino."""
+    texto_final = armar(sesion, clave, datos)
+    return {
+        "texto": texto_final,
+        "telefono": telefono,
+        "whatsapp": reglas.enlace_whatsapp(telefono, texto_final),
+    }

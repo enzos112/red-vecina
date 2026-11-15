@@ -92,6 +92,15 @@ def inscribir(datos: Inscripcion, request: Request, sesion: SesionDB, ahora: Aho
 # --- Tarjeta del vecino ---
 
 
+def _whatsapp(sesion: Session, vecino: Vecino) -> GuardarEnWhatsapp:
+    return GuardarEnWhatsapp(
+        numero=vecino.telefono.removeprefix("+"),
+        mensaje=mensajes.armar(
+            sesion, "bienvenida", {"nombre": vecino.nombre, "enlace": "{enlace}"}
+        ),
+    )
+
+
 @router.get("/t/{token}", summary="Tarjeta: saldo, pendientes, por vencer e historial")
 def tarjeta(vecino: VecinoToken, sesion: SesionDB, ahora: Ahora, p: Params) -> Tarjeta:
     # Pone al día sus códigos y vencimientos aunque la tarea del día no haya corrido.
@@ -132,12 +141,7 @@ def tarjeta(vecino: VecinoToken, sesion: SesionDB, ahora: Ahora, p: Params) -> T
             MovimientoSalida.model_validate(m)
             for m in puntos.historial(sesion, vecino.id, HISTORIAL_TARJETA)
         ],
-        whatsapp=GuardarEnWhatsapp(
-            numero=vecino.telefono.removeprefix("+"),
-            mensaje=mensajes.armar(
-                sesion, "bienvenida", {"nombre": vecino.nombre, "enlace": "{enlace}"}
-            ),
-        ),
+        whatsapp=_whatsapp(sesion, vecino),
     )
 
 
@@ -168,6 +172,7 @@ def _detalle(sesion: Session, v: Vecino, ahora, p: Parametros) -> VecinoDetalle:
             sesion, boletas.listar(sesion, vecino_id=v.id, limite=HISTORIAL_ADMIN)
         ),
         canjes=canjes_salida(sesion, canjes.listar(sesion, vecino_id=v.id, limite=HISTORIAL_ADMIN)),
+        whatsapp=_whatsapp(sesion, v),
     )
 
 

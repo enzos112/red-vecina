@@ -86,7 +86,7 @@ def test_puntos_sin_canjear(p):
 
 def test_plantillas_y_variables():
     plantillas = {t["clave"]: t["texto"] for t in leer_plantillas()}
-    assert len(plantillas) == 8
+    assert len(plantillas) == 10
     texto = armar(
         plantillas["boleta_recibida"],
         {

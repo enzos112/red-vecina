@@ -51,6 +51,12 @@ export type Body_boletas__subir = {
   foto: string
 }
 
+export type Body_boletas__subir_por_vecino = {
+  vecino_id: number
+  /** Foto de la boleta (JPG, PNG o WEBP). */
+  foto: string
+}
+
 export type BoletaDetalle = {
   id: number
   estado: EstadoBoleta
@@ -70,6 +76,8 @@ export type BoletaDetalle = {
   revisar_antes_de: string
   lectura: Record<string, unknown> | null
   controles: ControlSalida[] | null
+  rut_emisor: string | null
+  monto_excluido: number | null
 }
 
 export type BoletaEnCola = {
@@ -228,6 +236,8 @@ export type ControlSalida = {
   clave: string
   color: ColorControl
   mensaje: string
+  /** Campos del formulario que hay que mirar. */
+  campos?: string[]
 }
 
 export type CupoExtra = {
@@ -260,6 +270,11 @@ export type DatosBoleta = {
   monto_total: number
   /** Cigarros, recargas y similares. */
   monto_excluido?: number
+}
+
+export type Decision = {
+  boleta: BoletaDetalle
+  mensaje: MensajeVecino
 }
 
 export type EjecutarTareas = {
@@ -330,6 +345,19 @@ export type Inscrito = {
 export type Login = {
   email: string
   contrasena: string
+}
+
+export type MensajeVecino = {
+  texto: string
+  telefono: string
+  whatsapp: string
+}
+
+export type MotivoRechazo = {
+  clave: string
+  titulo: string
+  motivo: string
+  como_resolver: string
 }
 
 export type MotivoSalida = {
@@ -429,7 +457,10 @@ export type ProximoNivel = {
 }
 
 export type Rechazo = {
-  motivo: string
+  /** Clave de un motivo de la lista. */
+  clave: string
+  /** Para el motivo otro. */
+  nota?: string | null
 }
 
 export type ReporteComercioSalida = {
@@ -460,6 +491,11 @@ export type ResultadoCajaSalida = {
 
 export type ResultadoTareas = {
   resultados: Record<string, Record<string, unknown>>
+}
+
+export type ResumenCola = {
+  pendientes: number
+  atrasadas: number
 }
 
 export type Revision = {
@@ -572,6 +608,7 @@ export type VecinoDetalle = {
   movimientos: MovimientoSalida[]
   boletas: BoletaSalida[]
   canjes: CanjeSalida[]
+  whatsapp: GuardarEnWhatsapp
 }
 
 export type VecinoResumen = {
@@ -685,27 +722,39 @@ export function crearApi(pedir: Pedir) {
         pedir<EnlaceNuevo>('POST', `/admin/vecinos/${encodeURIComponent(String(vecinoId))}/enlace`),
     },
     boletas: {
-      /** Subir la foto de una boleta (queda pendiente) */
+      /** Subir la foto de una boleta (queda pendiente y se lee sola) */
       subir: (token: string, formulario: FormData) =>
         pedir<BoletaSalida>('POST', `/t/${encodeURIComponent(String(token))}/boletas`, { form: formulario }),
+      /** Subir una boleta que llegó por WhatsApp y asignarla a un vecino */
+      subirPorVecino: (formulario: FormData) =>
+        pedir<BoletaSalida>('POST', `/admin/boletas`, { form: formulario }),
       /** Cola de boletas (por defecto, las pendientes) */
-      cola: (consulta?: { estado?: EstadoBoleta | null }) =>
+      cola: (consulta?: { estado?: EstadoBoleta | null; comercio_id?: number | null; todas?: boolean }) =>
         pedir<BoletaEnCola[]>('GET', `/admin/boletas`, { consulta }),
+      /** Contador de pendientes */
+      resumen: () =>
+        pedir<ResumenCola>('GET', `/admin/boletas/resumen`),
+      /** Motivos de rechazo para elegir de una lista */
+      motivos: () =>
+        pedir<MotivoRechazo[]>('GET', `/admin/boletas/motivos`),
       /** Una boleta con su lectura y controles */
       detalle: (boletaId: number) =>
         pedir<BoletaDetalle>('GET', `/admin/boletas/${encodeURIComponent(String(boletaId))}`),
       /** Foto de la boleta */
       imagen: (boletaId: number): string =>
         `/api/admin/boletas/${encodeURIComponent(String(boletaId))}/imagen`,
+      /** Volver a leer la foto con el lector */
+      leer: (boletaId: number) =>
+        pedir<BoletaDetalle>('POST', `/admin/boletas/${encodeURIComponent(String(boletaId))}/leer`),
       /** Vista previa de controles y puntos con los datos corregidos */
       evaluar: (boletaId: number, cuerpo: DatosBoleta) =>
         pedir<Evaluacion>('POST', `/admin/boletas/${encodeURIComponent(String(boletaId))}/evaluar`, { json: cuerpo }),
       /** Aprobar, con ajustes si hace falta */
       aprobar: (boletaId: number, cuerpo: DatosBoleta) =>
-        pedir<BoletaDetalle>('POST', `/admin/boletas/${encodeURIComponent(String(boletaId))}/aprobar`, { json: cuerpo }),
-      /** Rechazar con un motivo */
+        pedir<Decision>('POST', `/admin/boletas/${encodeURIComponent(String(boletaId))}/aprobar`, { json: cuerpo }),
+      /** Rechazar con un motivo de la lista */
       rechazar: (boletaId: number, cuerpo: Rechazo) =>
-        pedir<BoletaDetalle>('POST', `/admin/boletas/${encodeURIComponent(String(boletaId))}/rechazar`, { json: cuerpo }),
+        pedir<Decision>('POST', `/admin/boletas/${encodeURIComponent(String(boletaId))}/rechazar`, { json: cuerpo }),
     },
     canjes: {
       /** Beneficios que puede canjear, en el orden de 6.2 */

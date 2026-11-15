@@ -1,0 +1,11 @@
+[
+  {"clave": "no_es_de_la_red", "titulo": "No es de un comercio de la red", "motivo": "la boleta no es de un comercio de la red", "como_resolver": "Solo suman las compras en los comercios de Red Vecina. Los ves en tu tarjeta."},
+  {"clave": "folio_repetido", "titulo": "Boleta ya registrada", "motivo": "esa boleta ya estaba registrada", "como_resolver": "Cada boleta suma una sola vez."},
+  {"clave": "fuera_de_plazo", "titulo": "Fuera de plazo", "motivo": "llegó después de {plazo_horas} horas desde la compra", "como_resolver": "Sube tus boletas dentro de {plazo_horas} horas desde la compra."},
+  {"clave": "monto_bajo", "titulo": "Monto bajo el mínimo", "motivo": "el monto es menor a {compra_minima}", "como_resolver": "Suman las compras desde {compra_minima}."},
+  {"clave": "boletas_del_dia", "titulo": "Tope de boletas del día", "motivo": "ya sumaste {boletas_dia} boletas ese día en ese local", "como_resolver": "Puedes sumar hasta {boletas_dia} boletas al día en cada local."},
+  {"clave": "trabaja_ahi", "titulo": "Trabaja en el local", "motivo": "no se suman puntos en el local donde trabajas", "como_resolver": "Tus compras en los otros locales de la red sí suman."},
+  {"clave": "ilegible", "titulo": "Foto ilegible", "motivo": "no se lee bien la foto", "como_resolver": "Sube otra foto con buena luz, donde se vean el total, la fecha y el folio."},
+  {"clave": "no_es_boleta", "titulo": "No es una boleta", "motivo": "la foto no es una boleta", "como_resolver": "Sube la foto de la boleta o del comprobante de pago."},
+  {"clave": "otro", "titulo": "Otro motivo", "motivo": "{nota}", "como_resolver": "Si tienes dudas, escríbenos por aquí."}
+]

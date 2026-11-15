@@ -34,10 +34,12 @@ def test_evaluar_y_aprobar_con_ajustes(api):
     # El operador descuenta $850 en cigarros (A15): quedan $7.000 y 70 puntos.
     r = c.post(f"/api/admin/boletas/{boleta_id}/aprobar", json=datos(api, monto_excluido=850))
     assert r.status_code == 200
-    aprobada = r.json()
+    aprobada = r.json()["boleta"]
     assert aprobada["estado"] == "aprobada" and aprobada["puntos"] == 70
     assert aprobada["comercio"] == "Panadería La Espiga"
-    assert {k["clave"] for k in aprobada["controles"]} == {"excluidos"}
+    observados = {k["clave"] for k in aprobada["controles"] if k["color"] != "verde"}
+    # Con el lector manual, la lectura queda en ámbar: el operador digitó los campos.
+    assert observados == {"lectura", "excluidos"}
     tarjeta = api.cliente().get(f"/api/t/{api.tokens['rosa']}").json()
     assert tarjeta["saldo"]["disponible"] == 370
     assert c.get("/api/admin/boletas").json() == []  # la cola quedó vacía
@@ -52,20 +54,21 @@ def test_aprobar_con_control_rojo_explica_el_motivo(api):
         json=datos(api, comercio_id=api.ids["don_luis"], folio="1001"),
     )
     assert r.status_code == 400
-    assert r.json()["detail"] == "Esta boleta ya fue registrada (A9)."
+    assert r.json()["detail"].startswith("Esta boleta ya fue registrada (A9). Ya la registró")
     assert c.get(f"/api/admin/boletas/{boleta_id}").json()["estado"] == "pendiente"
 
 
 def test_rechazar_con_motivo(api):
     boleta_id = subir_boleta(api)
     c = api.cliente(OPERADOR)
-    sin_motivo = c.post(f"/api/admin/boletas/{boleta_id}/rechazar", json={"motivo": ""})
-    assert sin_motivo.status_code == 422
-    r = c.post(f"/api/admin/boletas/{boleta_id}/rechazar", json={"motivo": "La foto no se lee."})
-    assert r.json()["estado"] == "rechazada"
+    url = f"/api/admin/boletas/{boleta_id}/rechazar"
+    assert c.post(url, json={"clave": ""}).status_code == 422
+    assert c.post(url, json={"clave": "otro"}).json()["detail"] == "Escribe el motivo del rechazo."
+    r = c.post(url, json={"clave": "ilegible"})
+    assert r.json()["boleta"]["estado"] == "rechazada"
     tarjeta = api.cliente().get(f"/api/t/{api.tokens['rosa']}").json()
-    assert tarjeta["boletas"][0]["motivo"] == "La foto no se lee."
-    otra_vez = c.post(f"/api/admin/boletas/{boleta_id}/rechazar", json={"motivo": "x"})
+    assert tarjeta["boletas"][0]["motivo"] == "No se lee bien la foto."
+    otra_vez = c.post(url, json={"clave": "ilegible"})
     assert otra_vez.json()["detail"] == "Esta boleta ya fue revisada."
 
 

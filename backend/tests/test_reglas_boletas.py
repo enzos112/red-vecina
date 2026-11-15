@@ -19,7 +19,8 @@ def boleta(monto: int, **datos) -> EntradaBoleta:
 
 
 def colores(resultado) -> dict[str, Color]:
-    return {c.clave: c.color for c in resultado.controles}
+    """Solo los controles que no salieron en verde."""
+    return {c.clave: c.color for c in resultado.observados}
 
 
 def test_boleta_de_7850_da_78_puntos(p):
@@ -28,7 +29,20 @@ def test_boleta_de_7850_da_78_puntos(p):
     r = evaluar_boleta(boleta(7_850), p)
     assert r.puntos == 78
     assert not r.rechazo_sugerido
-    assert r.controles == []
+    assert r.observados == []
+    # Cada control de la sección 4 queda guardado, también los que pasan.
+    assert [c.clave for c in r.controles] == [
+        "comercio",
+        "empleado",
+        "folio",
+        "plazo",
+        "boletas_dia",
+        "excluidos",
+        "monto_minimo",
+        "tope_boleta",
+        "tope_dia",
+    ]
+    assert all(c.color == Color.VERDE and c.mensaje for c in r.controles)
 
 
 def test_a7_puntos_sobre_lo_pagado_tras_el_canje(p):

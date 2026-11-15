@@ -112,3 +112,13 @@ def digito_verificador(numero: int) -> str:
         factor = 2 if factor == 7 else factor + 1
     resto = 11 - suma % 11
     return {11: "0", 10: "K"}.get(resto, str(resto))
+
+
+def normalizar_rut(texto: str | None) -> str | None:
+    """ "76.100.001-2", "761000012" o "76100001 - 2" → "76100001-2". None si no parece RUT."""
+    if not texto:
+        return None
+    limpio = re.sub(r"[^\dkK]", "", texto).upper()
+    if not 8 <= len(limpio) <= 9:
+        return None
+    return f"{limpio[:-1]}-{limpio[-1]}"

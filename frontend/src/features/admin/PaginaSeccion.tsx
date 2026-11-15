@@ -3,7 +3,7 @@ import { EnConstruccion } from '@/components/EnConstruccion'
 
 type Seccion = { texto: string; descripcion: string } | undefined
 
-/** Pantallas del equipo: llegan en las fases 5 y 7. */
+/** Pantallas de administración que llegan en la fase 7. */
 export function PaginaSeccion() {
   const seccion = useOutletContext<Seccion>()
   return <EnConstruccion titulo={seccion?.texto ?? 'Panel'} descripcion={seccion?.descripcion ?? ''} />

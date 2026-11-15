@@ -22,3 +22,11 @@ def armar(texto: str, datos: dict[str, Any]) -> str:
 
 def leer_plantillas() -> list[dict[str, str]]:
     return json.loads(RUTA_PLANTILLAS.read_text(encoding="utf-8"))
+
+
+def enlace_whatsapp(telefono: str, texto: str) -> str:
+    """wa.me con el número en dígitos (sin + ni espacios) y el texto ya escrito."""
+    from urllib.parse import quote
+
+    numero = re.sub(r"\D", "", telefono)
+    return f"https://wa.me/{numero}?text={quote(texto)}"

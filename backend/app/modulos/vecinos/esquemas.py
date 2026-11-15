@@ -88,6 +88,7 @@ class VecinoDetalle(VecinoResumen):
     movimientos: list[MovimientoSalida]
     boletas: list[BoletaSalida]
     canjes: list[CanjeSalida]
+    whatsapp: GuardarEnWhatsapp  # para reenviarle su enlace
 
 
 class EnlaceNuevo(BaseModel):

@@ -89,7 +89,15 @@ def ajustar(
         usuario_id=usuario_id,
         motivo=motivo.strip(),
     )
-    auditar(sesion, "ajustar_saldo", "vecino", vecino_id, usuario_id, {"puntos": puntos}, ahora)
+    auditar(
+        sesion,
+        "ajustar_saldo",
+        "vecino",
+        vecino_id,
+        usuario_id,
+        {"puntos": puntos, "motivo": motivo.strip()},
+        ahora,
+    )
     return movimiento
 
 

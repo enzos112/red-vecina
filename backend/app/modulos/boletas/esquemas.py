@@ -30,6 +30,9 @@ class ControlSalida(BaseModel):
     clave: str
     color: ColorControl
     mensaje: str
+    campos: list[str] = Field(
+        default_factory=list, description="Campos del formulario que hay que mirar."
+    )
 
 
 class BoletaSalida(BaseModel):
@@ -61,8 +64,10 @@ class BoletaEnCola(BoletaSalida):
 
 
 class BoletaDetalle(BoletaEnCola):
-    lectura: dict[str, Any] | None
+    lectura: dict[str, Any] | None  # {proveedor, error, segundos, datos}
     controles: list[ControlSalida] | None
+    rut_emisor: str | None
+    monto_excluido: int | None  # lo que no suma, para el formulario de revisión
 
 
 class DatosBoleta(BaseModel):
@@ -84,4 +89,28 @@ class Evaluacion(BaseModel):
 
 
 class Rechazo(BaseModel):
-    motivo: str = Field(min_length=1, max_length=500)
+    clave: str = Field(min_length=1, description="Clave de un motivo de la lista.")
+    nota: str | None = Field(default=None, max_length=300, description="Para el motivo otro.")
+
+
+class MotivoRechazo(BaseModel):
+    clave: str
+    titulo: str
+    motivo: str
+    como_resolver: str
+
+
+class MensajeVecino(BaseModel):
+    texto: str
+    telefono: str
+    whatsapp: str  # enlace wa.me con el texto
+
+
+class Decision(BaseModel):
+    boleta: BoletaDetalle
+    mensaje: MensajeVecino
+
+
+class ResumenCola(BaseModel):
+    pendientes: int
+    atrasadas: int  # pendientes que pasaron el plazo de validación (U11)
