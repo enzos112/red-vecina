@@ -9,12 +9,14 @@ from app.modulos.boletas.rutas import boletas_salida
 from app.modulos.canjes import servicio as canjes
 from app.modulos.canjes.rutas import canjes_salida, codigo_salida
 from app.modulos.comercios import servicio as comercios
+from app.modulos.mensajes import servicio as mensajes
 from app.modulos.parametros.reglas import Parametros, niveles
 from app.modulos.puntos import servicio as puntos
 from app.modulos.puntos.esquemas import Ajuste, MovimientoSalida, SaldoSalida, VencimientoSalida
 from app.modulos.vecinos import servicio
 from app.modulos.vecinos.esquemas import (
     EnlaceNuevo,
+    GuardarEnWhatsapp,
     Inscripcion,
     Inscrito,
     PendientesSalida,
@@ -30,6 +32,7 @@ router = APIRouter(tags=["Vecinos"])
 # Tamaños de página, no reglas de negocio.
 HISTORIAL_TARJETA = 30
 BOLETAS_TARJETA = 20
+CANJES_TARJETA = 20
 LIMITE_BUSQUEDA = 50
 HISTORIAL_ADMIN = 200
 
@@ -105,7 +108,10 @@ def tarjeta(vecino: VecinoToken, sesion: SesionDB, ahora: Ahora, p: Params) -> T
         comercio_origen=origen.nombre if origen else None,
         estado=vecino.estado,
         saldo=SaldoSalida(disponible=saldo.disponible, retenido=saldo.retenido),
-        pendientes=PendientesSalida(boletas=boletas.contar_pendientes(sesion, vecino.id)),
+        pendientes=PendientesSalida(
+            boletas=boletas.contar_pendientes(sesion, vecino.id),
+            puntos=boletas.puntos_pendientes(sesion, vecino.id),
+        ),
         por_vencer=_por_vencer(sesion, vecino.id, ahora, p),
         proximo_nivel=ProximoNivel(
             nombre=siguiente.nombre,
@@ -119,10 +125,19 @@ def tarjeta(vecino: VecinoToken, sesion: SesionDB, ahora: Ahora, p: Params) -> T
         boletas=boletas_salida(
             sesion, boletas.listar(sesion, vecino_id=vecino.id, limite=BOLETAS_TARJETA)
         ),
+        canjes=canjes_salida(
+            sesion, canjes.listar(sesion, vecino_id=vecino.id, limite=CANJES_TARJETA)
+        ),
         movimientos=[
             MovimientoSalida.model_validate(m)
             for m in puntos.historial(sesion, vecino.id, HISTORIAL_TARJETA)
         ],
+        whatsapp=GuardarEnWhatsapp(
+            numero=vecino.telefono.removeprefix("+"),
+            mensaje=mensajes.armar(
+                sesion, "bienvenida", {"nombre": vecino.nombre, "enlace": "{enlace}"}
+            ),
+        ),
     )
 
 

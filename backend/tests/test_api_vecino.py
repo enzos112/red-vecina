@@ -109,6 +109,11 @@ def test_tarjeta_de_rosa(api):
     assert t["boletas"][0]["comercio"] == "Minimarket Don Luis"
     assert t["movimientos"][0]["tipo"] == "gana"
     assert t["codigo_activo"] is None
+    assert t["canjes"] == []
+    # Para guardar la tarjeta en su propio chat: el navegador completa {enlace}.
+    assert t["whatsapp"]["numero"] == "56900010000"
+    assert t["whatsapp"]["mensaje"].startswith("Hola Rosa,")
+    assert "{enlace}" in t["whatsapp"]["mensaje"]
 
 
 def test_subir_boleta_queda_pendiente_y_llega_a_la_cola(api):
@@ -120,7 +125,7 @@ def test_subir_boleta_queda_pendiente_y_llega_a_la_cola(api):
     assert r.json()["estado"] == "pendiente"
     assert r.json()["tiene_imagen"] is True
     tarjeta = api.cliente().get(f"/api/t/{token}").json()
-    assert tarjeta["pendientes"] == {"boletas": 1}
+    assert tarjeta["pendientes"] == {"boletas": 1, "puntos": 0}
     operador = api.cliente(OPERADOR)
     cola = operador.get("/api/admin/boletas").json()
     assert [b["id"] for b in cola] == [r.json()["id"]]
@@ -154,6 +159,7 @@ def test_opciones_y_pedir_codigo(api):
     tarjeta = c.get(f"/api/t/{token}").json()
     assert tarjeta["saldo"] == {"disponible": 50, "retenido": 250}
     assert tarjeta["codigo_activo"]["codigo"] == codigo["codigo"]
+    assert tarjeta["canjes"][0]["estado"] == "activo"  # en su historial
     # P14: un código activo a la vez.
     otra = c.post(f"/api/t/{token}/canjes", json={"beneficio_id": primera["beneficio_id"]})
     assert otra.status_code == 400
@@ -206,5 +212,6 @@ def test_condiciones_publicas_salen_de_los_parametros(api, p):
     datos = r.json()
     assert datos["pesos_por_punto"] == p.P1.pesos_por_punto
     assert datos["vigencia_puntos_dias"] == p.P8.dias
+    assert datos["plazo_validacion_horas"] == p.U11.horas
     assert [n["puntos"] for n in datos["niveles"]] == list(p.P9.puntos)
     assert datos["niveles"][0]["valor_pesos"] == p.P9.puntos[0] * p.P2.pesos

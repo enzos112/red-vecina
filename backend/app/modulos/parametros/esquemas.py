@@ -64,6 +64,7 @@ class CondicionesRed(BaseModel):
     canjes_red_dias: int
     codigos_activos: int  # P14
     boletas_para_canjear: int  # P20
+    plazo_validacion_horas: int  # U11
     avisos_vencimiento_dias: list[int]  # U16
     plazo_reclamo_dias: int  # U17
     cuenta_sin_compras_dias: int  # U18

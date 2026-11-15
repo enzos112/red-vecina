@@ -34,6 +34,17 @@ class Inscrito(BaseModel):
 
 class PendientesSalida(BaseModel):
     boletas: int  # boletas enviadas que esperan revisión (A8)
+    puntos: int  # puntos ya calculados de esas boletas; las recién subidas aún no tienen
+
+
+class GuardarEnWhatsapp(BaseModel):
+    """Para que el vecino se mande su enlace a su propio chat de WhatsApp."""
+
+    numero: str = Field(description="Su celular en dígitos, para wa.me.")
+    mensaje: str = Field(
+        description="Plantilla de bienvenida armada. {enlace} lo completa el navegador, "
+        "que conoce la dirección pública de la tarjeta."
+    )
 
 
 class ProximoNivel(BaseModel):
@@ -53,7 +64,9 @@ class Tarjeta(BaseModel):
     proximo_nivel: ProximoNivel | None
     codigo_activo: CodigoSalida | None
     boletas: list[BoletaSalida]
+    canjes: list[CanjeSalida]
     movimientos: list[MovimientoSalida]
+    whatsapp: GuardarEnWhatsapp
 
 
 class VecinoResumen(BaseModel):

@@ -117,6 +117,18 @@ def contar_pendientes(sesion: Session, vecino_id: int | None = None) -> int:
     return sesion.scalar(consulta) or 0
 
 
+def puntos_pendientes(sesion: Session, vecino_id: int) -> int:
+    """Puntos ya calculados de las boletas pendientes del vecino (A8)."""
+    return (
+        sesion.scalar(
+            select(func.coalesce(func.sum(Boleta.puntos), 0)).where(
+                Boleta.estado == EstadoBoleta.PENDIENTE, Boleta.vecino_id == vecino_id
+            )
+        )
+        or 0
+    )
+
+
 def evaluar(
     sesion: Session,
     boleta_id: int,

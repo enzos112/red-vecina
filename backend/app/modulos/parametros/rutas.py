@@ -35,6 +35,7 @@ def condiciones(p: Params) -> CondicionesRed:
         canjes_red_dias=p.P13.dias,
         codigos_activos=p.P14.codigos,
         boletas_para_canjear=p.P20.boletas_validadas,
+        plazo_validacion_horas=p.U11.horas,
         avisos_vencimiento_dias=list(p.U16.dias),
         plazo_reclamo_dias=p.U17.dias,
         cuenta_sin_compras_dias=p.U18.dias,

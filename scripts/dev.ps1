@@ -1,6 +1,9 @@
 ﻿# Levanta backend (FastAPI en :8000) y frontend (Vite en :5173) con un solo comando.
-# Uso desde la raíz del repo:  .\dev.cmd
+# Uso desde la raíz del repo:  .\dev.cmd            (solo en este PC)
+#                              .\dev.cmd -Celular   (también desde un celular en la misma red wifi)
 # La primera vez crea el entorno de Python, instala dependencias y copia .env.example a .env.
+
+param([switch]$Celular)
 
 $ErrorActionPreference = 'Stop'
 $raiz = Split-Path -Parent $PSScriptRoot
@@ -49,7 +52,15 @@ $procesoBackend = Start-Process -FilePath $python -WorkingDirectory $backend -No
 try {
     Paso 'Frontend en http://localhost:5173  (Ctrl+C para detener ambos)'
     Push-Location $frontend
-    npm run dev
+    if ($Celular) {
+        # Vite escucha en la red local; la API sigue solo en este PC (el celular entra por el proxy).
+        $ips = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+            Where-Object { $_.IPAddress -notmatch '^(127\.|169\.254\.)' -and $_.PrefixOrigin -ne 'WellKnown' }
+        foreach ($ip in $ips) { Paso "Desde el celular: http://$($ip.IPAddress):5173" }
+        npm run dev -- --host
+    } else {
+        npm run dev
+    }
 } finally {
     Pop-Location
     if ($procesoBackend -and -not $procesoBackend.HasExited) {

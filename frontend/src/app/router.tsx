@@ -21,12 +21,33 @@ export const router = createBrowserRouter([
     lazy: async () => ({ Component: (await import('@/features/estilos/PaginaEstilos')).PaginaEstilos }),
   },
   {
-    path: '/t/:token',
+    // Zona del vecino: inscripción desde el QR y su tarjeta personal.
     lazy: async () => ({ Component: (await import('@/app/layouts/LayoutVecino')).LayoutVecino }),
     children: [
       {
-        index: true,
-        lazy: async () => ({ Component: (await import('@/features/vecino/PaginaTarjeta')).PaginaTarjeta }),
+        path: '/unirme/:comercio',
+        lazy: async () => ({ Component: (await import('@/features/vecino/PaginaUnirme')).PaginaUnirme }),
+      },
+      {
+        path: '/t/:token',
+        children: [
+          {
+            index: true,
+            lazy: async () => ({ Component: (await import('@/features/vecino/PaginaTarjeta')).PaginaTarjeta }),
+          },
+          {
+            path: 'boleta',
+            lazy: async () => ({ Component: (await import('@/features/vecino/PaginaBoleta')).PaginaBoleta }),
+          },
+          {
+            path: 'beneficios',
+            lazy: async () => ({ Component: (await import('@/features/vecino/PaginaBeneficios')).PaginaBeneficios }),
+          },
+          {
+            path: 'historial',
+            lazy: async () => ({ Component: (await import('@/features/vecino/PaginaHistorial')).PaginaHistorial }),
+          },
+        ],
       },
     ],
   },

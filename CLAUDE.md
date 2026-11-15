@@ -84,6 +84,7 @@ Al crear modelos nuevos, impórtalos en `backend/migrations/env.py` para que Ale
 | Qué | Comando |
 | --- | --- |
 | Levantar backend + frontend | `.\dev.cmd` |
+| Lo mismo, abrible desde el celular en la misma wifi | `.\dev.cmd -Celular` |
 | Verificar todo (ruff, pytest, oxlint, build) | `.\verificar.cmd` |
 | Datos de demostración (base vacía / desde cero) | `.\demo.cmd` / `.\demo.cmd --reiniciar` |
 | Parámetros, plantillas y primer admin | `cd backend; .\.venv\Scripts\python -m app.cli base` |

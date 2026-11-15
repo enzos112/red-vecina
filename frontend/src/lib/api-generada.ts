@@ -217,6 +217,7 @@ export type CondicionesRed = {
   canjes_red_dias: number
   codigos_activos: number
   boletas_para_canjear: number
+  plazo_validacion_horas: number
   avisos_vencimiento_dias: number[]
   plazo_reclamo_dias: number
   cuenta_sin_compras_dias: number
@@ -288,6 +289,14 @@ export type Evaluacion = {
 }
 
 export type GrupoParametro = 'red' | 'umbral'
+
+/** Para que el vecino se mande su enlace a su propio chat de WhatsApp. */
+export type GuardarEnWhatsapp = {
+  /** Su celular en dígitos, para wa.me. */
+  numero: string
+  /** Plantilla de bienvenida armada. {enlace} lo completa el navegador, que conoce la dirección pública de la tarjeta. */
+  mensaje: string
+}
 
 export type IndicadorSalida = {
   clave: string
@@ -397,6 +406,7 @@ export type PedirCodigo = {
 
 export type PendientesSalida = {
   boletas: number
+  puntos: number
 }
 
 export type PropuestaBeneficios = {
@@ -502,7 +512,9 @@ export type Tarjeta = {
   proximo_nivel: ProximoNivel | null
   codigo_activo: CodigoSalida | null
   boletas: BoletaSalida[]
+  canjes: CanjeSalida[]
   movimientos: MovimientoSalida[]
+  whatsapp: GuardarEnWhatsapp
 }
 
 export type TipoBeneficio = 'descuento' | 'producto'

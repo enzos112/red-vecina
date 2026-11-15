@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -22,3 +24,8 @@ def texto(sesion: Session, clave: str) -> str:
     if plantilla is None:
         raise ValueError(f"No existe la plantilla {clave}.")
     return plantilla.texto
+
+
+def armar(sesion: Session, clave: str, datos: dict[str, Any]) -> str:
+    """La plantilla vigente con sus variables reemplazadas."""
+    return reglas.armar(texto(sesion, clave), datos)
