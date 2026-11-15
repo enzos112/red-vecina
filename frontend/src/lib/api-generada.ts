@@ -201,6 +201,28 @@ export type ComercioPublico = {
   destacado: BeneficioSalida | null
 }
 
+/** Valores vigentes que el público necesita para entender el programa. */
+export type CondicionesRed = {
+  pesos_por_punto: number
+  compra_minima_sumar: number
+  maximo_puntos_boleta: number
+  plazo_boleta_horas: number
+  vigencia_puntos_dias: number
+  niveles: NivelPublico[]
+  veces_compra_minima_canje: number
+  vigencia_codigo_horas: number
+  canjes_por_comercio: number
+  canjes_por_comercio_dias: number
+  canjes_red: number
+  canjes_red_dias: number
+  codigos_activos: number
+  boletas_para_canjear: number
+  avisos_vencimiento_dias: number[]
+  plazo_reclamo_dias: number
+  cuenta_sin_compras_dias: number
+  aviso_cierre_dias: number
+}
+
 export type ControlSalida = {
   clave: string
   color: ColorControl
@@ -315,6 +337,13 @@ export type MovimientoSalida = {
   boleta_id: number | null
   canje_id: number | null
   motivo: string | null
+}
+
+export type NivelPublico = {
+  numero: number
+  nombre: string
+  puntos: number
+  valor_pesos: number
 }
 
 /** Un nivel de P9 con su descuento (P2) y su compra mínima tope (P10). */
@@ -703,6 +732,9 @@ export function crearApi(pedir: Pedir) {
         pedir<IndicadoresRedSalida>('GET', `/admin/indicadores`),
     },
     parametros: {
+      /** Valores vigentes del programa para el público */
+      condiciones: () =>
+        pedir<CondicionesRed>('GET', `/red/condiciones`),
       /** P1 a P20 y umbrales, con su valor vigente */
       listar: () =>
         pedir<ParametroSalida[]>('GET', `/admin/parametros`),

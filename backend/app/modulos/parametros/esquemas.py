@@ -38,3 +38,33 @@ class CambioParametroSalida(BaseModel):
     motivo: str
     usuario_id: int | None
     cambiado_en: datetime
+
+
+class NivelPublico(BaseModel):
+    numero: int
+    nombre: str
+    puntos: int
+    valor_pesos: int
+
+
+class CondicionesRed(BaseModel):
+    """Valores vigentes que el público necesita para entender el programa."""
+
+    pesos_por_punto: int  # P1
+    compra_minima_sumar: int  # P3
+    maximo_puntos_boleta: int  # P4
+    plazo_boleta_horas: int  # P7
+    vigencia_puntos_dias: int  # P8
+    niveles: list[NivelPublico]  # P9 con P2
+    veces_compra_minima_canje: int  # P10
+    vigencia_codigo_horas: int  # P11
+    canjes_por_comercio: int  # P12
+    canjes_por_comercio_dias: int
+    canjes_red: int  # P13
+    canjes_red_dias: int
+    codigos_activos: int  # P14
+    boletas_para_canjear: int  # P20
+    avisos_vencimiento_dias: list[int]  # U16
+    plazo_reclamo_dias: int  # U17
+    cuenta_sin_compras_dias: int  # U18
+    aviso_cierre_dias: int  # U25

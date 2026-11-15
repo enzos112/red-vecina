@@ -198,3 +198,13 @@ def test_canje_completo_en_la_caja(api):
     assert cupo["usado"] == 1_000 and cupo["reservado"] == 0
     canjes = api.cliente(ADMIN).get("/api/admin/canjes", params={"estado": "usado"}).json()
     assert canjes[0]["monto_ticket"] == 6_200
+
+
+def test_condiciones_publicas_salen_de_los_parametros(api, p):
+    r = api.cliente().get("/api/red/condiciones")
+    assert r.status_code == 200
+    datos = r.json()
+    assert datos["pesos_por_punto"] == p.P1.pesos_por_punto
+    assert datos["vigencia_puntos_dias"] == p.P8.dias
+    assert [n["puntos"] for n in datos["niveles"]] == list(p.P9.puntos)
+    assert datos["niveles"][0]["valor_pesos"] == p.P9.puntos[0] * p.P2.pesos

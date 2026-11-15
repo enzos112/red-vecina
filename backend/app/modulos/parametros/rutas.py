@@ -1,14 +1,45 @@
 from fastapi import APIRouter
 
-from app.core.dependencias import Admin, Ahora, Equipo, SesionDB
-from app.modulos.parametros import servicio
+from app.core.dependencias import Admin, Ahora, Equipo, Params, SesionDB
+from app.modulos.parametros import reglas, servicio
 from app.modulos.parametros.esquemas import (
     CambioParametroNuevo,
     CambioParametroSalida,
+    CondicionesRed,
+    NivelPublico,
     ParametroSalida,
 )
 
 router = APIRouter(tags=["Parámetros"])
+
+
+@router.get("/red/condiciones", summary="Valores vigentes del programa para el público")
+def condiciones(p: Params) -> CondicionesRed:
+    return CondicionesRed(
+        pesos_por_punto=p.P1.pesos_por_punto,
+        compra_minima_sumar=p.P3.pesos,
+        maximo_puntos_boleta=p.P4.puntos,
+        plazo_boleta_horas=p.P7.horas,
+        vigencia_puntos_dias=p.P8.dias,
+        niveles=[
+            NivelPublico(
+                numero=n.numero, nombre=n.nombre, puntos=n.puntos, valor_pesos=n.valor_pesos
+            )
+            for n in reglas.niveles(p)
+        ],
+        veces_compra_minima_canje=p.P10.veces_descuento,
+        vigencia_codigo_horas=p.P11.horas,
+        canjes_por_comercio=p.P12.canjes,
+        canjes_por_comercio_dias=p.P12.dias,
+        canjes_red=p.P13.canjes,
+        canjes_red_dias=p.P13.dias,
+        codigos_activos=p.P14.codigos,
+        boletas_para_canjear=p.P20.boletas_validadas,
+        avisos_vencimiento_dias=list(p.U16.dias),
+        plazo_reclamo_dias=p.U17.dias,
+        cuenta_sin_compras_dias=p.U18.dias,
+        aviso_cierre_dias=p.U25.dias,
+    )
 
 
 @router.get("/admin/parametros", summary="P1 a P20 y umbrales, con su valor vigente")
