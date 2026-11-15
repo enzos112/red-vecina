@@ -1,0 +1,10 @@
+[
+  {"clave": "bienvenida", "momento": "Bienvenida", "texto": "Hola {nombre}, ya eres parte de Red Vecina. Esta es tu tarjeta: {enlace}. Guárdala; ahí ves tus puntos y subes tus boletas."},
+  {"clave": "boleta_recibida", "momento": "Boleta recibida", "texto": "Recibimos tu boleta de {comercio} por {monto}. Tienes {puntos} puntos pendientes; te confirmamos en menos de {plazo_validacion}."},
+  {"clave": "boleta_aprobada", "momento": "Boleta aprobada", "texto": "Listo: +{puntos} puntos. Saldo disponible: {saldo}. {sugerencia_beneficio}"},
+  {"clave": "boleta_rechazada", "momento": "Boleta rechazada", "texto": "No pudimos sumar tu boleta de {comercio}: {motivo}. {como_resolver}"},
+  {"clave": "codigo_emitido", "momento": "Código emitido", "texto": "Tu código es {codigo}. Muéstralo en la caja de {comercio} antes de pagar. Vale hasta el {vence}. Compra mínima: {minimo}."},
+  {"clave": "canje_usado", "momento": "Canje usado", "texto": "Canje usado en {comercio}. Saldo: {saldo} puntos. Sube la boleta de esta compra y suma más."},
+  {"clave": "puntos_por_vencer", "momento": "Puntos por vencer", "texto": "{nombre}, tienes {puntos} puntos que vencen el {fecha}. Te alcanzan para {beneficio} en {comercio}."},
+  {"clave": "cupo_agotado", "momento": "Cupo agotado", "texto": "{comercio} ya entregó sus beneficios de esta semana. Desde el {proxima_liberacion} vuelve a estar disponible. Hoy puedes canjear en {alternativas}."}
+]

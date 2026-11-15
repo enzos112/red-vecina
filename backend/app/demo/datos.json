@@ -1,0 +1,86 @@
+{
+  "_nota": "Datos ficticios de demostración. Las ventas objetivo siguen las proporciones de la tabla 6.4 de las reglas. Nada de esto es una regla de negocio.",
+  "dominio_correos": "redvecina.test",
+  "dias_historia": 28,
+  "comercios": [
+    {
+      "nombre": "Minimarket Don Luis", "rubro": "Minimarket", "rut": "76100001-2",
+      "direccion": "Los Aromos 1240", "ventas_objetivo": 4000000, "ticket_promedio": 12000,
+      "atraccion_origen": 3,
+      "beneficios": [
+        {"nivel": 1, "tipo": "descuento", "texto": "{valor} de descuento en tu compra"},
+        {"nivel": 2, "tipo": "descuento", "texto": "{valor} de descuento en tu compra"},
+        {"nivel": 3, "tipo": "descuento", "texto": "{valor} de descuento en tu compra del mes"}
+      ]
+    },
+    {
+      "nombre": "Carnicería El Novillo", "rubro": "Carnicería", "rut": "76100002-0",
+      "direccion": "Los Aromos 1302", "ventas_objetivo": 1500000, "ticket_promedio": 16000,
+      "atraccion_origen": 2,
+      "beneficios": [
+        {"nivel": 2, "tipo": "descuento", "texto": "{valor} menos en carnes", "compra_minima_fraccion": 0.8},
+        {"nivel": 3, "tipo": "descuento", "texto": "{valor} menos en tu pedido para el asado", "restriccion": "Solo de miércoles a domingo", "dias_permitidos": [2, 3, 4, 5, 6]}
+      ]
+    },
+    {
+      "nombre": "Panadería La Espiga", "rubro": "Panadería", "rut": "76100003-9",
+      "direccion": "El Roble 455", "ventas_objetivo": 1200000, "ticket_promedio": 4500,
+      "atraccion_origen": 2,
+      "beneficios": [
+        {"nivel": 1, "tipo": "producto", "texto": "Un kilo de pan amasado de regalo"},
+        {"nivel": 2, "tipo": "descuento", "texto": "{valor} de descuento en tortas y pasteles", "restriccion": "No acumulable con la oferta de la semana"}
+      ]
+    },
+    {
+      "nombre": "Botillería Los Aromos", "rubro": "Botillería", "rut": "76100004-7",
+      "direccion": "Los Aromos 1388", "ventas_objetivo": 1000000, "ticket_promedio": 11000,
+      "atraccion_origen": 1,
+      "beneficios": [
+        {"nivel": 2, "tipo": "descuento", "texto": "{valor} de descuento en bebidas y snacks", "restriccion": "Solo de jueves a domingo", "dias_permitidos": [3, 4, 5, 6]}
+      ]
+    },
+    {
+      "nombre": "Verdulería Doña Ana", "rubro": "Verdulería", "rut": "76100005-5",
+      "direccion": "El Roble 512", "ventas_objetivo": 800000, "ticket_promedio": 6500,
+      "atraccion_origen": 1,
+      "beneficios": [
+        {"nivel": 1, "tipo": "descuento", "texto": "{valor} de descuento en frutas y verduras"},
+        {"nivel": 2, "tipo": "descuento", "texto": "{valor} de descuento en tu compra de la semana"}
+      ]
+    },
+    {
+      "nombre": "Barbería Central", "rubro": "Barbería", "rut": "76100006-3",
+      "direccion": "Plaza Central 18", "ventas_objetivo": 300000, "ticket_promedio": 8000,
+      "atraccion_origen": 1,
+      "beneficios": [
+        {"nivel": 1, "tipo": "descuento", "texto": "{valor} menos en el corte", "restriccion": "Solo de martes a sábado", "dias_permitidos": [1, 2, 3, 4, 5]},
+        {"nivel": 2, "tipo": "descuento", "texto": "{valor} menos en corte y barba", "restriccion": "Solo de martes a sábado", "dias_permitidos": [1, 2, 3, 4, 5]}
+      ]
+    }
+  ],
+  "vecinos_con_nombre": [
+    {"nombre": "Rosa González", "origen": "Minimarket Don Luis"},
+    {"nombre": "Juan Pérez", "origen": "Minimarket Don Luis"},
+    {"nombre": "Carmen Muñoz", "origen": "Carnicería El Novillo"},
+    {"nombre": "Luis Rojas", "origen": "Panadería La Espiga", "trabaja_en": "Panadería La Espiga"},
+    {"nombre": "Patricia Soto", "origen": "Verdulería Doña Ana"},
+    {"nombre": "Jorge Díaz", "origen": "Barbería Central"},
+    {"nombre": "Marcela Contreras", "origen": "Minimarket Don Luis"},
+    {"nombre": "Héctor Silva", "origen": "Botillería Los Aromos"},
+    {"nombre": "Gloria Morales", "origen": "Panadería La Espiga"},
+    {"nombre": "Ricardo Fuentes", "origen": "Carnicería El Novillo"},
+    {"nombre": "Verónica Araya", "origen": "Verdulería Doña Ana"},
+    {"nombre": "Manuel Espinoza", "origen": "Minimarket Don Luis"}
+  ],
+  "vecinos_sinteticos": 200,
+  "nombres": ["María", "José", "Ana", "Juan", "Carmen", "Luis", "Rosa", "Pedro", "Patricia", "Jorge", "Claudia", "Carlos", "Marcela", "Manuel", "Verónica", "Francisco", "Paola", "Sergio", "Gloria", "Héctor", "Cecilia", "Ricardo", "Sandra", "Víctor", "Ximena", "Raúl", "Lorena", "Miguel", "Isabel", "Eduardo"],
+  "apellidos": ["González", "Muñoz", "Rojas", "Díaz", "Pérez", "Soto", "Contreras", "Silva", "Martínez", "Sepúlveda", "Morales", "Rodríguez", "López", "Fuentes", "Hernández", "Torres", "Araya", "Flores", "Espinoza", "Valenzuela"],
+  "productos": {
+    "Minimarket": [["Arroz 1 kg", 1490], ["Aceite 1 L", 2890], ["Leche 1 L", 1090], ["Detergente", 4990], ["Fideos", 990], ["Azúcar 1 kg", 1290], ["Café", 3990], ["Atún", 1790]],
+    "Carnicería": [["Posta negra 1 kg", 10990], ["Pollo entero", 6490], ["Longaniza", 4290], ["Carne molida", 7990], ["Chuleta", 6990]],
+    "Panadería": [["Marraqueta 1 kg", 1990], ["Hallulla 1 kg", 1990], ["Pan amasado", 2290], ["Torta mil hojas", 8990], ["Berlín", 790]],
+    "Botillería": [["Bebida 3 L", 2790], ["Jugo 1,5 L", 1590], ["Papas fritas", 1990], ["Agua mineral", 990], ["Hielo", 1490]],
+    "Verdulería": [["Palta 1 kg", 3990], ["Tomate 1 kg", 1490], ["Papas 2 kg", 1990], ["Lechuga", 890], ["Manzana 1 kg", 1290], ["Limón 1 kg", 1690]],
+    "Barbería": [["Corte de pelo", 7000], ["Barba", 4000], ["Corte infantil", 5000]]
+  }
+}
