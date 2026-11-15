@@ -27,6 +27,22 @@ class Comercio(Base):
     creado_en: Mapped[datetime] = mapped_column(FechaHoraUTC, default=ahora_utc)
 
 
+class SolicitudComercio(Base):
+    """Formulario "Quiero unirme al piloto" de la landing para dueños."""
+
+    __tablename__ = "solicitudes_comercio"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    comercio: Mapped[str] = mapped_column(String(120))
+    rubro: Mapped[str] = mapped_column(String(60))
+    contacto: Mapped[str] = mapped_column(String(120))
+    telefono: Mapped[str] = mapped_column(String(20))
+    email: Mapped[str | None] = mapped_column(String(200))
+    direccion: Mapped[str | None] = mapped_column(String(200))
+    mensaje: Mapped[str | None] = mapped_column(Text)
+    creado_en: Mapped[datetime] = mapped_column(FechaHoraUTC, default=ahora_utc, index=True)
+
+
 class Beneficio(Base):
     __tablename__ = "beneficios"
 

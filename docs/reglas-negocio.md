@@ -415,3 +415,11 @@ Nov 14, 2026. Respuestas del equipo a las ambigüedades detectadas al construir 
 - La recompra exige un día calendario posterior al de la primera compra.
 - Un comercio aparece como “cupo agotado, vuelve el lunes” cuando tiene beneficios vigentes pero su cupo libre no alcanza para el menor de ellos.
 - Un cambio de beneficios aprobado rige desde el primer lunes que esté a U23 días o más de la solicitud.
+
+**A.15 Aprobación de beneficios** (Nov 15, 2026, al construir la fase 2)
+
+- Los beneficios los aprueba el operador o el administrador (B7). Crear comercios y usuarios, suspender comercios y cambiar parámetros sigue siendo solo del administrador.
+- Los primeros beneficios de un comercio rigen al aprobarse: sin beneficios anteriores no hay nada que avisar.
+- Si un cambio se aprueba cuando el lunes calculado desde la solicitud (A.14) ya pasó, rige desde el lunes siguiente a la aprobación.
+- Cada propuesta es el conjunto completo de beneficios del comercio (B1). Al regir, reemplaza entero al conjunto anterior. Una propuesta nueva reemplaza a la que seguía pendiente.
+- En la landing, el beneficio destacado de cada comercio es el del nivel obligatorio (P9).

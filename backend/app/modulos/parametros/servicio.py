@@ -47,6 +47,22 @@ def cargar(sesion: Session) -> Parametros:
     return reglas.construir_parametros({f.codigo: f.valor for f in filas})
 
 
+def listar(sesion: Session) -> list[Parametro]:
+    return list(sesion.scalars(select(Parametro).order_by(Parametro.orden)))
+
+
+def historial(sesion: Session, codigo: str) -> list[CambioParametro]:
+    if sesion.get(Parametro, codigo) is None:
+        raise ValueError(f"No existe el parámetro {codigo}.")
+    return list(
+        sesion.scalars(
+            select(CambioParametro)
+            .where(CambioParametro.codigo == codigo)
+            .order_by(CambioParametro.cambiado_en.desc(), CambioParametro.id.desc())
+        )
+    )
+
+
 def cambiar(
     sesion: Session,
     codigo: str,

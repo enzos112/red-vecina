@@ -38,6 +38,23 @@ class Configuracion(BaseSettings):
     OPERADOR_PASSWORD: SecretStr | None = None
     COMERCIO_PASSWORD: SecretStr | None = None
 
+    # Seguridad técnica (no son reglas de negocio): duración de la sesión y límites de
+    # intentos fallidos por ventana de tiempo, para frenar la adivinación de claves,
+    # enlaces de vecino y códigos de canje.
+    SESION_HORAS: int = 24 * 14
+    LOGIN_INTENTOS: int = 5
+    LOGIN_VENTANA_SEGUNDOS: int = 15 * 60
+    TOKEN_INTENTOS: int = 20
+    TOKEN_VENTANA_SEGUNDOS: int = 10 * 60
+    CODIGO_INTENTOS: int = 10
+    CODIGO_VENTANA_SEGUNDOS: int = 10 * 60
+    INSCRIPCION_INTENTOS: int = 10
+    INSCRIPCION_VENTANA_SEGUNDOS: int = 60 * 60
+    SUBIDAS_POR_HORA: int = 10
+    BOLETA_MAX_BYTES: int = 3 * 1024 * 1024
+    # Ejecutar las tareas del día con la primera petición (sección 5). Se apaga en pruebas.
+    TAREAS_PEREZOSAS: bool = True
+
     @field_validator("DATABASE_URL")
     @classmethod
     def normalizar_postgres(cls, valor: str) -> str:

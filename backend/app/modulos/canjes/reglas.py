@@ -3,14 +3,13 @@
 Funciones puras: reciben datos y parámetros, no tocan la base de datos.
 """
 
-import enum
 from datetime import date, datetime, timedelta
 
 from pydantic import BaseModel, ConfigDict
 
 from app.core.formato import fecha_hora, lista_dias, miles, pesos
 from app.core.tiempo import dia_local, dias_locales_entre, semana_de
-from app.modulos.canjes.esquemas import EstadoCanje
+from app.modulos.canjes.esquemas import EstadoCanje, ResultadoCaja
 from app.modulos.parametros.reglas import Parametros
 
 
@@ -151,16 +150,6 @@ def cupo_vuelve_al_vencer(semana_cupo: date, vencido_en: datetime, p: Parametros
 
 
 # --- Validación en la caja (B13, B14, sección 8, Anexo A.7) ---
-
-
-class ResultadoCaja(enum.StrEnum):
-    VALIDO = "valido"
-    NO_EXISTE = "no_existe"
-    OTRO_LOCAL = "otro_local"
-    VENCIDO = "vencido"
-    USADO = "usado"
-    DIA_NO_PERMITIDO = "dia_no_permitido"
-    BAJO_MINIMO = "bajo_minimo"
 
 
 class CodigoEnCaja(BaseModel):

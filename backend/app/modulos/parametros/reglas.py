@@ -11,6 +11,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
+from app.core.validacion import mensaje_validacion
+
 RUTA_CATALOGO = Path(__file__).with_name("catalogo.json")
 
 
@@ -320,7 +322,8 @@ def construir_parametros(valores: dict[str, dict[str, Any]]) -> Parametros:
     try:
         return Parametros.model_validate({c: valores[c] for c in CODIGOS})
     except ValidationError as error:
-        raise ValueError(f"Parámetros inválidos: {error}") from error
+        detalle = mensaje_validacion(error.errors()).removeprefix("Revisa los datos: ")
+        raise ValueError(f"Parámetros inválidos: {detalle}") from error
 
 
 def validar_valor(codigo: str, valor: dict[str, Any]) -> dict[str, Any]:
@@ -331,7 +334,8 @@ def validar_valor(codigo: str, valor: dict[str, Any]) -> dict[str, Any]:
     try:
         return modelo.model_validate(valor).model_dump(mode="json")
     except ValidationError as error:
-        raise ValueError(f"Valor inválido para {codigo}: {error}") from error
+        detalle = mensaje_validacion(error.errors()).removeprefix("Revisa los datos: ")
+        raise ValueError(f"Valor inválido para {codigo}: {detalle}") from error
 
 
 def parametros_iniciales() -> Parametros:

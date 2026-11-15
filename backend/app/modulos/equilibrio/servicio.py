@@ -2,7 +2,7 @@
 
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.auditoria import auditar
@@ -133,6 +133,34 @@ def agregar_extra(
     auditar(sesion, "cupo_extra", "comercio", comercio_id, usuario_id, {"monto": monto}, ahora)
     sesion.flush()
     return cupo
+
+
+def semanas(sesion: Session, comercio_id: int, hasta: date, cantidad: int) -> list[CupoSemanal]:
+    """Las últimas `cantidad` semanas de cupo hasta `hasta`, de la más antigua a la más nueva."""
+    filas = sesion.scalars(
+        select(CupoSemanal)
+        .where(CupoSemanal.comercio_id == comercio_id, CupoSemanal.semana <= hasta)
+        .order_by(CupoSemanal.semana.desc())
+        .limit(cantidad)
+    ).all()
+    return list(reversed(filas))
+
+
+def cupos_entre(sesion: Session, desde: date, hasta: date) -> int:
+    """Base más extra de toda la red en las semanas [desde, hasta] (Anexo A.12, P18)."""
+    return (
+        sesion.scalar(
+            select(func.coalesce(func.sum(CupoSemanal.base + CupoSemanal.extra), 0)).where(
+                CupoSemanal.semana >= desde, CupoSemanal.semana <= hasta
+            )
+        )
+        or 0
+    )
+
+
+def total_red(sesion: Session, semana: date) -> int:
+    filas = sesion.scalars(select(CupoSemanal).where(CupoSemanal.semana == semana)).all()
+    return sum(c.total for c in filas)
 
 
 def ofertas(sesion: Session, ahora: datetime, p: Parametros) -> list[reglas.ComercioOferta]:

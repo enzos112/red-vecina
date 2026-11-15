@@ -16,6 +16,7 @@ from app.modulos.parametros.reglas import Parametros
 from app.modulos.puntos import servicio as puntos
 from app.modulos.puntos.esquemas import TipoMovimiento
 from app.modulos.vecinos import servicio as vecinos
+from app.servicios.archivos.servicio import AlmacenBaseDatos
 
 _APROBADA = Boleta.estado == EstadoBoleta.APROBADA
 
@@ -38,6 +39,102 @@ def crear(
     sesion.add(boleta)
     sesion.flush()
     return boleta
+
+
+TIPOS_IMAGEN = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
+
+
+def _tipo_real(datos: bytes) -> str | None:
+    """Reconoce la imagen por sus primeros bytes, no por lo que dice el navegador."""
+    if datos.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if datos.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if datos[:4] == b"RIFF" and datos[8:12] == b"WEBP":
+        return "image/webp"
+    return None
+
+
+def recibir_foto(
+    sesion: Session,
+    vecino_id: int,
+    datos: bytes,
+    origen: OrigenBoleta,
+    ahora: datetime,
+    max_bytes: int,
+) -> Boleta:
+    """Guarda la foto y deja la boleta pendiente de revisión (A8). La lectura automática
+    y los controles llegan en la revisión del operador."""
+    if not datos:
+        raise ValueError("No recibimos la foto. Intenta subirla de nuevo.")
+    if len(datos) > max_bytes:
+        raise ValueError("La foto es demasiado grande. Prueba con otra más liviana.")
+    tipo = _tipo_real(datos)
+    if tipo is None:
+        raise ValueError("El archivo no es una foto. Sube una imagen JPG, PNG o WEBP.")
+    archivo_id = AlmacenBaseDatos(sesion).guardar(
+        datos, tipo, f"boleta-{vecino_id}-{int(ahora.timestamp())}.{TIPOS_IMAGEN[tipo]}"
+    )
+    boleta = crear(sesion, vecino_id, origen, ahora, archivo_id=archivo_id)
+    auditar(sesion, "recibir_boleta", "boleta", boleta.id, None, {"origen": origen}, ahora)
+    return boleta
+
+
+def imagen(sesion: Session, boleta: Boleta) -> tuple[bytes, str] | None:
+    if boleta.archivo_id is None:
+        return None
+    return AlmacenBaseDatos(sesion).leer(boleta.archivo_id)
+
+
+def obtener(sesion: Session, boleta_id: int) -> Boleta | None:
+    return sesion.get(Boleta, boleta_id)
+
+
+def listar(
+    sesion: Session,
+    *,
+    estado: EstadoBoleta | None = None,
+    vecino_id: int | None = None,
+    limite: int,
+) -> list[Boleta]:
+    """Pendientes de la más antigua a la más nueva (la cola); el resto, las recientes primero."""
+    consulta = select(Boleta).limit(limite)
+    if estado is not None:
+        consulta = consulta.where(Boleta.estado == estado)
+    if vecino_id is not None:
+        consulta = consulta.where(Boleta.vecino_id == vecino_id)
+    if estado == EstadoBoleta.PENDIENTE:
+        consulta = consulta.order_by(Boleta.recibida_en, Boleta.id)
+    else:
+        consulta = consulta.order_by(Boleta.recibida_en.desc(), Boleta.id.desc())
+    return list(sesion.scalars(consulta))
+
+
+def contar_pendientes(sesion: Session, vecino_id: int | None = None) -> int:
+    consulta = select(func.count(Boleta.id)).where(Boleta.estado == EstadoBoleta.PENDIENTE)
+    if vecino_id is not None:
+        consulta = consulta.where(Boleta.vecino_id == vecino_id)
+    return sesion.scalar(consulta) or 0
+
+
+def evaluar(
+    sesion: Session,
+    boleta_id: int,
+    *,
+    comercio_id: int | None,
+    folio: str | None,
+    fecha_compra: datetime,
+    monto_total: int,
+    monto_excluido: int,
+    p: Parametros,
+) -> reglas.ResultadoBoleta:
+    """Vista previa de los controles y los puntos con los datos que ve el operador."""
+    boleta = obtener(sesion, boleta_id)
+    if boleta is None:
+        raise ValueError("No encontramos esa boleta.")
+    return reglas.evaluar_boleta(
+        entrada(sesion, boleta, comercio_id, folio, fecha_compra, monto_total, monto_excluido), p
+    )
 
 
 def _rango_dia(momento: datetime) -> tuple[datetime, datetime]:
@@ -186,6 +283,16 @@ def compras_aprobadas(sesion: Session, vecino_id: int) -> list[tuple[int, dateti
         )
     ).all()
     return [(c, f) for c, f in filas]
+
+
+def compras_en_comercio(sesion: Session, comercio_id: int) -> list[tuple[int, datetime]]:
+    """(vecino_id, fecha de compra) de las boletas aprobadas de un comercio."""
+    filas = sesion.execute(
+        select(Boleta.vecino_id, Boleta.fecha_compra).where(
+            Boleta.comercio_id == comercio_id, _APROBADA
+        )
+    ).all()
+    return [(v, f) for v, f in filas]
 
 
 def ventas(sesion: Session, comercio_id: int, desde: datetime, hasta: datetime) -> int:

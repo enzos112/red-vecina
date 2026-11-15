@@ -4,7 +4,7 @@ import { api } from '@/lib/api'
 
 /** Página provisional de la fase 0: confirma que el frontend llega a la API. */
 export function PaginaProvisional() {
-  const salud = useQuery({ queryKey: ['salud'], queryFn: api.salud })
+  const salud = useQuery({ queryKey: ['salud'], queryFn: api.general.salud })
 
   let estado = 'Consultando la API…'
   let color = 'bg-muted-foreground'

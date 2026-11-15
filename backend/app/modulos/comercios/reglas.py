@@ -72,6 +72,24 @@ def rige_desde(solicitado_en: datetime, p: Parametros) -> datetime:
     return inicio_dia_utc(semana)
 
 
+def rige_desde_aprobacion(
+    solicitado_en: datetime, aprobado_en: datetime, primeros: bool, p: Parametros
+) -> datetime:
+    """Desde cuándo rige un conjunto de beneficios aprobado (Anexo A.14 y A.15).
+
+    - Los primeros beneficios de un comercio rigen al aprobarse: no hay nada que avisar.
+    - Un cambio rige desde el primer inicio de semana a U23 días de la solicitud; si al
+      aprobarlo esa fecha ya pasó, rige desde el próximo inicio de semana.
+    """
+    if primeros:
+        return aprobado_en
+    desde = rige_desde(solicitado_en, p)
+    if desde < aprobado_en:
+        semana = inicio_semana(dia_local(aprobado_en), p.P17.dia_inicio)
+        desde = inicio_dia_utc(semana + timedelta(days=DIAS_SEMANA))
+    return desde
+
+
 def slug(nombre: str) -> str:
     reemplazos = str.maketrans("áéíóúüñ", "aeiouun")
     base = nombre.lower().translate(reemplazos)

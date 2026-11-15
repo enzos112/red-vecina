@@ -3,6 +3,8 @@
 python -m app.cli base               parámetros, plantillas y primer administrador
 python -m app.cli demo [--reiniciar] datos de demostración (solo fuera de producción)
 python -m app.cli tareas [--forzar]  corre las tareas pendientes del día
+python -m app.cli openapi <archivo>  exporta el esquema OpenAPI
+python -m app.cli cliente-ts         regenera el cliente tipado del frontend
 """
 
 import argparse
@@ -116,6 +118,26 @@ def tareas(args: argparse.Namespace) -> None:
     print(resultado or "No había tareas pendientes hoy.")
 
 
+def openapi(args: argparse.Namespace) -> None:
+    """Escribe el esquema OpenAPI; el frontend genera sus tipos desde ahí."""
+    import json
+
+    from app.main import crear_app
+
+    esquema = crear_app().openapi()
+    destino = Path(args.salida)
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    destino.write_text(json.dumps(esquema, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"Esquema escrito en {destino}")
+
+
+def cliente_ts(_: argparse.Namespace) -> None:
+    from app.herramientas import cliente_ts as generador
+    from app.main import crear_app
+
+    print(f"Cliente escrito en {generador.escribir(crear_app().openapi())}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="Comandos de Red Vecina")
     sub = parser.add_subparsers(required=True)
@@ -129,6 +151,12 @@ def main() -> None:
     p_tareas = sub.add_parser("tareas", help="Tareas pendientes del día")
     p_tareas.add_argument("--forzar", action="store_true")
     p_tareas.set_defaults(f=tareas)
+    p_openapi = sub.add_parser("openapi", help="Exporta el esquema OpenAPI de la API")
+    p_openapi.add_argument("salida", help="Ruta del archivo JSON")
+    p_openapi.set_defaults(f=openapi)
+    sub.add_parser(
+        "cliente-ts", help="Genera frontend/src/lib/api-generada.ts desde el OpenAPI"
+    ).set_defaults(f=cliente_ts)
     args = parser.parse_args()
     args.f(args)
 

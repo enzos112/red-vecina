@@ -10,6 +10,7 @@ from app.modulos.comercios.reglas import (
     BeneficioPropuesto,
     digito_verificador,
     rige_desde,
+    rige_desde_aprobacion,
     rut_valido,
     slug,
     validar_beneficios,
@@ -64,6 +65,19 @@ def test_cambio_de_beneficios_rige_desde_un_lunes_con_7_dias_de_aviso(p):
     assert a_local(rige_desde(local(18, 15), p)).date().isoformat() == "2026-11-30"
     # Pedido el lunes 16 a mediodía: el lunes 23 está a menos de 7 días completos.
     assert a_local(rige_desde(local(16, 0, 0), p)).date().isoformat() == "2026-11-23"
+
+
+def test_aprobacion_de_beneficios_anexo_a15(p):
+    pedido = local(18, 15)  # miércoles 18
+    # Primeros beneficios del comercio: rigen al aprobarse.
+    assert rige_desde_aprobacion(pedido, local(19, 10), True, p) == local(19, 10)
+    # Cambio aprobado a tiempo: el lunes 30, como si se hubiera aprobado al pedirlo.
+    a_tiempo = rige_desde_aprobacion(pedido, local(20, 10), False, p)
+    assert a_local(a_tiempo).date().isoformat() == "2026-11-30"
+    # Aprobado el martes 1 de diciembre, con el lunes 30 ya pasado: rige el lunes 7.
+    tarde = rige_desde_aprobacion(pedido, local(1, 10, mes=12), False, p)
+    assert a_local(tarde).date().isoformat() == "2026-12-07"
+    assert a_local(tarde).hour == 0
 
 
 def test_rut_y_slug():

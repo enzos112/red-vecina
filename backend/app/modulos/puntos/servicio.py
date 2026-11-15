@@ -1,10 +1,12 @@
 """Libro de puntos en la base. Otros módulos registran movimientos solo a través de aquí."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
+from app.core.auditoria import auditar
+from app.modulos.parametros.reglas import Parametros
 from app.modulos.puntos import reglas
 from app.modulos.puntos.esquemas import TipoMovimiento as T
 from app.modulos.puntos.modelos import MovimientoPuntos
@@ -62,6 +64,60 @@ def registrar(
     sesion.add(movimiento)
     sesion.flush()
     return movimiento
+
+
+def ajustar(
+    sesion: Session,
+    vecino_id: int,
+    puntos: int,
+    motivo: str,
+    ahora: datetime,
+    p: Parametros,
+    usuario_id: int,
+) -> MovimientoPuntos:
+    """Corrección del operador con motivo (A16). Un ajuste positivo crea puntos que vencen
+    a P8 días (Anexo A.14); uno negativo puede dejar el saldo en deuda."""
+    if puntos == 0:
+        raise ValueError("El ajuste debe sumar o restar puntos.")
+    movimiento = registrar(
+        sesion,
+        vecino_id,
+        T.AJUSTA,
+        puntos,
+        ahora,
+        vence_en=ahora + timedelta(days=p.P8.dias) if puntos > 0 else None,
+        usuario_id=usuario_id,
+        motivo=motivo.strip(),
+    )
+    auditar(sesion, "ajustar_saldo", "vecino", vecino_id, usuario_id, {"puntos": puntos}, ahora)
+    return movimiento
+
+
+def historial(sesion: Session, vecino_id: int, limite: int) -> list[MovimientoPuntos]:
+    return list(
+        sesion.scalars(
+            select(MovimientoPuntos)
+            .where(MovimientoPuntos.vecino_id == vecino_id)
+            .order_by(MovimientoPuntos.creado_en.desc(), MovimientoPuntos.id.desc())
+            .limit(limite)
+        )
+    )
+
+
+def por_vencer(
+    sesion: Session, vecino_id: int, ahora: datetime, hasta: datetime
+) -> list[tuple[datetime, int]]:
+    return reglas.calcular_lotes(movimientos(sesion, vecino_id)).proximos(ahora, hasta)
+
+
+def disponible_red(sesion: Session) -> int:
+    """Saldo disponible sumado de todos los vecinos (indicador de puntos sin canjear)."""
+    signo = case(
+        (MovimientoPuntos.tipo.in_([T.GANA, T.LIBERA, T.AJUSTA]), MovimientoPuntos.puntos),
+        (MovimientoPuntos.tipo.in_([T.RETIENE, T.VENCE]), -MovimientoPuntos.puntos),
+        else_=0,
+    )
+    return sesion.scalar(select(func.coalesce(func.sum(signo), 0))) or 0
 
 
 def vencer_vecino(sesion: Session, vecino_id: int, ahora: datetime) -> int:

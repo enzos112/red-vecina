@@ -3,7 +3,6 @@
 Funciones puras: reciben datos y parámetros, no tocan la base de datos.
 """
 
-import enum
 from datetime import date, datetime, timedelta
 from decimal import ROUND_FLOOR, Decimal
 
@@ -12,6 +11,7 @@ from pydantic import BaseModel, ConfigDict
 from app.core.formato import fecha
 from app.core.tiempo import dia_local, inicio_semana
 from app.modulos.canjes.reglas import alcanza_dia_permitido, vence_en
+from app.modulos.equilibrio.esquemas import Semaforo
 from app.modulos.parametros.reglas import Parametros
 
 DIAS_SEMANA = 7  # calendario, no es un número de negocio
@@ -79,12 +79,6 @@ def arrastre_siguiente(base: int, extra: int, arrastre: int, consumido_al_cierre
     """
     consumo = desglosar_consumo(base, extra, arrastre, consumido_al_cierre)
     return min(base - consumo.de_base, base)
-
-
-class Semaforo(enum.StrEnum):
-    VERDE = "verde"
-    AMBAR = "ambar"
-    ROJO = "rojo"
 
 
 def porcentaje_usado(consumido: int, total: int) -> Decimal:

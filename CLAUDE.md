@@ -90,6 +90,7 @@ Al crear modelos nuevos, impórtalos en `backend/migrations/env.py` para que Ale
 | Tareas del día (o forzarlas) | `cd backend; .\.venv\Scripts\python -m app.cli tareas [--forzar]` |
 | Pruebas del backend | `cd backend; .\.venv\Scripts\python -m pytest` |
 | Lint y formato del backend | `cd backend; .\.venv\Scripts\python -m ruff check . ; .\.venv\Scripts\python -m ruff format .` |
+| Cliente tipado del frontend (tras cambiar rutas o esquemas) | `cd backend; .\.venv\Scripts\python -m app.cli cliente-ts` |
 | Nueva migración | `cd backend; .\.venv\Scripts\python -m alembic revision --autogenerate -m "descripcion"` |
 | Aplicar migraciones | `cd backend; .\.venv\Scripts\python -m alembic upgrade head` |
 | Build del frontend | `cd frontend; npm run build` |
@@ -106,6 +107,17 @@ Ver `.env.example`. `ENTORNO`, `DATABASE_URL`, `SECRET_KEY`, `LECTOR_PROVEEDOR`
 `ADMIN_PASSWORD`, `OPERADOR_PASSWORD`, `COMERCIO_PASSWORD`, y en la imagen `PORT` y
 `FRONTEND_DIST`. En producción la app se niega a arrancar con la `SECRET_KEY` de
 desarrollo o con SQLite.
+
+## API
+
+- Rutas en `rutas.py` de cada módulo, montadas bajo `/api` en `app/main.py`. Prefijos por zona:
+  `/red` (público), `/t/{token}` (vecino), `/comercio` (comercio con sesión), `/admin`
+  (operador y admin), `/acceso` (login).
+- Dependencias en `app/core/dependencias.py`: `SesionDB`, `Ahora`, `Params`, `Equipo`, `Admin`,
+  `ComercioActual` (el comercio sale de la sesión, nunca de la petición) y `VecinoToken`.
+- Los servicios lanzan `ValueError` con un mensaje para el usuario: la API responde 400 con ese
+  texto. Límites de intentos y duración de sesión son configuración técnica (`config.py`).
+- `frontend/src/lib/api-generada.ts` se genera; una prueba falla si queda desactualizado.
 
 ## Notas
 

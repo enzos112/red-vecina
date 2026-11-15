@@ -28,6 +28,20 @@ def p():
 
 
 @pytest.fixture
+def api(tmp_path):
+    """App completa sobre una base en memoria con una red pequeña y reloj fijo.
+
+    Ver tests/api_red.py: dos comercios con beneficios, uno sin beneficios, usuarios por
+    rol, Rosa con una boleta aprobada y una cuenta cerrada.
+    """
+    from tests.api_red import armar_entorno
+
+    entorno = armar_entorno(tmp_path)
+    yield entorno
+    entorno.cerrar()
+
+
+@pytest.fixture
 def sesion():
     """Base SQLite en memoria con todas las tablas, parámetros y plantillas iniciales."""
     from sqlalchemy import create_engine

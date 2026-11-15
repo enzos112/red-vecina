@@ -4,6 +4,7 @@ import secrets
 from collections.abc import Callable
 from datetime import date, datetime, timedelta
 
+from pydantic import BaseModel
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
@@ -271,3 +272,71 @@ def marcar_local_cerrado(
 
 def obtener(sesion: Session, canje_id: int) -> Canje | None:
     return sesion.get(Canje, canje_id)
+
+
+def del_comercio(sesion: Session, codigo: str, comercio_id: int) -> Canje | None:
+    """El código solo si pertenece a ese comercio: a otro local no se le muestran detalles."""
+    canje = _por_codigo(sesion, codigo)
+    return canje if canje and canje.comercio_id == comercio_id else None
+
+
+def activo_de(sesion: Session, vecino_id: int, ahora: datetime) -> Canje | None:
+    return sesion.scalar(
+        select(Canje)
+        .where(
+            Canje.vecino_id == vecino_id,
+            Canje.estado == EstadoCanje.ACTIVO,
+            Canje.vence_en > ahora,
+        )
+        .order_by(Canje.emitido_en.desc())
+        .limit(1)
+    )
+
+
+def listar(
+    sesion: Session,
+    *,
+    estado: EstadoCanje | None = None,
+    comercio_id: int | None = None,
+    vecino_id: int | None = None,
+    limite: int,
+) -> list[Canje]:
+    consulta = select(Canje).order_by(Canje.emitido_en.desc(), Canje.id.desc()).limit(limite)
+    if estado is not None:
+        consulta = consulta.where(Canje.estado == estado)
+    if comercio_id is not None:
+        consulta = consulta.where(Canje.comercio_id == comercio_id)
+    if vecino_id is not None:
+        consulta = consulta.where(Canje.vecino_id == vecino_id)
+    return list(sesion.scalars(consulta))
+
+
+def usados_en_comercio(sesion: Session, comercio_id: int) -> list[tuple[int, datetime]]:
+    """(vecino_id, usado_en) de los canjes usados en un comercio."""
+    filas = sesion.execute(
+        select(Canje.vecino_id, Canje.usado_en).where(
+            Canje.comercio_id == comercio_id, Canje.estado == EstadoCanje.USADO
+        )
+    ).all()
+    return [(v, u) for v, u in filas]
+
+
+class CanjeRecibido(BaseModel):
+    valor_pesos: int
+    monto_ticket: int | None
+    compra_minima: int
+
+
+def recibidos(
+    sesion: Session, comercio_id: int, desde: datetime, hasta: datetime
+) -> list[CanjeRecibido]:
+    """Canjes usados en el comercio en [desde, hasta) (indicadores de la sección 10)."""
+    filas = sesion.execute(
+        select(Canje.valor_pesos, Canje.monto_ticket, Canje.compra_minima).where(
+            Canje.comercio_id == comercio_id,
+            Canje.estado == EstadoCanje.USADO,
+            Canje.usado_en >= desde,
+            Canje.usado_en < hasta,
+        )
+    ).all()
+    return [CanjeRecibido(valor_pesos=v, monto_ticket=t, compra_minima=m) for v, t, m in filas]

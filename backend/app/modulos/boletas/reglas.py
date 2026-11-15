@@ -3,19 +3,13 @@
 Funciones puras: reciben datos y parámetros, no tocan la base de datos.
 """
 
-import enum
 from datetime import datetime, timedelta
 
 from pydantic import BaseModel, ConfigDict
 
 from app.core.formato import miles, pesos
+from app.modulos.boletas.esquemas import ColorControl as Color
 from app.modulos.parametros.reglas import Parametros
-
-
-class Color(enum.StrEnum):
-    VERDE = "verde"
-    AMBAR = "ambar"
-    ROJO = "rojo"
 
 
 class Control(BaseModel):
