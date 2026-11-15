@@ -16,7 +16,7 @@ def montar_frontend(app: FastAPI, dist: Path) -> None:
     if not indice.is_file():
         return
 
-    @app.get("/{ruta:path}", include_in_schema=False)
+    @app.api_route("/{ruta:path}", methods=["GET", "HEAD"], include_in_schema=False)
     def servir_frontend(ruta: str) -> FileResponse:
         if ruta == "api" or ruta.startswith("api/"):
             raise HTTPException(status_code=404, detail="No encontramos esta ruta de la API.")

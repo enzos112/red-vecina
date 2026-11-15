@@ -75,9 +75,9 @@ const SECCIONES_ADMIN: Seccion[] = [
   },
   {
     a: '/admin/sistema',
-    texto: 'Tareas y datos',
+    texto: 'Tareas, datos y equipo',
     icono: Wrench,
-    descripcion: 'Tareas programadas y exportación a CSV.',
+    descripcion: 'Tareas programadas, exportación a CSV y cuentas del equipo.',
   },
 ]
 

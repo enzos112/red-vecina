@@ -88,6 +88,7 @@ Al crear modelos nuevos, impórtalos en `backend/migrations/env.py` para que Ale
 | Verificar todo (ruff, pytest, oxlint, build) | `.\verificar.cmd` |
 | Datos de demostración (base vacía / desde cero) | `.\demo.cmd` / `.\demo.cmd --reiniciar` |
 | Parámetros, plantillas y primer admin | `cd backend; .\.venv\Scripts\python -m app.cli base` |
+| Comandos contra Neon desde el PC (lee `.env.produccion`) | `.\produccion.cmd base` / `demo --en-produccion` / `tareas` / `local` |
 | Tareas del día (o forzarlas) | `cd backend; .\.venv\Scripts\python -m app.cli tareas [--forzar]` |
 | Pruebas del backend | `cd backend; .\.venv\Scripts\python -m pytest` |
 | Lint y formato del backend | `cd backend; .\.venv\Scripts\python -m ruff check . ; .\.venv\Scripts\python -m ruff format .` |
@@ -107,7 +108,8 @@ Ver `.env.example`. `ENTORNO`, `DATABASE_URL`, `SECRET_KEY`, `LECTOR_PROVEEDOR`
 (`manual` | `gemini` | `anthropic`), `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `ADMIN_EMAIL`,
 `ADMIN_PASSWORD`, `OPERADOR_PASSWORD`, `COMERCIO_PASSWORD`, `CONTACTO_WHATSAPP`, y en la imagen `PORT` y
 `FRONTEND_DIST`. En producción la app se niega a arrancar con la `SECRET_KEY` de
-desarrollo o con SQLite.
+desarrollo o con SQLite, no publica `/docs` ni el OpenAPI, marca la cookie como `Secure` y
+agrega HSTS. Publicación paso a paso: `DEPLOY.md`.
 
 ## API
 

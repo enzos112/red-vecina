@@ -1,7 +1,7 @@
 """Comandos del proyecto.
 
 python -m app.cli base               parámetros, plantillas y primer administrador
-python -m app.cli demo [--reiniciar] datos de demostración (solo fuera de producción)
+python -m app.cli demo [--reiniciar] datos de demostración (en producción pide --en-produccion)
 python -m app.cli tareas [--forzar]  corre las tareas pendientes del día
 python -m app.cli openapi <archivo>  exporta el esquema OpenAPI
 python -m app.cli cliente-ts         regenera el cliente tipado del frontend
@@ -66,8 +66,11 @@ def demo(args: argparse.Namespace) -> None:
     from app.modulos.comercios.modelos import Comercio
 
     config = obtener_configuracion()
-    if config.es_produccion:
-        sys.exit("Los datos de demostración no se cargan en producción.")
+    if config.es_produccion and not args.en_produccion:
+        sys.exit(
+            "Estás apuntando a producción. Si de verdad quieres datos de demostración ahí"
+            " (por ejemplo, para mostrar la app), agrega --en-produccion."
+        )
     claves = Contrasenas(
         admin=_contrasena("ADMIN_PASSWORD"),
         operador=_contrasena("OPERADOR_PASSWORD"),
@@ -147,6 +150,9 @@ def main() -> None:
     p_demo = sub.add_parser("demo", help="Datos de demostración")
     p_demo.add_argument("--reiniciar", action="store_true", help="Borra la base y la crea de nuevo")
     p_demo.add_argument("--semilla", type=int, default=7)
+    p_demo.add_argument(
+        "--en-produccion", action="store_true", help="Permite cargarlos con ENTORNO=produccion"
+    )
     p_demo.set_defaults(f=demo)
     p_tareas = sub.add_parser("tareas", help="Tareas pendientes del día")
     p_tareas.add_argument("--forzar", action="store_true")

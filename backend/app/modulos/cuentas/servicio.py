@@ -62,6 +62,10 @@ def listar(sesion: Session) -> list[Usuario]:
     return list(sesion.scalars(select(Usuario).order_by(Usuario.rol, Usuario.email)))
 
 
+def por_email(sesion: Session, email: str) -> Usuario | None:
+    return sesion.scalar(select(Usuario).where(Usuario.email == email.strip().lower()))
+
+
 def obtener(sesion: Session, usuario_id: int) -> Usuario | None:
     return sesion.get(Usuario, usuario_id)
 

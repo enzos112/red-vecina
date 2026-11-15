@@ -14,7 +14,7 @@ from app.modulos.parametros.reglas import Parametros
 def inicializar(sesion: Session) -> int:
     """Carga los parámetros que falten con su valor inicial. No pisa valores existentes."""
     existentes = set(sesion.scalars(select(Parametro.codigo)))
-    nuevos = 0
+    cambios: list[CambioParametro] = []
     for orden, item in enumerate(reglas.leer_catalogo()):
         if item["codigo"] in existentes:
             continue
@@ -29,7 +29,7 @@ def inicializar(sesion: Session) -> int:
                 valor=valor,
             )
         )
-        sesion.add(
+        cambios.append(
             CambioParametro(
                 codigo=item["codigo"],
                 valor_anterior=None,
@@ -37,9 +37,11 @@ def inicializar(sesion: Session) -> int:
                 motivo="Valor inicial",
             )
         )
-        nuevos += 1
+    # Primero los parámetros: el historial apunta a ellos (Postgres revisa la llave al insertar).
     sesion.flush()
-    return nuevos
+    sesion.add_all(cambios)
+    sesion.flush()
+    return len(cambios)
 
 
 def cargar(sesion: Session) -> Parametros:

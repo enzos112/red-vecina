@@ -30,11 +30,20 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def _opciones_postgres() -> dict:
+    if config.get_main_option("sqlalchemy.url").startswith("sqlite"):
+        return {}
+    espera = obtener_configuracion().DB_TIMEOUT_SEGUNDOS
+    return {"connect_args": {"connect_timeout": espera, "prepare_threshold": None}}
+
+
 def run_migrations_online() -> None:
     conectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        # Igual que app/core/db.py: sin sentencias preparadas (pooler de Neon) y con espera.
+        **_opciones_postgres(),
     )
     with conectable.connect() as conexion:
         # render_as_batch permite ALTER TABLE en SQLite.

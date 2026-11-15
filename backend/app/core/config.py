@@ -63,6 +63,10 @@ class Configuracion(BaseSettings):
     INSCRIPCION_VENTANA_SEGUNDOS: int = 60 * 60
     SUBIDAS_POR_HORA: int = 10
     BOLETA_MAX_BYTES: int = 3 * 1024 * 1024
+    # Tope a cualquier cuerpo de petición: una foto más el resto del formulario.
+    CUERPO_MAX_BYTES: int = 4 * 1024 * 1024
+    # Espera máxima al conectar con Postgres: Neon tarda unos segundos en despertar.
+    DB_TIMEOUT_SEGUNDOS: int = 15
     # Ejecutar las tareas del día con la primera petición (sección 5). Se apaga en pruebas.
     TAREAS_PEREZOSAS: bool = True
 

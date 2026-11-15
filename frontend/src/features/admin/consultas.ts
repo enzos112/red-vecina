@@ -200,13 +200,17 @@ export function useSancionar(id: number) {
   })
 }
 
+export function useUsuarios() {
+  return useQuery({ queryKey: ['admin', 'usuarios'], queryFn: api.cuentas.usuarios })
+}
+
 export function useCrearUsuario() {
-  const refrescar = useRefrescar(['admin', 'comercios'])
+  const refrescar = useRefrescar(['admin', 'comercios'], ['admin', 'usuarios'])
   return useMutation({ mutationFn: api.cuentas.crearUsuario, onSuccess: refrescar })
 }
 
 export function useEditarUsuario() {
-  const refrescar = useRefrescar(['admin', 'comercios'])
+  const refrescar = useRefrescar(['admin', 'comercios'], ['admin', 'usuarios'])
   return useMutation({
     mutationFn: ({ id, datos }: { id: number; datos: UsuarioCambio }) => api.cuentas.cambiarUsuario(id, datos),
     onSuccess: refrescar,

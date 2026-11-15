@@ -1,16 +1,26 @@
-import { Download, LoaderCircle, Play } from 'lucide-react'
-import { useId, useState } from 'react'
+import { Download, LoaderCircle, Play, Plus } from 'lucide-react'
+import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Field, FieldLabel } from '@/components/ui/field'
+import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { api } from '@/lib/api'
 import { fechaHora, numero } from '@/lib/formato'
-import { mensajeError, useEjecutarTareas, useTareas } from '../consultas'
+import type { Rol } from '@/lib/api'
+import {
+  mensajeError,
+  useCrearUsuario,
+  useEditarUsuario,
+  useEjecutarTareas,
+  useTareas,
+  useUsuarios,
+  useYo,
+} from '../consultas'
 import { EstadoLista } from '../partes'
 
 /** Nombre en pantalla de lo que devuelve cada tarea. */
@@ -144,12 +154,144 @@ function Exportar() {
   )
 }
 
-/** /admin/sistema — tareas programadas y exportación de datos. */
+const LARGO_CLAVE = 10 // política de contraseñas del backend
+
+const ROLES: Record<Exclude<Rol, 'comercio'>, string> = {
+  operador: 'Operador: revisa boletas, vecinos y canjes',
+  admin: 'Administrador: además edita comercios, parámetros y usuarios',
+}
+
+function Equipo() {
+  const id = useId()
+  const usuarios = useUsuarios()
+  const yo = useYo()
+  const crear = useCrearUsuario()
+  const editar = useEditarUsuario()
+  const vacio = { nombre: '', email: '', contrasena: '', rol: 'operador' as Exclude<Rol, 'comercio'> }
+  const [datos, setDatos] = useState(vacio)
+  const equipo = usuarios.data?.filter((u) => u.rol !== 'comercio') ?? []
+
+  function enviar(e: FormEvent) {
+    e.preventDefault()
+    crear.mutate(datos, { onSuccess: () => setDatos(vacio) })
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl">Equipo</CardTitle>
+        <CardDescription>
+          Cuentas del equipo. Los usuarios de cada comercio se crean en su ficha, en Comercios.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-5">
+        {usuarios.isPending ? (
+          <Skeleton className="h-24" />
+        ) : usuarios.isError ? (
+          <EstadoLista texto={usuarios.error.message} />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Correo</TableHead>
+                <TableHead>Rol</TableHead>
+                <TableHead className="text-right">Estado</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {equipo.map((u) => (
+                <TableRow key={u.id}>
+                  <TableCell className="font-bold">{u.nombre}</TableCell>
+                  <TableCell>{u.email}</TableCell>
+                  <TableCell>{u.rol === 'admin' ? 'Administrador' : 'Operador'}</TableCell>
+                  <TableCell className="text-right">
+                    {u.id === yo.data?.id ? (
+                      <Badge variant="secondary">Tú</Badge>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant={u.activo ? 'outline' : 'default'}
+                        disabled={editar.isPending}
+                        onClick={() => editar.mutate({ id: u.id, datos: { activo: !u.activo } })}
+                      >
+                        {u.activo ? 'Desactivar' : 'Reactivar'}
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+        {editar.isError && <p className="text-peligro-texto">{mensajeError(editar.error)}</p>}
+        <form onSubmit={enviar} className="flex flex-col gap-3 rounded-lg border-2 border-dashed border-border p-4">
+          <h4 className="font-bold">Nueva cuenta del equipo</h4>
+          <FieldGroup className="grid gap-3 sm:grid-cols-3">
+            <Field>
+              <FieldLabel htmlFor={`${id}-nombre`}>Nombre</FieldLabel>
+              <Input
+                id={`${id}-nombre`}
+                value={datos.nombre}
+                onChange={(e) => setDatos({ ...datos, nombre: e.target.value })}
+                required
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor={`${id}-email`}>Correo</FieldLabel>
+              <Input
+                id={`${id}-email`}
+                type="email"
+                value={datos.email}
+                onChange={(e) => setDatos({ ...datos, email: e.target.value })}
+                required
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor={`${id}-clave`}>Contraseña inicial</FieldLabel>
+              <Input
+                id={`${id}-clave`}
+                type="text"
+                autoComplete="off"
+                value={datos.contrasena}
+                onChange={(e) => setDatos({ ...datos, contrasena: e.target.value })}
+                required
+                minLength={LARGO_CLAVE}
+              />
+              <FieldDescription>Al menos {LARGO_CLAVE} caracteres. Entrégala en persona.</FieldDescription>
+            </Field>
+          </FieldGroup>
+          <RadioGroup
+            value={datos.rol}
+            onValueChange={(v) => setDatos({ ...datos, rol: v as Exclude<Rol, 'comercio'> })}
+            className="gap-2"
+          >
+            {Object.entries(ROLES).map(([valor, texto]) => (
+              <div key={valor} className="flex items-center gap-2">
+                <RadioGroupItem value={valor} id={`${id}-${valor}`} />
+                <label htmlFor={`${id}-${valor}`}>{texto}</label>
+              </div>
+            ))}
+          </RadioGroup>
+          {crear.isError && <p className="text-peligro-texto">{mensajeError(crear.error)}</p>}
+          {crear.isSuccess && <p className="text-sm text-muted-foreground">Cuenta creada.</p>}
+          <Button type="submit" variant="secondary" className="self-start" disabled={crear.isPending}>
+            <Plus aria-hidden="true" />
+            Crear cuenta
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}
+
+/** /admin/sistema — tareas programadas, exportación de datos y cuentas del equipo. */
 export function PaginaSistema() {
   return (
     <div className="flex flex-col gap-6">
       <Tareas />
       <Exportar />
+      <Equipo />
     </div>
   )
 }

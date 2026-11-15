@@ -8,6 +8,7 @@ from app.core import errores
 from app.core.config import Configuracion, obtener_configuracion
 from app.core.dependencias import tareas_del_dia
 from app.core.frontend import montar_frontend
+from app.core.http import EncabezadosSeguridad, LimiteCuerpo
 from app.core.limites import Limitador
 from app.modulos.boletas.rutas import router as boletas
 from app.modulos.canjes.rutas import router as canjes
@@ -80,9 +81,10 @@ def crear_app(
         title="Red Vecina",
         version="0.2.0",
         summary="API del programa de puntos compartido entre comercios de barrio.",
-        docs_url="/docs",
+        # En producción no se publica la documentación interactiva ni el esquema.
+        docs_url=None if config.es_produccion else "/docs",
         redoc_url=None,
-        openapi_url="/api/openapi.json",
+        openapi_url=None if config.es_produccion else "/api/openapi.json",
         openapi_tags=ETIQUETAS,
         generate_unique_id_function=id_operacion,
         separate_input_output_schemas=False,
@@ -94,6 +96,8 @@ def crear_app(
     # Proveedor elegido por LECTOR_PROVEEDOR; las pruebas lo reemplazan por uno simulado.
     app.state.lector = crear_lector(config)
     errores.instalar(app)
+    app.add_middleware(LimiteCuerpo, max_bytes=config.CUERPO_MAX_BYTES)
+    app.add_middleware(EncabezadosSeguridad, hsts=config.es_produccion)
 
     api = APIRouter(prefix="/api")
 
@@ -102,6 +106,9 @@ def crear_app(
         # No consulta la base a propósito: el monitor que mantiene despierto el servicio
         # no debe gastar las horas de cómputo de Neon.
         return {"estado": "ok", "entorno": config.ENTORNO}
+
+    # Los monitores (UptimeRobot) consultan con HEAD por defecto.
+    api.add_api_route("/salud", salud, methods=["HEAD"], include_in_schema=False)
 
     for modulo in MODULOS:
         api.include_router(modulo, dependencies=[Depends(tareas_del_dia)])

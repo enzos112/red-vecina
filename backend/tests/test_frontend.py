@@ -49,3 +49,7 @@ def test_api_sigue_funcionando_con_frontend(cliente_con_frontend):
 def test_no_sale_de_dist(cliente_con_frontend):
     r = cliente_con_frontend.get("/..%2Fsecreto.txt")
     assert r.text != "no"
+
+
+def test_head_en_paginas(cliente_con_frontend):
+    assert cliente_con_frontend.head("/").status_code == 200

@@ -118,10 +118,11 @@ class Simulacion:
         mensajes.inicializar(self.s)
         p = parametros.cargar(self.s)
         dominio = DATOS["dominio_correos"]
-        self.admin = cuentas.crear_usuario(
+        # Si el comando base ya creó un usuario con ese correo, se reutiliza.
+        self.admin = cuentas.por_email(self.s, f"admin@{dominio}") or cuentas.crear_usuario(
             self.s, f"admin@{dominio}", "Administración", claves.admin, Rol.ADMIN, es_demo=True
         )
-        self.operador = cuentas.crear_usuario(
+        self.operador = cuentas.por_email(self.s, f"operador@{dominio}") or cuentas.crear_usuario(
             self.s, f"operador@{dominio}", "Operación", claves.operador, Rol.OPERADOR, es_demo=True
         )
         self.comercios: dict[str, Comercio] = {}

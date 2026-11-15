@@ -21,15 +21,18 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app/backend
 COPY backend/pyproject.toml ./
 COPY backend/app ./app
-RUN pip install .
+# Instala las dependencias y deja el código solo en ./app (sin copia en site-packages).
+RUN pip install . && pip uninstall -y red-vecina && rm -rf build *.egg-info
 
 COPY backend/alembic.ini ./
 COPY backend/migrations ./migrations
 COPY --from=frontend /frontend/dist /app/frontend/dist
 
-RUN useradd --create-home --uid 10001 vecina
+# Usuario sin privilegios: no puede escribir en el código.
+RUN useradd --no-create-home --uid 10001 vecina
 USER vecina
 
 EXPOSE 8000
-# Las migraciones al iniciar se agregan en la fase 8.
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips='*'"]
+# Primero las migraciones; si fallan, el servicio no arranca. Luego el servidor en $PORT.
+# Los datos iniciales (base) y los de demostración NO se cargan aquí: ver DEPLOY.md.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips='*' --no-server-header"]
