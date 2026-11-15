@@ -1,4 +1,3 @@
-import { Camera, MapPin, QrCode, RotateCcw, Store, Ticket } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { FormasFondo } from '@/components/marca/FormasFondo'
@@ -84,14 +83,12 @@ function ComoFunciona({ c }: { c?: CondicionesRed }) {
             {
               numero: 1,
               titulo: 'Inscríbete en el local',
-              icono: <QrCode />,
               texto:
                 'Escanea el código QR en la caja de un comercio de la red. Solo te pedimos tu nombre y tu WhatsApp.',
             },
             {
               numero: 2,
               titulo: 'Sube tu boleta',
-              icono: <Camera />,
               texto: c
                 ? `Saca una foto a tu boleta desde tu tarjeta. Ganas 1 punto por cada ${pesos(c.pesos_por_punto)} de compra.`
                 : 'Saca una foto a tu boleta desde tu tarjeta y suma puntos por cada compra.',
@@ -99,7 +96,6 @@ function ComoFunciona({ c }: { c?: CondicionesRed }) {
             {
               numero: 3,
               titulo: 'Canjea donde quieras',
-              icono: <Ticket />,
               texto:
                 'Elige un beneficio, pide tu código y muéstralo en la caja. Sirve en cualquier local de la red.',
             },
@@ -139,14 +135,12 @@ function Comercios() {
               <AlertDescription>
                 <p>{comercios.error.message}</p>
                 <Button variant="outline" size="sm" className="mt-2" onClick={() => comercios.refetch()}>
-                  <RotateCcw data-icon="inline-start" />
                   Intentar de nuevo
                 </Button>
               </AlertDescription>
             </Alert>
           ) : comercios.data.length === 0 ? (
             <Alert>
-              <Store />
               <AlertTitle>Pronto sumaremos comercios</AlertTitle>
               <AlertDescription>Estamos armando la red de tu barrio.</AlertDescription>
             </Alert>
@@ -172,15 +166,12 @@ function TarjetaComercio({ comercio }: { comercio: ComercioPublico }) {
       <CardHeader>
         <Badge variant="secondary">{comercio.rubro}</Badge>
         <CardTitle className="mt-3 text-2xl">{comercio.nombre}</CardTitle>
-        <p className="flex items-start gap-2 text-muted-foreground">
-          <MapPin className="mt-1 size-5 shrink-0" aria-hidden="true" />
-          {comercio.direccion}
-        </p>
+        <p className="text-muted-foreground">{comercio.direccion}</p>
       </CardHeader>
       <CardContent className="mt-auto">
         {beneficio ? (
           <div className="rounded-lg bg-secondary p-5">
-            <p className="text-sm font-bold text-vecina">Con {puntos(beneficio.puntos)}</p>
+            <p className="text-sm font-bold tracking-wide text-vecina uppercase">Con {puntos(beneficio.puntos)}</p>
             <p className="mt-1 text-lg font-bold">{beneficio.texto}</p>
             {beneficio.compra_minima > 0 && (
               <p className="mt-1 text-muted-foreground">

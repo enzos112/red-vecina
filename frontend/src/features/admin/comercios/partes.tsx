@@ -1,5 +1,5 @@
+import { Cargando } from '@/components/marca/Cargando'
 /** Piezas compartidas de /admin/comercios. */
-import { LoaderCircle } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -102,7 +102,7 @@ export function FormularioComercio({
         </Alert>
       ) : null}
       <Button type="submit" className="self-start" disabled={pendiente}>
-        {pendiente && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+        {pendiente && <Cargando />}
         {textoBoton}
       </Button>
     </form>

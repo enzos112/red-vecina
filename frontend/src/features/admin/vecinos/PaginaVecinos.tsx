@@ -1,4 +1,3 @@
-import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +29,6 @@ export function PaginaVecinos() {
   return (
     <div className="flex flex-col gap-6">
       <div className="relative max-w-xl">
-        <Search className="absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <Input
           className="pl-12"
           placeholder="Busca por nombre o teléfono"

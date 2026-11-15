@@ -1,6 +1,3 @@
-import { Upload } from 'lucide-react'
-import { buttonVariants } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useComerciosRed, useCondiciones } from '@/lib/consultas'
 import { numero, pesos, puntos as textoPuntos } from '@/lib/formato'
@@ -30,62 +27,78 @@ function useMeta(): Meta | null | undefined {
 }
 
 /**
- * Tarjeta de vecino de muestra para el hero. Los montos salen del beneficio destacado de la
- * API; el saldo es ilustrativo.
+ * Ilustración del hero: cómo se ve la tarjeta de un vecino. Es un dibujo, no un control:
+ * no tiene botones. Los montos salen del beneficio destacado de la API; el saldo es ilustrativo.
  */
 export function TarjetaEjemplo({ className }: { className?: string }) {
   const meta = useMeta()
   const saldo = meta ? Math.round((meta.puntos * AVANCE_EJEMPLO) / 10) * 10 : 0
   const faltan = meta ? meta.puntos - saldo : 0
+  const avance = meta ? (saldo / meta.puntos) * 100 : 0
 
   return (
-    <figure
-      aria-label="Ejemplo de tarjeta de vecino"
-      className={cn(
-        'w-full max-w-sm rounded-2xl bg-card p-6 text-tinta sm:p-7',
-        className,
-      )}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-lg font-bold">Hola, Rosa</p>
-        <Badge variant="mango">Ejemplo</Badge>
+    <figure aria-label="Ilustración: así se ve tu tarjeta" className={cn('w-full max-w-sm', className)}>
+      <div className="rotate-[-2deg] rounded-2xl bg-card text-tinta">
+        <div className="flex items-center justify-between rounded-t-2xl bg-mango px-6 py-3 sm:px-7">
+          <span className="font-extrabold tracking-tight text-barrio">Red Vecina.</span>
+          <span className="text-sm font-bold tracking-wide text-barrio uppercase">Tu tarjeta</span>
+        </div>
+
+        <div className="px-6 pt-6 pb-7 sm:px-7">
+          <p className="text-sm font-bold tracking-wide text-muted-foreground uppercase">Saldo</p>
+          {meta === undefined ? (
+            <Skeleton className="mt-2 h-16 w-48" />
+          ) : (
+            <p className="mt-1 flex items-baseline gap-2">
+              <span className="text-6xl leading-none font-extrabold tracking-tighter tabular-nums">
+                {numero(saldo)}
+              </span>
+              <span className="text-xl font-bold text-muted-foreground">puntos</span>
+            </p>
+          )}
+
+          <div className="mt-7" role="img" aria-label={meta ? `Llevas ${saldo} de ${meta.puntos} puntos` : 'Avance'}>
+            <div className="relative h-2 rounded-full bg-secondary">
+              <div className="h-full rounded-full bg-vecina" style={{ width: `${avance}%` }} />
+              <span
+                aria-hidden="true"
+                className="absolute top-1/2 right-0 size-5 translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-card bg-mango"
+              />
+            </div>
+            {meta && (
+              <div className="mt-2 flex justify-between text-sm font-semibold text-muted-foreground tabular-nums">
+                <span>0</span>
+                <span>{numero(meta.puntos)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Talón con perforación: el beneficio que viene. */}
+        <div className="relative border-t-2 border-dashed border-border px-6 py-5 sm:px-7">
+          <span aria-hidden="true" className="absolute -top-3 -left-3 size-6 rounded-full bg-barrio" />
+          <span aria-hidden="true" className="absolute -top-3 -right-3 size-6 rounded-full bg-barrio" />
+          {meta === undefined ? (
+            <Skeleton className="h-12 w-full" />
+          ) : meta ? (
+            <>
+              <p className="text-sm font-bold tracking-wide text-mango-texto uppercase">
+                A {textoPuntos(faltan)} de tu beneficio
+              </p>
+              <p className="mt-1 text-lg leading-snug font-extrabold">
+                {pesos(meta.valor)} de descuento en {meta.donde}
+              </p>
+            </>
+          ) : (
+            <p className="text-lg leading-snug font-extrabold">
+              Junta en un local y canjea en otro.
+            </p>
+          )}
+        </div>
       </div>
-
-      <p className="mt-6 text-sm font-semibold text-muted-foreground">Tu saldo</p>
-      {meta === undefined ? (
-        <Skeleton className="mt-2 h-14 w-48" />
-      ) : (
-        <p className="mt-1 text-5xl font-extrabold tracking-tight">
-          {numero(saldo)} <span className="text-2xl font-bold text-muted-foreground">puntos</span>
-        </p>
-      )}
-
-      <div
-        className="mt-6 h-3 overflow-hidden rounded-full bg-secondary"
-        role="img"
-        aria-label={meta ? `Llevas ${saldo} de ${meta.puntos} puntos` : 'Avance hacia tu beneficio'}
-      >
-        <div
-          className="h-full rounded-full bg-vecina"
-          style={{ width: `${meta ? (saldo / meta.puntos) * 100 : 0}%` }}
-        />
-      </div>
-
-      {meta === undefined ? (
-        <Skeleton className="mt-4 h-12 w-full" />
-      ) : meta ? (
-        <p className="mt-4 text-base">
-          Te faltan <strong>{textoPuntos(faltan)}</strong> para tu descuento de{' '}
-          <strong>{pesos(meta.valor)}</strong> en {meta.donde}.
-        </p>
-      ) : (
-        <p className="mt-4 text-base">Junta puntos y canjéalos en cualquier local de la red.</p>
-      )}
-
-      <span aria-hidden="true" className={cn(buttonVariants(), 'pointer-events-none mt-6 w-full')}>
-        <Upload />
-        Subir boleta
-      </span>
+      <figcaption className="mt-5 text-center text-sm text-crema/80">
+        Así se ve tu tarjeta en el celular.
+      </figcaption>
     </figure>
   )
 }

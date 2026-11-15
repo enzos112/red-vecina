@@ -1,5 +1,4 @@
 /** Piezas compartidas por las pantallas del vecino: encabezados, estados vacíos y de error. */
-import { ArrowLeft, RotateCcw, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -16,7 +15,6 @@ export function Encabezado({ token, titulo, children }: { token: string; titulo:
         to={`/t/${token}`}
         className="-ml-2 inline-flex min-h-12 items-center gap-2 rounded-full px-2 font-semibold text-vecina hover:text-vecina-oscuro"
       >
-        <ArrowLeft className="size-5" aria-hidden="true" />
         Volver a mi tarjeta
       </Link>
       <h1 className="mt-2 text-4xl font-extrabold tracking-tight">{titulo}</h1>
@@ -27,22 +25,17 @@ export function Encabezado({ token, titulo, children }: { token: string; titulo:
 
 /** Mensaje amable cuando un bloque no tiene nada que mostrar. */
 export function Vacio({
-  icono: Icono,
   titulo,
   children,
   className,
 }: {
-  icono: LucideIcon
   titulo: string
   children?: ReactNode
   className?: string
 }) {
   return (
-    <div className={cn('flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-5', className)}>
-      <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-vecina">
-        <Icono className="size-6" aria-hidden="true" />
-      </span>
-      <p className="text-lg font-bold">{titulo}</p>
+    <div className={cn('flex flex-col items-start gap-2 rounded-2xl border-2 border-dashed border-border p-6', className)}>
+      <p className="text-xl font-extrabold">{titulo}</p>
       {children && <div className="text-base text-muted-foreground">{children}</div>}
     </div>
   )
@@ -65,7 +58,6 @@ export function ErrorBloque({
         <p>{error.message}</p>
         {reintentar && (
           <Button variant="secondary" size="sm" className="mt-1" onClick={reintentar}>
-            <RotateCcw data-icon="inline-start" />
             Intentar de nuevo
           </Button>
         )}

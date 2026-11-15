@@ -1,4 +1,3 @@
-import { Maximize, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 
@@ -45,17 +44,16 @@ export function VisorFoto({ src, alt }: { src: string; alt: string }) {
     <div className="flex h-full flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Controles de la foto">
         <Button variant="outline" size="icon" onClick={() => setZoom((z) => Math.max(ZOOM_MIN, z - PASO))} disabled={zoom <= ZOOM_MIN} aria-label="Alejar">
-          <ZoomOut aria-hidden="true" />
+          <span aria-hidden="true" className="text-2xl leading-none font-bold">−</span>
         </Button>
         <span className="w-14 text-center font-bold tabular-nums">{Math.round(zoom * 100)}%</span>
         <Button variant="outline" size="icon" onClick={() => setZoom((z) => Math.min(ZOOM_MAX, z + PASO))} disabled={zoom >= ZOOM_MAX} aria-label="Acercar">
-          <ZoomIn aria-hidden="true" />
+          <span aria-hidden="true" className="text-2xl leading-none font-bold">+</span>
         </Button>
-        <Button variant="outline" size="icon" onClick={() => setZoom(1)} aria-label="Ajustar al ancho">
-          <Maximize aria-hidden="true" />
+        <Button variant="outline" onClick={() => setZoom(1)}>
+          Ajustar
         </Button>
         <Button variant="outline" onClick={() => setGiro((g) => (g + 270) % 360)}>
-          <RotateCcw aria-hidden="true" />
           Girar
         </Button>
       </div>

@@ -1,4 +1,3 @@
-import { ArrowDown, ArrowUp, Minus, TriangleAlert } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { IndicadorSalida } from '@/lib/api'
@@ -18,11 +17,13 @@ function valorTexto(v: number | null, f: Formato): string {
 function Comparacion({ actual, anterior, formato }: { actual: number | null; anterior: number | null; formato: Formato }) {
   if (actual === null || anterior === null) return <span className="text-muted-foreground">Sin comparación</span>
   const diferencia = actual - anterior
-  const Icono = diferencia > 0 ? ArrowUp : diferencia < 0 ? ArrowDown : Minus
+  const tendencia = diferencia > 0 ? 'Sube' : diferencia < 0 ? 'Baja' : 'Igual'
   return (
-    <span className="flex items-center gap-1 text-muted-foreground">
-      <Icono className="size-4" aria-hidden="true" />
-      <span>mes pasado: {valorTexto(anterior, formato)}</span>
+    <span className="text-muted-foreground">
+      <strong className={diferencia > 0 ? 'text-exito-texto' : diferencia < 0 ? 'text-peligro-texto' : ''}>
+        {tendencia}
+      </strong>{' '}
+      · mes pasado: {valorTexto(anterior, formato)}
     </span>
   )
 }
@@ -55,7 +56,6 @@ function Cifra({
 function Alerta({ i }: { i: IndicadorSalida }) {
   return (
     <li className="flex gap-3 rounded-lg border border-l-4 border-border border-l-alerta bg-alerta-fondo px-4 py-3">
-      <TriangleAlert className="mt-1 size-5 shrink-0 text-alerta-texto" aria-hidden="true" />
       <span>
         <strong>{i.nombre}:</strong> {i.senal}. {i.accion}
       </span>

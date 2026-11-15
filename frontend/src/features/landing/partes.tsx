@@ -42,23 +42,28 @@ export function EncabezadoSeccion({ antetitulo, titulo, bajada, id, oscuro, clas
   )
 }
 
-type Paso = { numero: number; titulo: string; texto: ReactNode; icono: ReactNode }
+type Paso = { numero: number; titulo: string; texto: ReactNode }
 
-/** Lista de pasos numerados ("cómo funciona"). */
+/** Barra superior de cada paso: el recorrido va del azul al naranja. */
+const BARRAS = ['bg-vecina', 'bg-barrio', 'bg-mango']
+
+/**
+ * Pasos numerados ("cómo funciona"). Sin íconos: el número grande es la imagen, y una línea
+ * une los pasos como un recorrido.
+ */
 export function Pasos({ pasos }: { pasos: Paso[] }) {
   return (
-    <ol className="mt-12 grid gap-5 md:grid-cols-3">
-      {pasos.map((paso) => (
-        <li key={paso.numero} className="flex flex-col rounded-xl border border-border bg-card p-6 sm:p-8">
-          <div className="flex items-center justify-between">
-            <span className="text-6xl leading-none font-extrabold text-vecina" aria-hidden="true">
-              {paso.numero}
-            </span>
-            <span className="flex size-14 items-center justify-center rounded-full bg-secondary text-vecina [&_svg]:size-7">
-              {paso.icono}
-            </span>
-          </div>
-          <h3 className="mt-8 text-2xl font-extrabold">
+    <ol className="mt-14 grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
+      {pasos.map((paso, i) => (
+        <li key={paso.numero} className="relative flex flex-col bg-card p-7 sm:p-9">
+          <span aria-hidden="true" className={cn('absolute inset-x-0 top-0 h-1.5', BARRAS[i % BARRAS.length])} />
+          <span
+            aria-hidden="true"
+            className="text-7xl leading-none font-extrabold tracking-tighter text-barrio tabular-nums"
+          >
+            {String(paso.numero).padStart(2, '0')}
+          </span>
+          <h3 className="mt-10 text-2xl font-extrabold">
             <span className="sr-only">Paso {paso.numero}: </span>
             {paso.titulo}
           </h3>

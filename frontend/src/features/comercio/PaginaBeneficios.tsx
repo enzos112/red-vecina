@@ -1,4 +1,4 @@
-import { Clock, LoaderCircle, Pencil } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -219,7 +219,6 @@ function Editor({
   return (
     <form onSubmit={enviar} className="flex flex-col gap-5">
       <Alert>
-        <Clock aria-hidden="true" />
         <AlertDescription>
           Los cambios quedan pendientes hasta que el equipo los apruebe. Si los envías hoy, rigen desde el{' '}
           {dia(datos.rige_si_pides_hoy)}.
@@ -241,7 +240,7 @@ function Editor({
       )}
       <div className="flex flex-wrap gap-2">
         <Button type="submit" size="lg" disabled={proponer.isPending}>
-          {proponer.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+          {proponer.isPending && <Cargando />}
           Enviar para aprobación
         </Button>
         <Button type="button" variant="ghost" size="lg" onClick={onCancelar}>
@@ -292,7 +291,6 @@ export function PaginaBeneficios() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-extrabold">Tus beneficios</h1>
         <Button variant="secondary" onClick={() => setEditando(true)}>
-          <Pencil aria-hidden="true" />
           {d.vigentes.length || d.pendientes.length ? 'Proponer cambios' : 'Crear beneficios'}
         </Button>
       </div>

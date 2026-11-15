@@ -3,7 +3,6 @@ import { cn } from "cn"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
-import { XIcon } from "lucide-react"
 
 function Dialog({
   ...props
@@ -70,11 +69,9 @@ function DialogContent({
             <Button
               variant="ghost"
               className="absolute top-3 right-3"
-              size="icon-sm"
+              size="sm"
             >
-              <XIcon
-              />
-              <span className="sr-only">Cerrar</span>
+              Cerrar
             </Button>
           </DialogPrimitive.Close>
         )}

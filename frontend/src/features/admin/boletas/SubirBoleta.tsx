@@ -1,4 +1,4 @@
-import { ImageIcon, LoaderCircle, Search, Upload } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -34,7 +34,6 @@ function BuscarVecino({ elegido, onElegir }: { elegido: VecinoResumen | null; on
     <Field>
       <FieldLabel htmlFor={id}>Vecino</FieldLabel>
       <div className="relative">
-        <Search className="absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <Input
           id={id}
           className="pl-12"
@@ -132,7 +131,6 @@ export function SubirBoleta() {
     >
       <DialogTrigger asChild>
         <Button variant="secondary">
-          <Upload aria-hidden="true" />
           Subir boleta de WhatsApp
         </Button>
       </DialogTrigger>
@@ -149,7 +147,7 @@ export function SubirBoleta() {
               <img src={foto.vista} alt="Vista previa de la boleta" className="max-h-56 self-start rounded-lg border-2 border-border" />
             ) : null}
             <Button variant="outline" onClick={() => archivo.current?.click()} disabled={preparando}>
-              {preparando ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <ImageIcon aria-hidden="true" />}
+              {preparando && <Cargando />}
               {foto ? 'Cambiar foto' : 'Elegir foto'}
             </Button>
             {errorFoto && (
@@ -166,7 +164,7 @@ export function SubirBoleta() {
         </div>
         <DialogFooter>
           <Button onClick={enviar} disabled={!vecino || !foto || subir.isPending}>
-            {subir.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+            {subir.isPending && <Cargando />}
             {vecino ? `Subir para ${vecino.nombre.split(' ')[0]}` : 'Subir'}
           </Button>
         </DialogFooter>

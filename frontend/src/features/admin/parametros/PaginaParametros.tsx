@@ -1,4 +1,4 @@
-import { LoaderCircle, Pencil } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -243,7 +243,7 @@ function Editor({ p, onCerrar }: { p: ParametroSalida; onCerrar: () => void }) {
         </Alert>
       )}
       <Button type="submit" className="self-start" disabled={hayErrores || !motivo.trim() || cambiar.isPending}>
-        {cambiar.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+        {cambiar.isPending && <Cargando />}
         Guardar cambio
       </Button>
     </form>
@@ -339,7 +339,6 @@ export function PaginaParametros() {
                 {esAdmin && (
                   <TableCell>
                     <Button variant="outline" size="sm" onClick={() => setEditando(p)}>
-                      <Pencil aria-hidden="true" />
                       Editar
                     </Button>
                   </TableCell>

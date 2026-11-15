@@ -1,4 +1,4 @@
-import { CircleCheck, CircleX, LoaderCircle, WifiOff } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,7 @@ function Pantalla({ tono, children }: { tono: 'verde' | 'rojo'; children: React.
       role="alert"
       className={
         'aparecer fixed inset-0 z-50 flex flex-col overflow-y-auto px-6 pt-10 pb-[max(2rem,env(safe-area-inset-bottom))] text-white ' +
-        (tono === 'verde' ? 'sobre-oscuro bg-vecina' : 'bg-peligro-oscuro')
+        (tono === 'verde' ? 'sobre-oscuro bg-exito-texto' : 'bg-peligro-oscuro')
       }
     >
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6">{children}</div>
@@ -66,7 +66,6 @@ function Valido({
 
   return (
     <Pantalla tono="verde">
-      <CircleCheck className="size-16" aria-hidden="true" />
       <div>
         <p className="text-5xl leading-tight font-extrabold">Válido</p>
         <p className="mt-3 text-3xl font-bold">{r.valor_pesos != null ? `${pesos(r.valor_pesos)} de descuento` : r.mensaje}</p>
@@ -93,7 +92,7 @@ function Valido({
           <p className="rounded-lg bg-white px-4 py-3 text-lg font-bold text-peligro-texto">{mensajeError(usar.error)}</p>
         )}
         <Button type="submit" variant="oscuro" size="lg" className="h-16 text-2xl" disabled={usar.isPending}>
-          {usar.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+          {usar.isPending && <Cargando />}
           Usar
         </Button>
         <Button type="button" variant="oscuro-secundario" size="lg" onClick={onCancelar}>
@@ -115,7 +114,6 @@ function Invalido({ r, onOtro }: { r: ResultadoCajaSalida; onOtro: () => void })
   }
   return (
     <Pantalla tono="rojo">
-      <CircleX className="size-16" aria-hidden="true" />
       <div>
         <p className="text-5xl leading-tight font-extrabold">{titulo[r.resultado] ?? 'No válido'}</p>
         <p className="mt-4 text-2xl">{r.mensaje}</p>
@@ -135,7 +133,6 @@ function Usado({ r, onSeguir }: { r: ResultadoCajaSalida; onSeguir: () => void }
   }, [onSeguir])
   return (
     <Pantalla tono="verde">
-      <CircleCheck className="size-20" aria-hidden="true" />
       <div>
         <p className="text-5xl leading-tight font-extrabold">Listo</p>
         <p className="mt-3 text-3xl font-bold">
@@ -208,7 +205,7 @@ export function PaginaValidar() {
         </p>
         {consultar.isPending && (
           <p className="flex items-center gap-2 text-lg font-bold">
-            <LoaderCircle className="size-6 animate-spin" aria-hidden="true" /> Revisando…
+            <Cargando /> Revisando…
           </p>
         )}
         {consultar.isError && <p className="text-lg font-bold text-peligro-texto">{mensajeError(consultar.error)}</p>}
@@ -223,7 +220,6 @@ export function PaginaValidar() {
         to="/comercio/sin-internet"
         className="flex min-h-14 items-center gap-3 rounded-lg border-2 border-border bg-card px-4 text-lg font-bold transition-colors duration-200 hover:bg-muted"
       >
-        <WifiOff className="size-6 text-muted-foreground" aria-hidden="true" />
         ¿Aplicaste un código sin internet? Ingrésalo aquí
       </Link>
 

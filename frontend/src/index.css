@@ -47,6 +47,8 @@
     --color-vecina-claro: var(--vecina-claro);
     --color-mango: var(--mango);
     --color-mango-oscuro: var(--mango-oscuro);
+    --color-mango-texto: var(--mango-texto);
+    --color-vecina-forma: var(--vecina-forma);
     --color-crema: var(--crema);
     --color-tinta: var(--tinta);
     --color-musgo: var(--musgo);
@@ -111,38 +113,40 @@
 }
 
 :root {
-    /* Paleta de la sección 6 */
-    --barrio: #12382A;          /* fondo del hero y bloques de énfasis */
-    --barrio-claro: #1A4636;    /* formas geométricas sobre el verde barrio */
-    --vecina: #1F6F4A;          /* acción principal sobre fondo claro */
-    --vecina-oscuro: #175A3B;   /* su estado al pasar el cursor */
-    --vecina-claro: #2A7D56;    /* formas geométricas sobre el verde vecina */
-    --mango: #FFC857;           /* acción principal sobre fondo oscuro */
-    --mango-oscuro: #F5B731;
-    --crema: #FBF8F1;           /* fondo general */
-    --tinta: #1C2B24;           /* texto */
-    --musgo: #5B6B63;           /* texto secundario */
+    /* Paleta de la sección 6: azul de confianza + naranja de barrio, sobre papel crema. */
+    --barrio: #053073;          /* azul noche: hero y bloques de énfasis */
+    --barrio-claro: #0B3F8F;    /* formas geométricas sobre el azul noche */
+    --vecina: #074EBC;          /* azul: acción principal sobre fondo claro (blanco 7,4:1) */
+    --vecina-oscuro: #053F99;   /* su estado al pasar el cursor */
+    --vecina-claro: #1B71F6;    /* azul brillante: foco y detalles gráficos, nunca texto chico */
+    --mango: #F79D18;           /* naranja: acento y acción sobre azul noche, con texto azul noche */
+    --mango-oscuro: #EB9310;    /* hover del naranja (azul noche encima: 5,2:1) */
+    --mango-texto: #9A5B00;     /* naranja para texto chico sobre claro (5,2:1) */
+    --vecina-forma: #0E5BD0;    /* formas geométricas sobre el azul */
+    --crema: #FFF9F2;           /* fondo general */
+    --tinta: #0B1B33;           /* texto (16,5:1) */
+    --musgo: #5A6478;           /* texto secundario (5,7:1) */
 
-    /* Estados. El color puro marca (punto, borde); el texto usa su versión oscura. */
-    --exito: #2E8B57;
-    --exito-texto: #1F6B41;
-    --exito-fondo: #E3F1E8;
-    --alerta: #E0A100;
-    --alerta-texto: #7A5700;
-    --alerta-fondo: #FCF1D6;
-    --peligro: #C8452C;
-    --peligro-texto: #A63A25;
-    --peligro-fondo: #FAE6E1;
-    --peligro-oscuro: #A63A25;
+    /* Estados. Separados de la marca y siempre con una palabra: nunca solo el color. */
+    --exito: #1E7A46;
+    --exito-texto: #17633A;
+    --exito-fondo: #E4F2E9;
+    --alerta: #B86E00;
+    --alerta-texto: #7F4C00;
+    --alerta-fondo: #FCEFD9;
+    --peligro: #C0392B;
+    --peligro-texto: #A12D22;
+    --peligro-fondo: #FBE7E4;
+    --peligro-oscuro: #A12D22;
 
     /* Tonos de hover y presión de los botones */
-    --peligro-hover: #8C2F1D;
-    --peligro-activo: #76281A;
-    --mango-activo: #E9A915;
-    --barrio-activo: #21533F;
-    --secundario-hover: #D3E2D7;
-    --secundario-activo: #C4D8CA;
-    --esqueleto: #ECE6D8;
+    --peligro-hover: #8E271D;
+    --peligro-activo: #772018;
+    --mango-activo: #DE870A;
+    --barrio-activo: #0A3D8A;
+    --secundario-hover: #D6E2F5;
+    --secundario-activo: #C5D5EF;
+    --esqueleto: #EFE6D8;
 
     --background: var(--crema);
     --foreground: var(--tinta);
@@ -152,31 +156,31 @@
     --popover-foreground: var(--tinta);
     --primary: var(--vecina);
     --primary-foreground: #FFFFFF;
-    --secondary: #E4EDE6;
+    --secondary: #E7EEF9;
     --secondary-foreground: var(--tinta);
-    --muted: #F1EDE3;
+    --muted: #F5EEE3;
     --muted-foreground: var(--musgo);
-    --accent: #E4EDE6;
+    --accent: #E7EEF9;
     --accent-foreground: var(--tinta);
     --destructive: var(--peligro);
-    --border: #E2DDD0;
-    --input: #CFC8B8;
-    --ring: var(--vecina);
+    --border: #E8DFD2;
+    --input: #CBC1B2;
+    --ring: var(--vecina-claro);
     --chart-1: var(--vecina);
     --chart-2: var(--mango);
     --chart-3: var(--barrio);
-    --chart-4: var(--musgo);
-    --chart-5: var(--peligro);
+    --chart-4: var(--vecina-claro);
+    --chart-5: var(--musgo);
     --radius: 1rem;
 
     --sidebar: #FFFFFF;
     --sidebar-foreground: var(--tinta);
     --sidebar-primary: var(--vecina);
     --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #E4EDE6;
+    --sidebar-accent: #E7EEF9;
     --sidebar-accent-foreground: var(--tinta);
-    --sidebar-border: #E2DDD0;
-    --sidebar-ring: var(--vecina);
+    --sidebar-border: #E8DFD2;
+    --sidebar-ring: var(--vecina-claro);
 }
 
 @layer base {
@@ -202,7 +206,7 @@
     color: var(--tinta);
   }
   :focus-visible {
-    outline: 3px solid var(--vecina);
+    outline: 3px solid var(--vecina-claro);
     outline-offset: 2px;
   }
   .sobre-oscuro :focus-visible {

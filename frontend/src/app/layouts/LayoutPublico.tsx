@@ -99,10 +99,15 @@ function Pie() {
             </Link>
           </li>
         </ColumnaPie>
-        <ColumnaPie titulo="Legal">
+        <ColumnaPie titulo="Más">
           <li>
             <Link to="/condiciones" className={enlacePie}>
               Condiciones y datos
+            </Link>
+          </li>
+          <li>
+            <Link to="/acceso" className={enlacePie}>
+              Entrar (comercios y equipo)
             </Link>
           </li>
         </ColumnaPie>

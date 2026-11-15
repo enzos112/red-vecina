@@ -118,8 +118,10 @@ def test_validacion_de_un_parametro():
         validar_valor("P3", {"pesos": -1})
     with pytest.raises(ValueError):
         validar_valor("P9", {"puntos": [500, 250], "nombres": ["a", "b"], "obligatorio": 1})
-    with pytest.raises(ValueError, match="Faltan"):
+    with pytest.raises(ValueError, match="preparando"):
         construir_parametros({})
+    with pytest.raises(ValueError, match="Faltan parámetros: P2"):
+        construir_parametros({"P1": {"pesos_por_punto": 100}})
 
 
 def _mes(**cifras):

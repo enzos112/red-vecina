@@ -1,4 +1,3 @@
-import { CalendarClock, CheckCircle2, ChevronRight, Gift, History, MessageCircle, Receipt, Upload } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -34,7 +33,6 @@ function Cargando() {
 function GuardarEnWhatsapp({ t, token, onCerrar }: { t: Tarjeta; token: string; onCerrar: () => void }) {
   return (
     <section aria-labelledby="titulo-bienvenida" className="sobre-oscuro aparecer rounded-3xl bg-barrio p-6 text-crema">
-      <CheckCircle2 className="size-10 text-mango" aria-hidden="true" />
       <h2 id="titulo-bienvenida" className="mt-3 text-3xl font-extrabold">
         ¡Listo, ya eres parte de Red Vecina!
       </h2>
@@ -44,7 +42,6 @@ function GuardarEnWhatsapp({ t, token, onCerrar }: { t: Tarjeta; token: string; 
       <div className="mt-5 flex flex-col gap-3">
         <Button asChild variant="oscuro" size="lg" className="h-auto min-h-14 w-full py-3 text-center whitespace-normal">
           <a href={enlaceWhatsapp(t.whatsapp.numero, t.whatsapp.mensaje, token)} target="_blank" rel="noreferrer">
-            <MessageCircle data-icon="inline-start" />
             Guardar mi tarjeta en WhatsApp
           </a>
         </Button>
@@ -121,7 +118,6 @@ function PorVencer({ t }: { t: Tarjeta }) {
   if (t.por_vencer.length === 0) return null
   return (
     <Alert variant="alerta">
-      <CalendarClock aria-hidden="true" />
       <AlertTitle>Tienes puntos por vencer</AlertTitle>
       <AlertDescription>
         <ul>
@@ -145,7 +141,7 @@ function Recientes({ t, token }: { t: Tarjeta; token: string }) {
         Lo último
       </h2>
       {items.length === 0 ? (
-        <Vacio icono={Receipt} titulo="Aún no tienes movimientos">
+        <Vacio titulo="Aún no tienes movimientos">
           Cuando subas tu primera boleta, aparecerá aquí.
         </Vacio>
       ) : (
@@ -157,7 +153,6 @@ function Recientes({ t, token }: { t: Tarjeta; token: string }) {
           </ul>
           <Button asChild variant="link" className="self-start">
             <Link to={`/t/${token}/historial`}>
-              <History data-icon="inline-start" />
               Ver todo mi historial
             </Link>
           </Button>
@@ -201,7 +196,6 @@ export function PaginaTarjeta() {
 
       {aviso.boletaEnviada && (
         <Alert variant="exito" role="status">
-          <CheckCircle2 aria-hidden="true" />
           <AlertTitle>Recibimos tu boleta</AlertTitle>
           <AlertDescription>
             {plazo ? `La revisamos en menos de ${plazo} horas.` : 'La revisaremos pronto.'} Tus puntos aparecen aquí al
@@ -226,17 +220,14 @@ export function PaginaTarjeta() {
       <div className="flex flex-col gap-3">
         <Button asChild size="lg" variant={codigo ? 'secondary' : 'default'} className="w-full">
           <Link to={`/t/${token}/boleta`}>
-            <Upload data-icon="inline-start" />
             Subir boleta
           </Link>
         </Button>
         <Button asChild variant="outline" className="w-full justify-between">
           <Link to={`/t/${token}/beneficios`}>
             <span className="inline-flex items-center gap-2">
-              <Gift className="size-5" aria-hidden="true" />
               Mis beneficios
             </span>
-            <ChevronRight className="size-5" aria-hidden="true" />
           </Link>
         </Button>
       </div>
@@ -246,7 +237,6 @@ export function PaginaTarjeta() {
       {!aviso.bienvenida && (
         <Button asChild variant="link" className="self-start">
           <a href={enlaceWhatsapp(t.whatsapp.numero, t.whatsapp.mensaje, token)} target="_blank" rel="noreferrer">
-            <MessageCircle data-icon="inline-start" />
             Guardar mi tarjeta en WhatsApp
           </a>
         </Button>

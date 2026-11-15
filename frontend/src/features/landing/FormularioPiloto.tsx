@@ -1,5 +1,4 @@
 import { useMutation } from '@tanstack/react-query'
-import { CheckCircle2, Send } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -80,7 +79,6 @@ export function FormularioPiloto() {
       <Card className="aparecer">
         <CardContent className="flex flex-col items-start gap-4" role="status">
           <span className="flex size-14 items-center justify-center rounded-full bg-exito-fondo text-exito-texto">
-            <CheckCircle2 className="size-8" aria-hidden="true" />
           </span>
           <h3 className="text-3xl font-extrabold">¡Gracias, {campos.contacto.trim().split(' ')[0]}!</h3>
           <p className="text-lg text-muted-foreground">{enviar.data.mensaje}</p>
@@ -171,7 +169,6 @@ export function FormularioPiloto() {
             )}
 
             <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={enviar.isPending}>
-              <Send data-icon="inline-start" />
               {enviar.isPending ? 'Enviando…' : 'Enviar mis datos'}
             </Button>
           </FieldGroup>

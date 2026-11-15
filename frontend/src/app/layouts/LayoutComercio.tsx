@@ -1,4 +1,3 @@
-import { BarChart3, Gauge, Gift, LogOut, QrCode, ScanLine } from 'lucide-react'
 import { Link, Navigate, NavLink, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
 import { Logo } from '@/components/marca/Logo'
 import { Button } from '@/components/ui/button'
@@ -8,10 +7,10 @@ import { dia } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
 const SECCIONES = [
-  { a: '/comercio', texto: 'Validar', icono: ScanLine, exacta: true },
-  { a: '/comercio/cupo', texto: 'Cupo', icono: Gauge, exacta: false },
-  { a: '/comercio/beneficios', texto: 'Beneficios', icono: Gift, exacta: false },
-  { a: '/comercio/reporte', texto: 'Reporte', icono: BarChart3, exacta: false },
+  { a: '/comercio', texto: 'Validar', exacta: true },
+  { a: '/comercio/cupo', texto: 'Cupo', exacta: false },
+  { a: '/comercio/beneficios', texto: 'Beneficios', exacta: false },
+  { a: '/comercio/reporte', texto: 'Reporte', exacta: false },
 ]
 
 /** Zona del comercio: celular, con las secciones siempre visibles abajo (sin menú oculto). */
@@ -46,22 +45,24 @@ export function LayoutComercio() {
       <header className="sobre-oscuro bg-barrio">
         <div className="mx-auto flex h-16 max-w-md items-center justify-between gap-2 px-4">
           <Logo tono="oscuro" />
-          <div className="flex min-w-0 items-center gap-1">
-            <span className="truncate text-sm font-semibold text-crema/85">{yo.data.comercio?.nombre ?? 'Comercio'}</span>
-            <Button variant="oscuro-secundario" size="icon" className="border-transparent" asChild>
-              <Link to="/comercio/afiche" aria-label="Afiche y tarjeta para la caja">
-                <QrCode aria-hidden="true" />
-              </Link>
-            </Button>
-            <Button
-              variant="oscuro-secundario"
-              size="icon"
-              className="border-transparent"
-              aria-label="Salir"
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="hidden truncate text-sm font-semibold text-crema/85 min-[400px]:block">
+              {yo.data.comercio?.nombre ?? 'Comercio'}
+            </span>
+            <Link
+              to="/comercio/afiche"
+              className="text-sm font-bold text-crema underline-offset-4 hover:underline"
+              aria-label="Afiche y tarjeta para la caja"
+            >
+              Afiche
+            </Link>
+            <button
+              type="button"
+              className="cursor-pointer text-sm font-bold text-mango underline-offset-4 hover:underline"
               onClick={() => salir.mutate(undefined, { onSettled: () => navigate('/comercio/login', { replace: true }) })}
             >
-              <LogOut aria-hidden="true" />
-            </Button>
+              Salir
+            </button>
           </div>
         </div>
       </header>
@@ -85,31 +86,22 @@ export function LayoutComercio() {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card pb-[env(safe-area-inset-bottom)]"
       >
         <ul className="mx-auto grid max-w-md grid-cols-4">
-          {SECCIONES.map(({ a, texto, icono: Icono, exacta }) => (
+          {SECCIONES.map(({ a, texto, exacta }) => (
             <li key={a}>
               <NavLink
                 to={a}
                 end={exacta}
                 className={({ isActive }) =>
                   cn(
-                    'flex min-h-18 flex-col items-center justify-center gap-1 text-sm font-semibold transition-colors duration-200',
-                    isActive ? 'text-vecina' : 'text-muted-foreground hover:text-foreground',
+                    'relative flex min-h-16 items-center justify-center text-base font-bold transition-colors duration-200',
+                    'before:absolute before:inset-x-3 before:top-0 before:h-1 before:rounded-b-full before:transition-colors',
+                    isActive
+                      ? 'text-barrio before:bg-mango'
+                      : 'text-muted-foreground before:bg-transparent hover:text-foreground',
                   )
                 }
               >
-                {({ isActive }) => (
-                  <>
-                    <span
-                      className={cn(
-                        'flex h-8 w-14 items-center justify-center rounded-full transition-colors duration-200',
-                        isActive && 'bg-secondary',
-                      )}
-                    >
-                      <Icono className="size-5" aria-hidden="true" />
-                    </span>
-                    {texto}
-                  </>
-                )}
+                {texto}
               </NavLink>
             </li>
           ))}

@@ -1,4 +1,3 @@
-import { FileWarning } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -175,7 +174,6 @@ export function PaginaCondiciones() {
         </h1>
 
         <Alert variant="alerta" className="mt-8">
-          <FileWarning />
           <AlertTitle>Borrador pendiente de revisión legal</AlertTitle>
           <AlertDescription>
             Este texto explica cómo funciona el piloto. Todavía no lo revisa un abogado y puede

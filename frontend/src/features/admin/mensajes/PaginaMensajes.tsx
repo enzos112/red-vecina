@@ -1,4 +1,4 @@
-import { LoaderCircle, RotateCcw } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useDeferredValue, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -68,7 +68,7 @@ function Plantilla({ t }: { t: PlantillaSalida }) {
               disabled={!cambiado || !!vista?.error || editar.isPending}
               onClick={() => editar.mutate({ clave: t.clave, texto })}
             >
-              {editar.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+              {editar.isPending && <Cargando />}
               Guardar
             </Button>
             {cambiado && (
@@ -78,7 +78,6 @@ function Plantilla({ t }: { t: PlantillaSalida }) {
             )}
             {texto !== t.texto_base && (
               <Button variant="ghost" onClick={() => setTexto(t.texto_base)}>
-                <RotateCcw aria-hidden="true" />
                 Volver al texto original
               </Button>
             )}

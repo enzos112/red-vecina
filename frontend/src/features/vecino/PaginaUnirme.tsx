@@ -1,5 +1,5 @@
+import { Cargando } from '@/components/marca/Cargando'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { ArrowRight, LoaderCircle, MapPin, Store } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -37,7 +37,6 @@ function Presentacion({ comercio }: { comercio: ComercioPublico }) {
   return (
     <section className="sobre-oscuro rounded-3xl bg-barrio p-6 text-crema">
       <p className="inline-flex items-center gap-2 text-base font-semibold text-mango">
-        <Store className="size-5" aria-hidden="true" />
         Te invita {comercio.nombre}
       </p>
       <h1 className="mt-3 text-4xl font-extrabold tracking-tight">Únete a Red Vecina</h1>
@@ -52,7 +51,6 @@ function Presentacion({ comercio }: { comercio: ComercioPublico }) {
       )}
       {comercio.direccion && (
         <p className="mt-4 inline-flex items-center gap-2 text-base text-crema/90">
-          <MapPin className="size-5 shrink-0" aria-hidden="true" />
           {comercio.direccion}
         </p>
       )}
@@ -170,10 +168,9 @@ function Formulario({ comercio }: { comercio: ComercioPublico }) {
 
             <Button type="submit" size="lg" className="w-full" disabled={inscribir.isPending}>
               {inscribir.isPending ? (
-                <LoaderCircle data-icon="inline-start" className="animate-spin motion-reduce:animate-none" />
+                <Cargando />
               ) : null}
               {inscribir.isPending ? 'Creando tu tarjeta…' : 'Crear mi tarjeta'}
-              {!inscribir.isPending && <ArrowRight data-icon="inline-end" />}
             </Button>
           </FieldGroup>
         </form>

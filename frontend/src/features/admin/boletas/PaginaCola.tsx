@@ -1,4 +1,3 @@
-import { Bot, CircleAlert } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -113,7 +112,7 @@ export function PaginaCola() {
                     </Link>
                     {atrasada && (
                       <span className="ml-2 inline-flex items-center gap-1 text-sm font-bold text-peligro-texto">
-                        <CircleAlert className="size-4" aria-hidden="true" /> atrasada
+                        atrasada
                       </span>
                     )}
                   </TableCell>
@@ -126,7 +125,7 @@ export function PaginaCola() {
                   <TableCell>
                     {b.comercio ?? (
                       <span className="inline-flex items-center gap-1 text-muted-foreground">
-                        <Bot className="size-4" aria-hidden="true" /> por leer
+                        por leer
                       </span>
                     )}
                   </TableCell>

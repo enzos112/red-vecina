@@ -1,4 +1,4 @@
-import { Camera, ImageIcon, LoaderCircle, RotateCcw, Send } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -105,11 +105,9 @@ export function PaginaBoleta() {
           )}
           <div className="flex flex-col gap-3">
             <Button size="lg" className="w-full" onClick={() => camara.current?.click()}>
-              <Camera data-icon="inline-start" />
               Tomar foto
             </Button>
             <Button variant="secondary" className="w-full" onClick={() => galeria.current?.click()}>
-              <ImageIcon data-icon="inline-start" />
               Elegir de la galería
             </Button>
           </div>
@@ -120,7 +118,7 @@ export function PaginaBoleta() {
         <div className="flex flex-col gap-4" aria-busy="true">
           <Skeleton className="aspect-3/4 w-full rounded-2xl" />
           <p className="flex items-center gap-2 text-lg" role="status">
-            <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            <Cargando />
             Preparando tu foto…
           </p>
         </div>
@@ -144,15 +142,10 @@ export function PaginaBoleta() {
 
           <div className="flex flex-col gap-3">
             <Button size="lg" className="w-full" onClick={enviar} disabled={subir.isPending}>
-              {subir.isPending ? (
-                <LoaderCircle data-icon="inline-start" className="animate-spin motion-reduce:animate-none" />
-              ) : (
-                <Send data-icon="inline-start" />
-              )}
+              {subir.isPending && <Cargando />}
               {subir.isPending ? 'Enviando…' : 'Enviar boleta'}
             </Button>
             <Button variant="secondary" className="w-full" onClick={elegirOtra} disabled={subir.isPending}>
-              <RotateCcw data-icon="inline-start" />
               Elegir otra foto
             </Button>
           </div>

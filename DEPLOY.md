@@ -167,7 +167,7 @@ Antes de una demostración importante, abre la web un par de minutos antes.
 
 ## 7. Primeros pasos en producción
 
-1. Entra a `https://<tu-servicio>.onrender.com/acceso` con `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
+1. Entra a `https://<tu-servicio>.onrender.com/acceso` (o directo `/admin/entrar`) con `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
 2. En **Tareas, datos y equipo → Equipo**, crea la cuenta del operador.
 3. En **Comercios**, crea cada comercio y su usuario (en la ficha del comercio).
 4. Imprime la tarjeta de 3 pasos de cada comercio desde su portal.
@@ -200,14 +200,14 @@ Hazla en el celular, con datos móviles (no con la wifi de la casa).
 
 **Comercio**
 
-- [ ] Login en `/acceso` con el usuario del comercio. Entra al portal del comercio.
+- [ ] Login en `/comercio/login` con el usuario del comercio. Entra al portal del comercio.
 - [ ] El validador acepta el código del vecino y descuenta el beneficio.
 - [ ] Se ven el cupo de la semana, el reporte y los beneficios.
 - [ ] La tarjeta de 3 pasos se descarga en PDF con el WhatsApp del equipo.
 
 **Operador**
 
-- [ ] Login con la cuenta creada en el paso 7. Entra a `/admin`.
+- [ ] Login en `/admin/entrar` con la cuenta creada en el paso 7. Entra a `/admin`.
 - [ ] La boleta subida aparece en la cola. Se puede aprobar y el vecino ve sus puntos.
 - [ ] Vecinos, Canjes, Comercios y Red abren.
 - [ ] No ve Parámetros, Mensajes ni Tareas en el menú.

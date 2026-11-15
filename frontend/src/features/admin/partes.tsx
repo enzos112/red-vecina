@@ -1,5 +1,4 @@
 /** Piezas compartidas del panel del equipo. */
-import { Check, Copy, MessageCircle } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -78,12 +77,10 @@ export function MensajeParaVecino({ texto, whatsapp }: { texto: string; whatsapp
       <p className="rounded-lg border-2 border-border bg-muted px-4 py-3 text-lg whitespace-pre-wrap select-all">{texto}</p>
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" onClick={copiar}>
-          {copiado ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
           {copiado ? 'Copiado' : 'Copiar'}
         </Button>
         <Button asChild>
           <a href={whatsapp} target="_blank" rel="noreferrer">
-            <MessageCircle aria-hidden="true" />
             Abrir WhatsApp
           </a>
         </Button>

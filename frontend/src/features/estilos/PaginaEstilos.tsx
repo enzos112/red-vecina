@@ -1,4 +1,3 @@
-import { AlertTriangle, ArrowRight, CheckCircle2, Info, Trash2, Upload, XCircle } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { FormasFondo } from '@/components/marca/FormasFondo'
 import { Logo } from '@/components/marca/Logo'
@@ -44,19 +43,21 @@ type Color = { nombre: string; uso: string; variable: string; texto: string; con
 
 /** Paleta de la sección 6. El contraste indicado es del texto de muestra sobre el color. */
 const PALETA: Color[] = [
-  { nombre: 'Verde barrio', uso: 'Hero y bloques de énfasis', variable: '--barrio', texto: 'text-crema', contraste: 'Crema 12,2:1' },
-  { nombre: 'Verde vecina', uso: 'Acción principal en fondo claro', variable: '--vecina', texto: 'text-white', contraste: 'Blanco 6,1:1' },
-  { nombre: 'Mango', uso: 'Acción principal en fondo oscuro', variable: '--mango', texto: 'text-barrio', contraste: 'Verde barrio 8,4:1' },
-  { nombre: 'Crema', uso: 'Fondo general', variable: '--crema', texto: 'text-tinta', contraste: 'Tinta 13,9:1' },
-  { nombre: 'Blanco', uso: 'Tarjetas', variable: '--card', texto: 'text-tinta', contraste: 'Tinta 14,8:1' },
-  { nombre: 'Tinta', uso: 'Texto', variable: '--tinta', texto: 'text-crema', contraste: 'Crema 13,9:1' },
-  { nombre: 'Musgo', uso: 'Texto secundario', variable: '--musgo', texto: 'text-white', contraste: 'Blanco 5,6:1 · crema 5,3:1' },
+  { nombre: 'Azul noche', uso: 'Hero y bloques de énfasis', variable: '--barrio', texto: 'text-crema', contraste: 'Crema 12,0:1' },
+  { nombre: 'Azul', uso: 'Acción principal en fondo claro', variable: '--vecina', texto: 'text-white', contraste: 'Blanco 7,4:1' },
+  { nombre: 'Azul brillante', uso: 'Foco y detalles, nunca texto chico', variable: '--vecina-claro', texto: 'text-white', contraste: 'Solo decorativo' },
+  { nombre: 'Naranja', uso: 'Acento y acción sobre azul noche', variable: '--mango', texto: 'text-barrio', contraste: 'Azul noche 5,8:1' },
+  { nombre: 'Naranja texto', uso: 'Texto naranja chico sobre claro', variable: '--mango-texto', texto: 'text-white', contraste: 'Sobre crema 5,2:1' },
+  { nombre: 'Crema', uso: 'Fondo general', variable: '--crema', texto: 'text-tinta', contraste: 'Tinta 16,5:1' },
+  { nombre: 'Blanco', uso: 'Tarjetas', variable: '--card', texto: 'text-tinta', contraste: 'Tinta 17,2:1' },
+  { nombre: 'Tinta', uso: 'Texto', variable: '--tinta', texto: 'text-crema', contraste: 'Crema 16,5:1' },
+  { nombre: 'Grafito', uso: 'Texto secundario', variable: '--musgo', texto: 'text-white', contraste: 'Blanco 6,0:1 · crema 5,7:1' },
 ]
 
 const ESTADOS: Color[] = [
-  { nombre: 'Éxito', uso: 'Puntos y bordes', variable: '--exito', texto: 'text-white', contraste: 'Texto en #1F6B41: 5,6:1' },
-  { nombre: 'Alerta', uso: 'Puntos y bordes', variable: '--alerta', texto: 'text-tinta', contraste: 'Texto en #7A5700: 5,9:1' },
-  { nombre: 'Peligro', uso: 'Puntos y bordes', variable: '--peligro', texto: 'text-white', contraste: 'Texto en #A63A25: 5,4:1' },
+  { nombre: 'Éxito', uso: 'Barras y bordes', variable: '--exito', texto: 'text-white', contraste: 'Texto en #17633A: 7,3:1' },
+  { nombre: 'Alerta', uso: 'Barras y bordes', variable: '--alerta', texto: 'text-white', contraste: 'Texto en #7F4C00: 7,2:1' },
+  { nombre: 'Peligro', uso: 'Barras y bordes', variable: '--peligro', texto: 'text-white', contraste: 'Texto en #A12D22: 7,2:1' },
 ]
 
 function Muestra({ color }: { color: Color }) {
@@ -151,7 +152,6 @@ export function PaginaEstilos() {
             <Button variant="outline">Contorno</Button>
             <Button variant="ghost">Fantasma</Button>
             <Button variant="destructive">
-              <Trash2 data-icon="inline-start" />
               Peligro
             </Button>
             <Button disabled>Desactivado</Button>
@@ -159,14 +159,10 @@ export function PaginaEstilos() {
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Button size="lg">
-              <Upload data-icon="inline-start" />
               Grande
             </Button>
             <Button>Normal</Button>
             <Button size="sm">Chico (48 px)</Button>
-            <Button size="icon" variant="secondary" aria-label="Siguiente">
-              <ArrowRight />
-            </Button>
           </div>
           <div className="sobre-oscuro mt-6 flex flex-wrap gap-3 rounded-xl bg-barrio p-6">
             <Button variant="oscuro">Sobre fondo oscuro</Button>
@@ -238,22 +234,18 @@ export function PaginaEstilos() {
         <Bloque titulo="Avisos">
           <div className="flex max-w-2xl flex-col gap-4">
             <Alert>
-              <Info />
               <AlertTitle>Tu boleta está en revisión</AlertTitle>
               <AlertDescription>Te avisamos por WhatsApp cuando sumemos tus puntos.</AlertDescription>
             </Alert>
             <Alert variant="exito">
-              <CheckCircle2 />
               <AlertTitle>Código usado</AlertTitle>
               <AlertDescription>El descuento quedó registrado.</AlertDescription>
             </Alert>
             <Alert variant="alerta">
-              <AlertTriangle />
               <AlertTitle>Tus puntos vencen pronto</AlertTitle>
               <AlertDescription>Úsalos antes del viernes.</AlertDescription>
             </Alert>
             <Alert variant="destructive">
-              <XCircle />
               <AlertTitle>Código vencido</AlertTitle>
               <AlertDescription>Pide uno nuevo desde tu tarjeta.</AlertDescription>
             </Alert>

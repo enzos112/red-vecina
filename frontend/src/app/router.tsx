@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router'
 import { LayoutPublico } from '@/app/layouts/LayoutPublico'
+import { PaginaAcceso } from '@/features/landing/PaginaAcceso'
 import { PaginaComercios } from '@/features/landing/PaginaComercios'
 import { PaginaCondiciones } from '@/features/landing/PaginaCondiciones'
 import { PaginaInicio } from '@/features/landing/PaginaInicio'
@@ -13,6 +14,7 @@ export const router = createBrowserRouter([
       { path: '/', Component: PaginaInicio },
       { path: '/comercios', Component: PaginaComercios },
       { path: '/condiciones', Component: PaginaCondiciones },
+      { path: '/acceso', Component: PaginaAcceso },
       { path: '*', Component: PaginaNoEncontrada },
     ],
   },

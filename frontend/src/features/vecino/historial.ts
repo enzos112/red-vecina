@@ -1,5 +1,4 @@
 /** Historial del vecino: compras (boletas), canjes y vencimientos en una sola línea de tiempo. */
-import { CalendarX2, Receipt, Ticket, Wrench, type LucideIcon } from 'lucide-react'
 import type { Tarjeta } from '@/lib/api'
 import { fechaHora, pesos, puntos } from '@/lib/formato'
 
@@ -15,7 +14,6 @@ export type ItemHistorial = {
   detalle: string | null
   nota: string | null
   etiqueta: Etiqueta
-  icono: LucideIcon
 }
 
 function detalleBoleta(monto: number | null, fechaCompra: string | null): string | null {
@@ -31,7 +29,6 @@ export function armarHistorial(t: Tarjeta): ItemHistorial[] {
       clave: `boleta-${b.id}`,
       tipo: 'compra' as const,
       fecha: b.recibida_en,
-      icono: Receipt,
       detalle: detalleBoleta(b.monto_valido ?? b.monto_total, b.fecha_compra),
     }
     if (b.estado === 'pendiente') {
@@ -62,7 +59,6 @@ export function armarHistorial(t: Tarjeta): ItemHistorial[] {
     const base = {
       clave: `canje-${c.id}`,
       tipo: 'canje' as const,
-      icono: Ticket,
       titulo: `Canje en ${c.comercio}`,
       detalle: `${pesos(c.valor_pesos)} de descuento · ${puntos(c.puntos)}`,
     }
@@ -96,7 +92,6 @@ export function armarHistorial(t: Tarjeta): ItemHistorial[] {
         clave: `mov-${m.id}`,
         tipo: 'vencimiento',
         fecha: m.creado_en,
-        icono: CalendarX2,
         titulo: `Vencieron ${puntos(m.puntos)}`,
         detalle: null,
         nota: 'Pasó su plazo sin usarse. Siempre se gastan primero los puntos más antiguos.',
@@ -108,7 +103,6 @@ export function armarHistorial(t: Tarjeta): ItemHistorial[] {
         clave: `mov-${m.id}`,
         tipo: 'ajuste',
         fecha: m.creado_en,
-        icono: Wrench,
         titulo: 'Ajuste del equipo',
         detalle: null,
         nota: m.motivo,

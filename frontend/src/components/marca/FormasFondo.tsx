@@ -2,14 +2,14 @@ import { cn } from '@/lib/utils'
 
 type Props = {
   variante?: 'hero' | 'bloque'
-  /** Fondo sobre el que van: verde barrio (por defecto) o verde vecina. */
+  /** Fondo sobre el que van: azul noche (por defecto) o azul vecina. */
   sobre?: 'barrio' | 'vecina'
   className?: string
 }
 
 /**
- * Formas geométricas planas para los fondos verde barrio: círculos, medias lunas y
- * cuadrados en un verde apenas más claro. Decorativas; sin degradados.
+ * Formas geométricas planas para los fondos azules: círculos, medias lunas y
+ * cuadrados en un azul apenas más claro. Decorativas; sin degradados.
  */
 export function FormasFondo({ variante = 'hero', sobre = 'barrio', className }: Props) {
   return (
@@ -18,7 +18,7 @@ export function FormasFondo({ variante = 'hero', sobre = 'barrio', className }: 
       className={cn('pointer-events-none absolute inset-0 h-full w-full', className)}
       preserveAspectRatio="xMidYMid slice"
       viewBox="0 0 1280 800"
-      fill={sobre === 'barrio' ? 'var(--barrio-claro)' : 'var(--vecina-claro)'}
+      fill={sobre === 'barrio' ? 'var(--barrio-claro)' : 'var(--vecina-forma)'}
     >
       {variante === 'hero' ? (
         <>

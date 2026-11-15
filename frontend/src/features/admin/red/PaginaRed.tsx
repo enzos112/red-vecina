@@ -1,4 +1,3 @@
-import { ShieldAlert, TriangleAlert } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { Badge } from '@/components/ui/badge'
@@ -48,7 +47,6 @@ function Indicador({ i }: { i: IndicadorSalida }) {
 function Fraude({ a }: { a: AlertaFraudeSalida }) {
   return (
     <li className="flex gap-3 rounded-lg border-2 border-l-4 border-border border-l-peligro bg-card px-4 py-3">
-      <ShieldAlert className="mt-1 size-5 shrink-0 text-peligro-texto" aria-hidden="true" />
       <div className="flex flex-col gap-1">
         <p className="font-bold">{a.titulo}</p>
         <p>{a.detalle}</p>
@@ -184,7 +182,6 @@ function Revision() {
                 key={`${a.comercio_id}-${a.indicador.clave}`}
                 className="flex gap-3 rounded-lg border-2 border-l-4 border-border border-l-alerta bg-alerta-fondo px-4 py-3"
               >
-                <TriangleAlert className="mt-1 size-5 shrink-0 text-alerta-texto" aria-hidden="true" />
                 <span>
                   <strong>{a.comercio ?? 'Red'}</strong> · {a.indicador.nombre} ({valor(a.indicador)}): {a.indicador.senal}.{' '}
                   {a.indicador.accion}

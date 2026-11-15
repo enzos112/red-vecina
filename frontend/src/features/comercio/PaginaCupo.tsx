@@ -1,4 +1,4 @@
-import { LoaderCircle, Plus } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -104,7 +104,7 @@ function CupoExtra() {
             </Alert>
           )}
           <Button type="submit" disabled={!Number(monto) || agregar.isPending}>
-            {agregar.isPending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Plus aria-hidden="true" />}
+            {agregar.isPending && <Cargando />}
             Agregar cupo
           </Button>
         </form>

@@ -1,4 +1,3 @@
-import { CalendarX2, History, Receipt, Ticket } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { esTarjetaInexistente, useTarjeta, useToken } from './consultas'
 import { FilaHistorial } from './FilaHistorial'
@@ -6,10 +5,10 @@ import { armarHistorial, type ItemHistorial } from './historial'
 import { CargandoLista, Encabezado, ErrorBloque, TarjetaNoEncontrada, Vacio } from './partes'
 
 const PESTANAS = [
-  { valor: 'todo', texto: 'Todo', vacio: 'Aún no tienes movimientos', icono: History },
-  { valor: 'compra', texto: 'Compras', vacio: 'Aún no subes boletas', icono: Receipt },
-  { valor: 'canje', texto: 'Canjes', vacio: 'Aún no pides códigos', icono: Ticket },
-  { valor: 'vencimiento', texto: 'Vencidos', vacio: 'No se te ha vencido ningún punto', icono: CalendarX2 },
+  { valor: 'todo', texto: 'Todo', vacio: 'Aún no tienes movimientos' },
+  { valor: 'compra', texto: 'Compras', vacio: 'Aún no subes boletas' },
+  { valor: 'canje', texto: 'Canjes', vacio: 'Aún no pides códigos' },
+  { valor: 'vencimiento', texto: 'Vencidos', vacio: 'No se te ha vencido ningún punto' },
 ] as const
 
 function filtrar(items: ItemHistorial[], valor: (typeof PESTANAS)[number]['valor']) {
@@ -44,7 +43,7 @@ export function PaginaHistorial() {
             return (
               <TabsContent key={p.valor} value={p.valor} className="mt-4">
                 {items.length === 0 ? (
-                  <Vacio icono={p.icono} titulo={p.vacio}>
+                  <Vacio titulo={p.vacio}>
                     {p.valor === 'vencimiento'
                       ? 'Si tienes puntos por vencer, lo verás en tu tarjeta.'
                       : 'Cuando ocurra, lo verás aquí.'}

@@ -1,4 +1,3 @@
-import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { Badge } from '@/components/ui/badge'
@@ -82,7 +81,6 @@ function Lista({ esAdmin, onNuevo }: { esAdmin: boolean; onNuevo: () => void }) 
     <div className="flex flex-col gap-4">
       {esAdmin && (
         <Button className="self-start" onClick={onNuevo}>
-          <Plus aria-hidden="true" />
           Nuevo comercio
         </Button>
       )}

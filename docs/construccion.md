@@ -195,18 +195,22 @@ red-vecina/
 
 La dirección es la que pides: colores planos, tipografía grande y botones redondeados con transición suave. De la referencia de Wise se toman los principios, no la marca: un titular enorme, una frase de apoyo, dos botones (uno principal y uno secundario) y secciones que alternan bloque visual con texto corto.
 
-**Paleta** (colores propios, sin degradados)
+**Paleta** (colores propios, sin degradados). Azul de confianza y naranja de barrio, sobre papel crema: el azul dice que detrás hay alguien serio (puntos que valen plata, datos personales); el naranja trae la calidez del comercio. Son complementarios y la pareja más segura para daltónicos.
 
-| Uso | Nombre | Hex |
-| --- | --- | --- |
-| Fondo del hero y de los bloques de énfasis | Verde barrio | `#12382A` |
-| Acción principal sobre fondo claro | Verde vecina | `#1F6F4A` |
-| Acción principal sobre fondo oscuro y destacados | Mango | `#FFC857` |
-| Fondo general | Crema | `#FBF8F1` |
-| Tarjetas | Blanco | `#FFFFFF` |
-| Texto | Tinta | `#1C2B24` |
-| Texto secundario | Musgo | `#5B6B63` |
-| Estados | Verde `#2E8B57`, ámbar `#E0A100`, rojo `#C8452C` |  |
+| Uso | Nombre | Hex | Contraste |
+| --- | --- | --- | --- |
+| Fondo del hero y de los bloques de énfasis | Azul noche (`barrio`) | `#053073` | Titular crema 12,0:1 |
+| Acción principal sobre fondo claro, enlaces | Azul (`vecina`) | `#074EBC` | Texto blanco 7,4:1 |
+| Foco y detalles gráficos (nunca texto chico) | Azul brillante (`vecina-claro`) | `#1B71F6` | — |
+| Acento: cifras clave, acción sobre azul noche | Naranja (`mango`) | `#F79D18` | Siempre con texto azul noche, 5,8:1. Nunca texto blanco (2,1:1) |
+| Texto naranja chico sobre claro | Naranja texto (`mango-texto`) | `#9A5B00` | 5,2:1 |
+| Fondo general | Crema | `#FFF9F2` | — |
+| Tarjetas | Blanco | `#FFFFFF` | — |
+| Texto | Tinta | `#0B1B33` | 16,5:1 |
+| Texto secundario | Grafito (`musgo`) | `#5A6478` | 5,7:1 |
+| Estados | Verde `#1E7A46`, ámbar `#B86E00`, rojo `#C0392B` | | Separados de la marca y siempre con una palabra |
+
+Los nombres entre paréntesis son las variables de `frontend/src/index.css`.
 
 **Reglas visuales**
 
@@ -214,7 +218,8 @@ La dirección es la que pides: colores planos, tipografía grande y botones redo
 - **Botones:** forma de píldora, 52 px de alto en móvil, color plano. Al pasar el cursor o tocar, el color de fondo cambia en 200 ms; sin sombras ni saltos de tamaño.
 - **Tarjetas:** esquinas de 20 a 24 px, borde fino, sin sombras fuertes.
 - **Movimiento:** solo transiciones de color y apariciones suaves al cargar. Se respeta la preferencia de movimiento reducido del teléfono.
-- **Hero de la landing:** fondo verde barrio a pantalla completa, titular crema, botón mango, y a la derecha una tarjeta del vecino de ejemplo con saldo y un beneficio. Formas geométricas planas de fondo en un tono de verde apenas más claro.
+- **Hero de la landing:** fondo azul noche a pantalla completa, titular crema, botón naranja, y a la derecha una ilustración de la tarjeta del vecino (saldo, avance y el beneficio que viene), rotulada como ilustración y sin botones falsos. Formas geométricas planas de fondo en un azul apenas más claro.
+- **Sin íconos.** La imagen la hacen la tipografía y la composición: números grandes, pasos numerados, barras y bloques de color planos, etiquetas en mayúsculas pequeñas. Los estados se dicen con palabras ("Válido", "Revisar"), no con símbolos. La marca es una R trazada en un cuadrado azul noche con un punto naranja.
 - **Móvil primero:** la tarjeta del vecino y el validador se usan en celular; el panel del operador, en computador.
 
 **Pensado para tu público** (mujeres a cargo de las compras del hogar y hombres sobre 40)
@@ -223,7 +228,7 @@ La dirección es la que pides: colores planos, tipografía grande y botones redo
 - Una acción principal por pantalla; la tarjeta abre mostrando el saldo y un solo botón, “Subir boleta”.
 - Textos en español de Chile, de tú, con frases cortas y sin jerga: “Te faltan 50 puntos para tu descuento en la panadería”.
 - Los montos siempre en pesos con punto de miles; las fechas como “viernes 20, 18:30”.
-- Íconos siempre acompañados de texto. Sin carruseles ni menús ocultos en la tarjeta.
+- Sin íconos: cada acción y estado se nombra con palabras. Sin carruseles ni menús ocultos en la tarjeta.
 
 shadcn/ui se usa como base y se personaliza por variables de tema (colores, radios y tipografía), sin crear componentes desde cero.
 

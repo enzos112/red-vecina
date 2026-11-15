@@ -1,4 +1,4 @@
-import { ArrowLeft, KeyRound, LoaderCircle, LogOut, Scale } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -58,7 +58,7 @@ function Ajuste({ v }: { v: VecinoDetalle }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <Scale className="size-5" aria-hidden="true" /> Ajustar saldo
+          Ajustar saldo
         </CardTitle>
         <CardDescription>Para corregir errores o resolver reclamos. El motivo es obligatorio y queda registrado.</CardDescription>
       </CardHeader>
@@ -91,7 +91,7 @@ function Ajuste({ v }: { v: VecinoDetalle }) {
             </Alert>
           )}
           <Button type="submit" className="self-start" disabled={!valido || ajustar.isPending}>
-            {ajustar.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+            {ajustar.isPending && <Cargando />}
             Guardar ajuste
           </Button>
         </form>
@@ -108,7 +108,7 @@ function Enlace({ v }: { v: VecinoDetalle }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <KeyRound className="size-5" aria-hidden="true" /> Enlace de su tarjeta
+          Enlace de su tarjeta
         </CardTitle>
         <CardDescription>Reenvíaselo si lo perdió. Si alguien más lo tiene, genera uno nuevo.</CardDescription>
       </CardHeader>
@@ -146,7 +146,6 @@ function Salida({ v }: { v: VecinoDetalle }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <LogOut className="size-5" aria-hidden="true" />
           Salida del programa
         </CardTitle>
         <CardDescription>
@@ -171,7 +170,7 @@ function Salida({ v }: { v: VecinoDetalle }) {
             <p className="font-bold">¿Confirmas la salida de {v.nombre}? Sus datos se borran ahora.</p>
             <div className="flex flex-wrap gap-2">
               <Button variant="destructive" onClick={() => salida.mutate(motivo)} disabled={salida.isPending}>
-                {salida.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+                {salida.isPending && <Cargando />}
                 Sí, borrar sus datos
               </Button>
               <Button variant="ghost" onClick={() => setConfirmar(false)}>
@@ -213,7 +212,6 @@ export function PaginaVecino() {
     <div className="flex flex-col gap-8">
       <Button variant="ghost" size="sm" className="self-start" asChild>
         <Link to="/admin/vecinos">
-          <ArrowLeft aria-hidden="true" />
           Vecinos
         </Link>
       </Button>

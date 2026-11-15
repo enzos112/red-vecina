@@ -1,4 +1,4 @@
-import { ArrowLeft, LoaderCircle, Plus } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -132,7 +132,6 @@ function NuevoUsuario({ comercioId, slug }: { comercioId: number; slug: string }
       </FieldGroup>
       {crear.isError && <p className="text-peligro-texto">{mensajeError(crear.error)}</p>}
       <Button type="submit" variant="secondary" className="self-start" disabled={crear.isPending}>
-        <Plus aria-hidden="true" />
         Crear usuario
       </Button>
     </form>
@@ -286,7 +285,7 @@ function Sanciones({ d }: { d: ComercioDetalle }) {
               className="self-start"
               disabled={sancionar.isPending || !motivo.trim() || !evidencia.trim()}
             >
-              {sancionar.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+              {sancionar.isPending && <Cargando />}
               Registrar {TIPOS[elegido].toLowerCase()}
             </Button>
           </form>
@@ -313,7 +312,6 @@ export function PaginaComercio() {
     <div className="flex flex-col gap-6">
       <Button variant="ghost" size="sm" className="self-start" asChild>
         <Link to="/admin/comercios">
-          <ArrowLeft aria-hidden="true" />
           Comercios
         </Link>
       </Button>

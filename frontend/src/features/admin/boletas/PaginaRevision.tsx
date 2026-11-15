@@ -1,5 +1,5 @@
-import { ArrowLeft, ArrowRight, Bot, Check, CircleCheck, CircleX, LoaderCircle, RefreshCw, TriangleAlert } from 'lucide-react'
-import { useEffect, useId, useMemo, useState, type ReactNode } from 'react'
+import { Cargando } from '@/components/marca/Cargando'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -98,10 +98,10 @@ function useSiguiente(actual: number) {
 
 // --- Controles ---
 
-const COLOR: Record<ControlSalida['color'], { icono: ReactNode; clase: string; texto: string }> = {
-  verde: { icono: <CircleCheck className="size-5 text-exito-texto" aria-hidden="true" />, clase: 'border-l-exito', texto: 'Bien' },
-  ambar: { icono: <TriangleAlert className="size-5 text-alerta-texto" aria-hidden="true" />, clase: 'border-l-alerta bg-alerta-fondo', texto: 'Revisar' },
-  rojo: { icono: <CircleX className="size-5 text-peligro-texto" aria-hidden="true" />, clase: 'border-l-peligro bg-peligro-fondo', texto: 'Rechazo sugerido' },
+const COLOR: Record<ControlSalida['color'], { etiqueta: string; clase: string; texto: string }> = {
+  verde: { etiqueta: 'text-exito-texto', clase: 'border-l-exito', texto: 'Bien' },
+  ambar: { etiqueta: 'text-alerta-texto', clase: 'border-l-alerta bg-alerta-fondo', texto: 'Revisar' },
+  rojo: { etiqueta: 'text-peligro-texto', clase: 'border-l-peligro bg-peligro-fondo', texto: 'Rechazo' },
 }
 
 const ORDEN = { rojo: 0, ambar: 1, verde: 2 }
@@ -112,11 +112,10 @@ function Controles({ controles }: { controles: ControlSalida[] }) {
     <ul className="flex flex-col gap-2" aria-label="Controles">
       {ordenados.map((c) => (
         <li key={c.clave} className={cn('flex items-start gap-3 rounded-md border border-l-4 border-border px-3 py-2', COLOR[c.color].clase)}>
-          <span className="mt-0.5">{COLOR[c.color].icono}</span>
-          <span>
-            <span className="sr-only">{COLOR[c.color].texto}: </span>
-            {c.mensaje}
+          <span className={cn('w-20 shrink-0 pt-0.5 text-xs font-extrabold tracking-wide uppercase', COLOR[c.color].etiqueta)}>
+            {COLOR[c.color].texto}
           </span>
+          <span>{c.mensaje}</span>
         </li>
       ))}
     </ul>
@@ -152,7 +151,7 @@ function InfoLectura({ b }: { b: BoletaDetalle }) {
   if (pendiente && b.tiene_imagen && !lectura) {
     return (
       <p className="flex items-center gap-2 text-muted-foreground">
-        <LoaderCircle className="size-5 animate-spin" aria-hidden="true" /> Leyendo la boleta…
+        <Cargando /> Leyendo la boleta…
       </p>
     )
   }
@@ -161,7 +160,6 @@ function InfoLectura({ b }: { b: BoletaDetalle }) {
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-2 text-muted-foreground">
-          <Bot className="size-5" aria-hidden="true" />
           {!lectura
             ? 'Sin lectura automática.'
             : lectura.proveedor === 'manual'
@@ -172,7 +170,6 @@ function InfoLectura({ b }: { b: BoletaDetalle }) {
         </p>
         {pendiente && b.tiene_imagen && (
           <Button variant="ghost" size="xs" onClick={() => leer.mutate()} disabled={leer.isPending}>
-            <RefreshCw className={cn(leer.isPending && 'animate-spin')} aria-hidden="true" />
             Volver a leer
           </Button>
         )}
@@ -284,7 +281,7 @@ function DialogoRechazo({
           )}
           <DialogFooter>
             <Button type="submit" variant="destructive" disabled={!clave || (clave === 'otro' && !nota.trim()) || rechazar.isPending}>
-              {rechazar.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+              {rechazar.isPending && <Cargando />}
               Rechazar
             </Button>
           </DialogFooter>
@@ -303,7 +300,6 @@ function ResultadoDecision({ d, siguiente }: { d: Decision; siguiente: number | 
     <Card className="aparecer">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl">
-          {aprobada ? <Check className="size-6 text-exito-texto" aria-hidden="true" /> : <CircleX className="size-6 text-peligro-texto" aria-hidden="true" />}
           {aprobada ? `Aprobada: +${puntos(d.boleta.puntos ?? 0)}` : 'Rechazada'}
         </CardTitle>
       </CardHeader>
@@ -316,7 +312,6 @@ function ResultadoDecision({ d, siguiente }: { d: Decision; siguiente: number | 
           {siguiente ? (
             <Button onClick={() => navigate(`/admin/boletas/${siguiente}`)}>
               Siguiente boleta
-              <ArrowRight data-icon="inline-end" aria-hidden="true" />
             </Button>
           ) : (
             <Button variant="secondary" onClick={() => navigate('/admin/boletas')}>
@@ -448,7 +443,7 @@ function FormularioRevision({ b, onDecision }: { b: BoletaDetalle; onDecision: (
             {ev.puntos_calculados !== ev.puntos && <><br />Calculados: {numero(ev.puntos_calculados)}</>}
           </p>
         )}
-        {evaluacion.isFetching && <LoaderCircle className="size-5 animate-spin text-muted-foreground" aria-label="Calculando" />}
+        {evaluacion.isFetching && <Cargando />}
       </div>
       {!datos && <p className="text-muted-foreground">Completa comercio, folio, fecha y total para calcular los puntos.</p>}
       {datos && evaluacion.isError && <p className="text-peligro-texto">{mensajeError(evaluacion.error)}</p>}
@@ -469,11 +464,10 @@ function FormularioRevision({ b, onDecision }: { b: BoletaDetalle; onDecision: (
           onClick={aprobarAhora}
           disabled={!puedeAprobar}
         >
-          {aprobar.isPending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Check aria-hidden="true" />}
+          {aprobar.isPending && <Cargando />}
           {ajustado ? 'Aprobar con ajustes' : 'Aprobar'}
         </Button>
         <Button variant={hayRojo ? 'destructive' : 'outline'} onClick={() => setRechazando(true)}>
-          <CircleX aria-hidden="true" />
           Rechazar
         </Button>
       </div>
@@ -569,7 +563,6 @@ export function PaginaRevision() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button variant="ghost" size="sm" asChild>
           <Link to="/admin/boletas">
-            <ArrowLeft aria-hidden="true" />
             Cola
           </Link>
         </Button>

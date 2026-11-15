@@ -1,4 +1,4 @@
-import { LoaderCircle } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import { Logo } from '@/components/marca/Logo'
@@ -79,7 +79,7 @@ export function PaginaEntrar() {
               </Alert>
             )}
             <Button type="submit" size="lg" disabled={entrar.isPending || !email || !contrasena}>
-              {entrar.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+              {entrar.isPending && <Cargando />}
               Entrar
             </Button>
           </FieldGroup>

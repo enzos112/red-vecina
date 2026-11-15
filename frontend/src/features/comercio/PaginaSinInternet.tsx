@@ -1,4 +1,4 @@
-import { ArrowLeft, LoaderCircle } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -70,7 +70,6 @@ export function PaginaSinInternet() {
     <div className="flex flex-col gap-6">
       <Button variant="ghost" size="sm" className="self-start" asChild>
         <Link to="/comercio">
-          <ArrowLeft aria-hidden="true" />
           Validador
         </Link>
       </Button>
@@ -115,7 +114,7 @@ export function PaginaSinInternet() {
         )}
         {ingresar.data && <Resultado d={ingresar.data} />}
         <Button type="submit" size="lg" disabled={codigo.length !== LARGO || !hora || ingresar.isPending}>
-          {ingresar.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+          {ingresar.isPending && <Cargando />}
           Registrar código
         </Button>
       </form>

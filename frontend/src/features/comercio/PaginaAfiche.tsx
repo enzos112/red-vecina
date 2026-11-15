@@ -1,4 +1,4 @@
-import { Download, FileText, LoaderCircle } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -10,12 +10,12 @@ import { useYo } from '@/lib/sesion'
 
 // Colores de la marca (index.css). El lienzo no lee variables CSS, así que se repiten aquí.
 const C = {
-  barrio: '#12382A',
-  barrioClaro: '#1A4636',
-  vecina: '#1F6F4A',
-  mango: '#FFC857',
-  crema: '#FBF8F1',
-  tinta: '#1C2B24',
+  barrio: '#053073',
+  barrioClaro: '#0B3F8F',
+  vecina: '#074EBC',
+  mango: '#F79D18',
+  crema: '#FFF9F2',
+  tinta: '#0B1B33',
 }
 const FUENTE = '"Plus Jakarta Sans Variable", system-ui, sans-serif'
 
@@ -58,23 +58,22 @@ function rectRedondo(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
   ctx.fill()
 }
 
-/** Marca de Red Vecina: el cuadro mango con dos casas y el nombre. */
+/** Marca de Red Vecina sobre fondo oscuro: cuadro crema, R azul noche y punto naranja. */
 function marca(ctx: CanvasRenderingContext2D, x: number, y: number, lado: number, color: string) {
+  ctx.fillStyle = C.crema
+  rectRedondo(ctx, x, y, lado, lado, lado * 0.22)
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.scale(lado / 64, lado / 64)
+  ctx.strokeStyle = C.barrio
+  ctx.lineWidth = 6
+  ctx.lineJoin = 'round'
+  ctx.stroke(new Path2D('M18 46V18h13.5a9 9 0 0 1 0 18H18'))
   ctx.fillStyle = C.mango
-  rectRedondo(ctx, x, y, lado, lado, lado * 0.25)
-  const casa = (cx: number, base: number, w: number, h: number, relleno: string) => {
-    ctx.fillStyle = relleno
-    ctx.beginPath()
-    ctx.moveTo(cx - w / 2, base)
-    ctx.lineTo(cx - w / 2, base - h * 0.6)
-    ctx.lineTo(cx, base - h)
-    ctx.lineTo(cx + w / 2, base - h * 0.6)
-    ctx.lineTo(cx + w / 2, base)
-    ctx.closePath()
-    ctx.fill()
-  }
-  casa(x + lado * 0.38, y + lado * 0.8, lado * 0.36, lado * 0.5, C.barrio)
-  casa(x + lado * 0.64, y + lado * 0.8, lado * 0.3, lado * 0.4, C.vecina)
+  ctx.beginPath()
+  ctx.arc(44, 44, 7, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
   ctx.fillStyle = color
   fuente(ctx, 800, lado * 0.6)
   ctx.textBaseline = 'middle'
@@ -101,7 +100,7 @@ async function dibujarAfiche(comercio: string, enlace: string): Promise<Lienzo> 
   ctx.fillStyle = C.crema
   ctx.fillRect(0, 0, ancho, alto)
 
-  // Cabecera verde barrio.
+  // Cabecera azul noche.
   ctx.fillStyle = C.barrio
   ctx.fillRect(0, 0, ancho, 620)
   ctx.fillStyle = C.barrioClaro
@@ -282,11 +281,10 @@ function Pieza({
             disabled={!lienzo}
             onClick={async () => lienzo && descargar(await aBlob(lienzo.canvas, 'image/png'), `${archivo}.png`)}
           >
-            {lienzo ? <Download aria-hidden="true" /> : <LoaderCircle className="animate-spin" aria-hidden="true" />}
+            {!lienzo && <Cargando />}
             Imagen
           </Button>
           <Button disabled={!lienzo} onClick={async () => lienzo && descargar(await comoPdf(lienzo, pagina), `${archivo}.pdf`)}>
-            <FileText aria-hidden="true" />
             PDF
           </Button>
         </div>

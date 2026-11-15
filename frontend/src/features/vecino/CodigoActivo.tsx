@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Clock, Store } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { CodigoSalida } from '@/lib/api'
 import { codigo as formatoCodigo, cuentaRegresiva, fechaHora, pesos, puntos } from '@/lib/formato'
@@ -49,7 +48,6 @@ export function CodigoActivo({ codigo, token }: { codigo: CodigoSalida; token: s
 
       <dl className="mt-6 grid gap-5 rounded-2xl bg-barrio-claro p-4">
         <div className="flex gap-3">
-          <Store className="mt-1 size-6 shrink-0 text-mango" aria-hidden="true" />
           <div>
             <dt className="sr-only">Comercio y beneficio</dt>
             <dd className="text-xl font-extrabold">{codigo.comercio}</dd>
@@ -60,7 +58,6 @@ export function CodigoActivo({ codigo, token }: { codigo: CodigoSalida; token: s
           </div>
         </div>
         <div className="flex gap-3">
-          <Clock className="mt-1 size-6 shrink-0 text-mango" aria-hidden="true" />
           <div>
             <dt className="sr-only">Tiempo restante</dt>
             <dd className="text-xl font-extrabold tabular-nums">

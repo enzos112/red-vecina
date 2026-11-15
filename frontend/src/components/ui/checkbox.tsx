@@ -1,7 +1,6 @@
 import * as React from "react"
 import { cn } from "cn"
 import { Checkbox as CheckboxPrimitive } from "radix-ui"
-import { CheckIcon } from "lucide-react"
 
 /** Casilla de 28 px con borde grueso; el área táctil se extiende con after:. */
 
@@ -22,8 +21,7 @@ function Checkbox({
         data-slot="checkbox-indicator"
         className="grid place-content-center text-current transition-none [&>svg]:size-5 [&>svg]:stroke-3"
       >
-        <CheckIcon
-        />
+        <span aria-hidden="true" className="mb-1 block h-3 w-1.5 rotate-45 border-r-[3px] border-b-[3px] border-current" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )

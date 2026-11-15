@@ -1,4 +1,3 @@
-import { Inbox, LogOut, MessageSquareText, Settings2, Store, Ticket, TrendingUp, Users, Wrench, type LucideIcon } from 'lucide-react'
 import { Navigate, NavLink, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
 import { Logo } from '@/components/marca/Logo'
 import { Button } from '@/components/ui/button'
@@ -23,25 +22,22 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { sinSesion, useResumenCola, useSalir, useYo } from '@/features/admin/consultas'
 import { numero } from '@/lib/formato'
 
-type Seccion = { a: string; texto: string; icono: LucideIcon; descripcion: string }
+type Seccion = { a: string; texto: string; descripcion: string }
 
 const SECCIONES_OPERADOR: Seccion[] = [
   {
     a: '/admin/boletas',
     texto: 'Boletas',
-    icono: Inbox,
     descripcion: 'Cola de boletas con lectura automática para aprobar o rechazar.',
   },
   {
     a: '/admin/vecinos',
     texto: 'Vecinos',
-    icono: Users,
     descripcion: 'Busca por nombre o teléfono, revisa movimientos y reenvía enlaces.',
   },
   {
     a: '/admin/canjes',
     texto: 'Canjes',
-    icono: Ticket,
     descripcion: 'Códigos emitidos, usados y vencidos.',
   },
   // A.15 y secciones 9 y 10: el operador aprueba beneficios, registra sanciones y hace la
@@ -49,13 +45,11 @@ const SECCIONES_OPERADOR: Seccion[] = [
   {
     a: '/admin/comercios',
     texto: 'Comercios',
-    icono: Store,
     descripcion: 'Alta y edición, beneficios por aprobar, sanciones y solicitudes.',
   },
   {
     a: '/admin/red',
     texto: 'Red',
-    icono: TrendingUp,
     descripcion: 'Revisión del lunes, indicadores y alertas de fraude.',
   },
 ]
@@ -64,19 +58,16 @@ const SECCIONES_ADMIN: Seccion[] = [
   {
     a: '/admin/parametros',
     texto: 'Parámetros',
-    icono: Settings2,
     descripcion: 'Parámetros de la red, editables y con registro de cambios.',
   },
   {
     a: '/admin/mensajes',
     texto: 'Mensajes',
-    icono: MessageSquareText,
     descripcion: 'Plantillas de los mensajes al vecino.',
   },
   {
     a: '/admin/sistema',
     texto: 'Tareas, datos y equipo',
-    icono: Wrench,
     descripcion: 'Tareas programadas, exportación a CSV y cuentas del equipo.',
   },
 ]
@@ -96,11 +87,14 @@ function Grupo({ titulo, secciones }: { titulo: string; secciones: Seccion[] }) 
       <SidebarGroupLabel>{titulo}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu className="gap-1">
-          {secciones.map(({ a, texto, icono: Icono }) => (
+          {secciones.map(({ a, texto }) => (
             <SidebarMenuItem key={a}>
-              <SidebarMenuButton asChild isActive={pathname.startsWith(a)}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.startsWith(a)}
+                className="relative pl-4 before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-transparent data-[active=true]:before:bg-mango"
+              >
                 <NavLink to={a}>
-                  <Icono aria-hidden="true" />
                   <span>{texto}</span>
                 </NavLink>
               </SidebarMenuButton>
@@ -162,7 +156,6 @@ export function LayoutAdmin() {
               size="sm"
               onClick={() => salir.mutate(undefined, { onSettled: () => navigate('/admin/entrar', { replace: true }) })}
             >
-              <LogOut aria-hidden="true" />
               Salir
             </Button>
           </SidebarFooter>

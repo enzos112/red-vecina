@@ -1,4 +1,3 @@
-import { CheckCircle2, Handshake, QrCode, ScanLine, ShieldCheck, Smartphone, Users, Gift } from 'lucide-react'
 import { Link } from 'react-router'
 import { FormasFondo } from '@/components/marca/FormasFondo'
 import { Badge } from '@/components/ui/badge'
@@ -75,15 +74,12 @@ function ValidadorEjemplo() {
       >
         482 913
       </p>
-      <div className="mt-5 rounded-lg bg-exito-fondo p-5">
-        <p className="flex items-center gap-2 text-lg font-extrabold text-exito-texto">
-          <CheckCircle2 className="size-6" aria-hidden="true" />
-          Código válido
-        </p>
+      <div className="mt-5 rounded-lg border-l-8 border-exito bg-exito-fondo p-5">
+        <p className="text-sm font-extrabold tracking-[0.2em] text-exito-texto uppercase">Válido</p>
         {cargando ? (
           <Skeleton className="mt-2 h-6 w-3/4 bg-white/60" />
         ) : (
-          <p className="mt-1 text-tinta">
+          <p className="mt-1 text-lg font-bold text-tinta">
             {destacado?.texto ?? (valor ? `Descuento de ${pesos(valor)}` : 'Beneficio de la red')}
           </p>
         )}
@@ -95,22 +91,22 @@ function ValidadorEjemplo() {
 
 const RAZONES = [
   {
-    icono: Users,
+    clave: 'Clientes',
     titulo: 'Clientes que vienen de otros locales',
     texto: 'Cada vecino que llega con puntos de otro negocio es un cliente nuevo. Tu reporte te muestra cuántos llegaron.',
   },
   {
-    icono: Gift,
+    clave: 'Tu regla',
     titulo: 'Tú eliges el beneficio',
     texto: 'Un descuento o un producto, con las reglas que te acomoden. Cambiarlo es simple.',
   },
   {
-    icono: ShieldCheck,
+    clave: 'Con tope',
     titulo: 'Un tope que te cuida',
     texto: 'Cada semana tienes un cupo de descuentos según tus ventas. Si se usa entero, tus beneficios descansan hasta la semana siguiente.',
   },
   {
-    icono: Smartphone,
+    clave: '$0',
     titulo: 'Sin máquinas ni costos',
     texto: 'Validas los códigos desde tu celular. Durante el piloto no cobramos nada.',
   },
@@ -126,16 +122,12 @@ function QueGanas() {
           titulo="Más movimiento en tu caja."
           bajada="Los vecinos ya compran cerca. Con la red, también te eligen a ti."
         />
-        <ul className="mt-12 grid gap-5 sm:grid-cols-2">
-          {RAZONES.map(({ icono: Icono, titulo, texto }) => (
-            <li key={titulo} className="flex gap-5 rounded-xl border border-border bg-card p-6 sm:p-8">
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-secondary text-vecina">
-                <Icono className="size-7" aria-hidden="true" />
-              </span>
-              <div>
-                <h3 className="text-xl font-extrabold sm:text-2xl">{titulo}</h3>
-                <p className="mt-2 text-muted-foreground">{texto}</p>
-              </div>
+        <ul className="mt-14 grid gap-x-12 gap-y-12 sm:grid-cols-2">
+          {RAZONES.map(({ clave, titulo, texto }) => (
+            <li key={titulo} className="border-t-4 border-barrio pt-6">
+              <p className="text-5xl leading-none font-extrabold tracking-tighter text-vecina sm:text-6xl">{clave}</p>
+              <h3 className="mt-6 text-xl font-extrabold sm:text-2xl">{titulo}</h3>
+              <p className="mt-2 max-w-md text-muted-foreground">{texto}</p>
             </li>
           ))}
         </ul>
@@ -159,19 +151,16 @@ function ComoFunciona() {
             {
               numero: 1,
               titulo: 'Conversamos',
-              icono: <Handshake />,
               texto: 'Te visitamos, vemos tu negocio y acordamos tus beneficios.',
             },
             {
               numero: 2,
               titulo: 'Pones el afiche',
-              icono: <QrCode />,
               texto: 'Te damos un afiche con código QR para tu caja. Tus clientes se inscriben en un minuto.',
             },
             {
               numero: 3,
               titulo: 'Validas códigos',
-              icono: <ScanLine />,
               texto: 'El vecino te muestra su código, lo ingresas en tu celular y aplicas el beneficio.',
             },
           ]}

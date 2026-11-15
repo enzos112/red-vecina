@@ -1,4 +1,4 @@
-import { Download, LoaderCircle, Play, Plus } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -52,7 +52,7 @@ function Tareas() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <Button className="self-start" onClick={() => ejecutar.mutate()} disabled={ejecutar.isPending}>
-          {ejecutar.isPending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Play aria-hidden="true" />}
+          {ejecutar.isPending && <Cargando />}
           Ejecutar tareas ahora
         </Button>
         {ejecutar.isError && (
@@ -128,19 +128,16 @@ function Exportar() {
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
             <a href={api.reportes.exportarBoletas(rango)} download>
-              <Download aria-hidden="true" />
               Boletas
             </a>
           </Button>
           <Button variant="outline" asChild>
             <a href={api.reportes.exportarCanjes(rango)} download>
-              <Download aria-hidden="true" />
               Canjes
             </a>
           </Button>
           <Button variant="outline" asChild>
             <a href={api.reportes.exportarComercios()} download>
-              <Download aria-hidden="true" />
               Reporte por comercio
             </a>
           </Button>
@@ -276,7 +273,6 @@ function Equipo() {
           {crear.isError && <p className="text-peligro-texto">{mensajeError(crear.error)}</p>}
           {crear.isSuccess && <p className="text-sm text-muted-foreground">Cuenta creada.</p>}
           <Button type="submit" variant="secondary" className="self-start" disabled={crear.isPending}>
-            <Plus aria-hidden="true" />
             Crear cuenta
           </Button>
         </form>

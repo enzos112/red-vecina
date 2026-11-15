@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Gift, LoaderCircle, Store, Ticket, Upload } from 'lucide-react'
+import { Cargando } from '@/components/marca/Cargando'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -36,7 +36,6 @@ function Opcion({ opcion, onElegir }: { opcion: OpcionSalida; onElegir: () => vo
           Compra mínima {pesos(opcion.compra_minima)} · <strong className="text-foreground">{puntos(opcion.puntos)}</strong>
         </span>
         <span className="mt-1 inline-flex items-center gap-2 font-bold text-vecina">
-          <Ticket className="size-5" aria-hidden="true" />
           Pedir código
         </span>
       </button>
@@ -55,7 +54,6 @@ function Agotados({ nombres, proxima }: { nombres: string[]; proxima: string | n
       <ul className="flex flex-col gap-3">
         {nombres.map((nombre) => (
           <li key={nombre} className="flex items-center gap-4 rounded-2xl border border-border bg-muted/50 p-4">
-            <Store className="size-6 shrink-0 text-muted-foreground" aria-hidden="true" />
             <div className="min-w-0 flex-1">
               <p className="font-bold">{nombre}</p>
               <p className="text-muted-foreground">Ya entregó sus beneficios de la semana.</p>
@@ -130,11 +128,7 @@ function Confirmar({
               Ahora no
             </Button>
             <Button onClick={confirmar} disabled={pedir.isPending}>
-              {pedir.isPending ? (
-                <LoaderCircle data-icon="inline-start" className="animate-spin motion-reduce:animate-none" />
-              ) : (
-                <Ticket data-icon="inline-start" />
-              )}
+              {pedir.isPending && <Cargando />}
               {pedir.isPending ? 'Pidiendo…' : 'Pedir mi código'}
             </Button>
           </DialogFooter>
@@ -149,7 +143,7 @@ function NoPuede({ datos, token }: { datos: OpcionesSalida; token: string }) {
   const motivo = datos.motivos[0]
   if (datos.codigo_activo || motivo?.clave === 'codigo_activo') {
     return (
-      <Vacio icono={Ticket} titulo="Ya tienes un código activo">
+      <Vacio titulo="Ya tienes un código activo">
         <p>Úsalo o espera a que venza para pedir otro.</p>
         <Button asChild className="mt-4">
           <Link to={`/t/${token}`}>Ver mi código</Link>
@@ -158,12 +152,11 @@ function NoPuede({ datos, token }: { datos: OpcionesSalida; token: string }) {
     )
   }
   return (
-    <Vacio icono={Gift} titulo="Por ahora no puedes canjear">
+    <Vacio titulo="Por ahora no puedes canjear">
       <p className="text-lg text-foreground">{motivo?.mensaje ?? 'Inténtalo más tarde.'}</p>
       {motivo?.clave === 'sin_boletas' && (
         <Button asChild className="mt-4">
           <Link to={`/t/${token}/boleta`}>
-            <Upload data-icon="inline-start" />
             Subir boleta
           </Link>
         </Button>
@@ -224,7 +217,7 @@ export function PaginaBeneficios() {
         {!datos.puede ? (
           <NoPuede datos={datos} token={token} />
         ) : datos.todas.length === 0 ? (
-          <Vacio icono={Gift} titulo="Hoy no hay beneficios para ti">
+          <Vacio titulo="Hoy no hay beneficios para ti">
             <p className="text-lg text-foreground">
               {faltaSaldo && minimo !== undefined
                 ? `Te faltan ${puntos(minimo - saldo)} para tu primer beneficio. Sube tus boletas y suma más.`
@@ -244,7 +237,6 @@ export function PaginaBeneficios() {
             </ul>
             {hayMas && (
               <Button variant="secondary" className="w-full" onClick={() => setVerTodas((v) => !v)} aria-expanded={verTodas}>
-                {verTodas ? <ChevronUp data-icon="inline-start" /> : <ChevronDown data-icon="inline-start" />}
                 {verTodas ? 'Ver solo los destacados' : `Ver todos (${datos.todas.length})`}
               </Button>
             )}

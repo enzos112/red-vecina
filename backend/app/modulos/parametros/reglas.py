@@ -317,6 +317,9 @@ def leer_catalogo() -> list[dict[str, Any]]:
 def construir_parametros(valores: dict[str, dict[str, Any]]) -> Parametros:
     """Arma Parametros desde {codigo: valor}. Lanza ValueError con un mensaje en español."""
     faltan = [c for c in CODIGOS if c not in valores]
+    if faltan and len(faltan) == len(CODIGOS):
+        # Base recién creada: el público ve un aviso amable (el equipo corre `cli base`).
+        raise ValueError("La red todavía se está preparando. Vuelve a intentarlo en un rato.")
     if faltan:
         raise ValueError(f"Faltan parámetros: {', '.join(faltan)}.")
     try:
