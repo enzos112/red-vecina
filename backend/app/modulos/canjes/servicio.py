@@ -361,6 +361,50 @@ def liberar_vencidos(sesion: Session, ahora: datetime, p: Parametros) -> dict[st
     return {"codigos": len(vencidos)}
 
 
+def anular_activos(sesion: Session, vecino_id: int, ahora: datetime, nota: str) -> int:
+    """Salida del vecino: sus códigos activos se anulan y devuelven puntos y cupo, sin
+    contar como vencidos para P19."""
+    activos = sesion.scalars(
+        select(Canje).where(Canje.vecino_id == vecino_id, Canje.estado == EstadoCanje.ACTIVO)
+    ).all()
+    for canje in activos:
+        momento = min(ahora, canje.vence_en)
+        canje.estado = EstadoCanje.VENCIDO
+        canje.vencido_en = momento
+        canje.cuenta_para_p19 = False
+        canje.nota = nota
+        puntos.registrar(
+            sesion, vecino_id, TipoMovimiento.LIBERA, canje.puntos, momento, canje_id=canje.id
+        )
+        equilibrio.liberar(sesion, canje.comercio_id, canje.semana_cupo, canje.valor_pesos)
+    sesion.flush()
+    return len(activos)
+
+
+def tiene_activos(sesion: Session, comercio_id: int, ahora: datetime) -> bool:
+    """Si el comercio tiene códigos emitidos que todavía se pueden usar."""
+    return (
+        sesion.scalar(
+            select(Canje.id)
+            .where(
+                Canje.comercio_id == comercio_id,
+                Canje.estado == EstadoCanje.ACTIVO,
+                Canje.vence_en > ahora,
+            )
+            .limit(1)
+        )
+        is not None
+    )
+
+
+def ultimo_uso(sesion: Session, vecino_id: int) -> datetime | None:
+    return sesion.scalar(
+        select(func.max(Canje.usado_en)).where(
+            Canje.vecino_id == vecino_id, Canje.estado == EstadoCanje.USADO
+        )
+    )
+
+
 def marcar_local_cerrado(
     sesion: Session, canje_id: int, ahora: datetime, usuario_id: int | None = None
 ) -> Canje:
@@ -412,6 +456,16 @@ def listar(
         consulta = consulta.where(Canje.comercio_id == comercio_id)
     if vecino_id is not None:
         consulta = consulta.where(Canje.vecino_id == vecino_id)
+    return list(sesion.scalars(consulta))
+
+
+def para_exportar(sesion: Session, desde: datetime | None, hasta: datetime | None) -> list[Canje]:
+    """Por fecha de emisión."""
+    consulta = select(Canje).order_by(Canje.emitido_en, Canje.id)
+    if desde is not None:
+        consulta = consulta.where(Canje.emitido_en >= desde)
+    if hasta is not None:
+        consulta = consulta.where(Canje.emitido_en < hasta)
     return list(sesion.scalars(consulta))
 
 

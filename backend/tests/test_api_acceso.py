@@ -3,6 +3,7 @@
 from sqlalchemy import func, select
 
 from app.tareas.modelos import EjecucionTarea
+from app.tareas.servicio import TAREAS
 from tests.api_red import ADMIN, CLAVE, DON_LUIS, OPERADOR, armar_entorno
 
 
@@ -207,7 +208,7 @@ def test_tareas_perezosas_corren_una_vez_al_dia(tmp_path):
         assert ejecuciones() == 0  # /salud no toca la base
         c.get("/api/red/comercios")
         primera = ejecuciones()
-        assert primera == 3
+        assert primera == len(TAREAS)
         c.get("/api/red/comercios")
         assert ejecuciones() == primera
         entorno.avanzar(days=1)
@@ -221,4 +222,4 @@ def test_solo_el_admin_fuerza_las_tareas(api):
     assert api.cliente(OPERADOR).post("/api/admin/tareas", json={}).status_code == 403
     r = api.cliente(ADMIN).post("/api/admin/tareas", json={"forzar": True})
     assert r.status_code == 200
-    assert set(r.json()["resultados"]) == {"liberar_codigos", "vencer_puntos", "recalcular_cupos"}
+    assert set(r.json()["resultados"]) == set(TAREAS)

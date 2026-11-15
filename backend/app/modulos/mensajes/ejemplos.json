@@ -1,0 +1,20 @@
+{
+  "nombre": "Rosa",
+  "enlace": "https://redvecina.cl/t/ejemplo",
+  "comercio": "Panadería La Espiga",
+  "monto": "$12.500",
+  "puntos": "125",
+  "saldo": "640",
+  "sugerencia_beneficio": "Ya te alcanza para $2.000 de descuento en Minimarket Don Luis.",
+  "motivo": "la foto no se lee bien",
+  "como_resolver": "Mándanos otra foto hoy mismo y la revisamos.",
+  "codigo": "482 913",
+  "vence": "jueves 19, 18:30",
+  "minimo": "$10.000",
+  "beneficio": "$1.000 de descuento",
+  "fecha": "martes 2 de diciembre",
+  "alternativas": "Verdulería Doña Ana y Ferretería El Clavo",
+  "proxima_liberacion": "lunes 23",
+  "descuento": "$2.000",
+  "faltan": "110"
+}

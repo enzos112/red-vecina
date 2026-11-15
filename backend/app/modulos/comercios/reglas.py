@@ -1,4 +1,5 @@
-"""Beneficios de un comercio (B1 a B8) y cuándo rige un cambio (sección 5, U23).
+"""Beneficios de un comercio (B1 a B8), cuándo rige un cambio (sección 5, U23) y sanciones
+(sección 9).
 
 Funciones puras: reciben datos y parámetros, no tocan la base de datos.
 """
@@ -10,7 +11,7 @@ from pydantic import BaseModel, ConfigDict
 
 from app.core.formato import pesos
 from app.core.tiempo import dia_local, inicio_dia_utc, inicio_semana
-from app.modulos.comercios.esquemas import TipoBeneficio
+from app.modulos.comercios.esquemas import CausaSancion, TipoBeneficio, TipoSancion
 from app.modulos.parametros.reglas import Parametros, niveles
 
 DIAS_SEMANA = 7
@@ -122,3 +123,68 @@ def normalizar_rut(texto: str | None) -> str | None:
     if not 8 <= len(limpio) <= 9:
         return None
     return f"{limpio[:-1]}-{limpio[-1]}"
+
+
+# --- Sanciones (sección 9) ---
+
+
+class SancionPrevia(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tipo: TipoSancion
+    causa: CausaSancion
+    decidida_en: datetime
+
+
+class Sugerencia(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    tipo: TipoSancion
+    razon: str
+
+
+ORDEN_SANCIONES = (TipoSancion.ADVERTENCIA, TipoSancion.SUSPENSION, TipoSancion.SALIDA)
+
+
+def sancion_sugerida(
+    previas: list[SancionPrevia], causa: CausaSancion, ahora: datetime, p: Parametros
+) -> Sugerencia:
+    """Qué sanción toca a un comercio según la sección 9. Solo sugiere: decide el operador.
+
+    Primera vez, advertencia escrita. Segunda vez dentro de U21 días, suspensión de los
+    beneficios por U21 semanas. Tercera vez dentro de esa ventana, salida de la red. Si el
+    comercio ya se negó a respetar códigos U20 veces en U20 días contando esta, corresponde
+    al menos la suspensión (sección 8).
+    """
+    ventana = [s for s in previas if s.decidida_en > ahora - timedelta(days=p.U21.dias)]
+    n = len(ventana)
+    tipo = ORDEN_SANCIONES[min(n, len(ORDEN_SANCIONES) - 1)]
+    if n == 0:
+        razon = "Es la primera sanción: corresponde una advertencia escrita."
+    elif n == 1:
+        razon = (
+            f"Ya tuvo una sanción en los últimos {p.U21.dias} días: corresponde suspender "
+            f"sus beneficios por {p.U21.semanas_suspension} semanas."
+        )
+    else:
+        razon = f"Es la tercera sanción en {p.U21.dias} días: corresponde la salida de la red."
+
+    if causa == CausaSancion.NEGO_CODIGO:
+        casos = 1 + sum(
+            1
+            for s in previas
+            if s.causa == CausaSancion.NEGO_CODIGO
+            and s.decidida_en > ahora - timedelta(days=p.U20.dias)
+        )
+        if casos >= p.U20.casos and ORDEN_SANCIONES.index(tipo) < 1:
+            tipo = TipoSancion.SUSPENSION
+            razon = (
+                f"Con este son {casos} casos en {p.U20.dias} días de negarse a respetar un "
+                f"código válido: corresponde suspender sus beneficios por "
+                f"{p.U21.semanas_suspension} semanas."
+            )
+    return Sugerencia(tipo=tipo, razon=razon)
+
+
+def fin_suspension(ahora: datetime, p: Parametros) -> datetime:
+    return ahora + timedelta(weeks=p.U21.semanas_suspension)

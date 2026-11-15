@@ -338,6 +338,12 @@ def validar_valor(codigo: str, valor: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"Valor inválido para {codigo}: {detalle}") from error
 
 
+def esquema(codigo: str) -> dict[str, Any]:
+    """JSON Schema del valor de un parámetro: campos, tipos y rangos (para el formulario)."""
+    modelo: type[_Valor] = Parametros.model_fields[codigo].annotation  # type: ignore[assignment]
+    return modelo.model_json_schema()
+
+
 def parametros_iniciales() -> Parametros:
     return construir_parametros({p["codigo"]: p["valor"] for p in leer_catalogo()})
 

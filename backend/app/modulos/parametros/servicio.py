@@ -51,6 +51,16 @@ def listar(sesion: Session) -> list[Parametro]:
     return list(sesion.scalars(select(Parametro).order_by(Parametro.orden)))
 
 
+def ultimos_cambios(sesion: Session, limite: int) -> list[CambioParametro]:
+    return list(
+        sesion.scalars(
+            select(CambioParametro)
+            .order_by(CambioParametro.cambiado_en.desc(), CambioParametro.id.desc())
+            .limit(limite)
+        )
+    )
+
+
 def historial(sesion: Session, codigo: str) -> list[CambioParametro]:
     if sesion.get(Parametro, codigo) is None:
         raise ValueError(f"No existe el parámetro {codigo}.")

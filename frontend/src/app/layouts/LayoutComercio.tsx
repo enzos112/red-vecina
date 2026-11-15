@@ -4,6 +4,7 @@ import { Logo } from '@/components/marca/Logo'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { sinSesion, useSalir, useYo } from '@/lib/sesion'
+import { dia } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
 const SECCIONES = [
@@ -65,6 +66,18 @@ export function LayoutComercio() {
         </div>
       </header>
       <main className="mx-auto w-full max-w-md flex-1 px-4 pt-6 pb-32">
+        {yo.data.comercio?.estado === 'suspendido' && (
+          <p className="mb-6 rounded-lg border-2 border-l-4 border-border border-l-alerta bg-alerta-fondo px-4 py-3">
+            Tus beneficios están suspendidos
+            {yo.data.comercio.suspendido_hasta ? ` hasta el ${dia(yo.data.comercio.suspendido_hasta)}` : ''}: los vecinos
+            no los ven. Los códigos ya emitidos se respetan y tus boletas siguen sumando.
+          </p>
+        )}
+        {yo.data.comercio?.estado === 'retirado' && (
+          <p className="mb-6 rounded-lg border-2 border-l-4 border-border border-l-alerta bg-alerta-fondo px-4 py-3">
+            Tu comercio salió de la red. Puedes validar los códigos que ya se emitieron hasta que venzan.
+          </p>
+        )}
         <Outlet />
       </main>
       <nav

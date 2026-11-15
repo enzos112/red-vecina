@@ -10,6 +10,27 @@ class EstadoComercio(enum.StrEnum):
     RETIRADO = "retirado"
 
 
+class EstadoSolicitud(enum.StrEnum):
+    NUEVA = "nueva"
+    CONTACTADA = "contactada"
+    INCORPORADA = "incorporada"  # ya es comercio de la red
+    DESCARTADA = "descartada"
+
+
+class TipoSancion(enum.StrEnum):
+    """Sección 9: advertencia escrita, suspensión de beneficios o salida de la red."""
+
+    ADVERTENCIA = "advertencia"
+    SUSPENSION = "suspension"
+    SALIDA = "salida"
+
+
+class CausaSancion(enum.StrEnum):
+    NEGO_CODIGO = "nego_codigo"  # se negó a respetar un código válido (sección 8, U20)
+    FRAUDE = "fraude"  # compras inventadas, boletas de clientes, etc. (sección 9)
+    OTRA = "otra"
+
+
 class TipoBeneficio(enum.StrEnum):
     DESCUENTO = "descuento"
     PRODUCTO = "producto"
@@ -87,6 +108,16 @@ class SolicitudSalida(BaseModel):
     direccion: str | None
     mensaje: str | None
     creado_en: datetime
+    estado: EstadoSolicitud
+    nota: str | None
+    comercio_id: int | None
+    atendida_en: datetime | None
+
+
+class SolicitudCambio(BaseModel):
+    estado: EstadoSolicitud
+    nota: str | None = Field(default=None, max_length=2000)
+    comercio_id: int | None = None  # al incorporarla, el comercio que se creó
 
 
 class BeneficioNuevo(BaseModel):
@@ -124,6 +155,10 @@ class Revision(BaseModel):
     comentario: str = Field(min_length=1, max_length=1000)
 
 
+class Aprobacion(BaseModel):
+    comentario: str | None = Field(default=None, max_length=1000)
+
+
 class ComercioAdmin(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -135,6 +170,7 @@ class ComercioAdmin(BaseModel):
     slug: str
     estado: EstadoComercio
     alta_en: datetime
+    suspendido_hasta: datetime | None = None
     es_demo: bool
 
 
@@ -146,4 +182,56 @@ class ComercioNuevo(BaseModel):
 
 
 class ComercioCambio(BaseModel):
-    estado: EstadoComercio
+    """Edición del comercio. El slug no cambia: es la dirección del QR ya impreso."""
+
+    nombre: str | None = Field(default=None, min_length=1, max_length=120)
+    rubro: str | None = Field(default=None, min_length=1, max_length=60)
+    rut: str | None = Field(default=None, min_length=9, max_length=12)
+    direccion: str | None = Field(default=None, min_length=1, max_length=200)
+    estado: EstadoComercio | None = None
+
+
+class SancionNueva(BaseModel):
+    tipo: TipoSancion
+    causa: CausaSancion
+    motivo: str = Field(min_length=1, max_length=1000)
+    evidencia: str = Field(min_length=1, max_length=2000)
+
+
+class SancionSalida(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    tipo: TipoSancion
+    causa: CausaSancion
+    motivo: str
+    evidencia: str
+    hasta: datetime | None
+    decidida_por: int | None
+    decidida_en: datetime
+
+
+class SugerenciaSancion(BaseModel):
+    tipo: TipoSancion
+    razon: str
+    semanas_suspension: int  # U21
+
+
+class UsuarioDeComercio(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    email: str
+    nombre: str
+    activo: bool
+    creado_en: datetime
+
+
+class ComercioDetalle(BaseModel):
+    comercio: ComercioAdmin
+    usuarios: list[UsuarioDeComercio]
+    vigentes: list[BeneficioSalida]
+    proximos: list[BeneficioSalida]
+    pendientes: list[BeneficioSalida]
+    sanciones: list[SancionSalida]
+    sugerencias: dict[CausaSancion, SugerenciaSancion]  # qué tocaría según la sección 9

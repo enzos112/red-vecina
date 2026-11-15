@@ -21,6 +21,8 @@ from app.modulos.vecinos.esquemas import (
     Inscrito,
     PendientesSalida,
     ProximoNivel,
+    SalidaPrograma,
+    SalidaRealizada,
     Tarjeta,
     VecinoDetalle,
     VecinoResumen,
@@ -206,3 +208,28 @@ def ajustar(
 def nuevo_enlace(vecino_id: int, usuario: Equipo, sesion: SesionDB, ahora: Ahora) -> EnlaceNuevo:
     vecino = servicio.regenerar_token(sesion, _vecino(sesion, vecino_id).id, ahora, usuario.id)
     return EnlaceNuevo(enlace=enlace(vecino))
+
+
+@router.post(
+    "/admin/vecinos/{vecino_id}/salida",
+    summary="Salida del programa: borra datos personales y anula puntos (sección 8)",
+)
+def salida(
+    vecino_id: int,
+    datos: SalidaPrograma,
+    usuario: Equipo,
+    sesion: SesionDB,
+    ahora: Ahora,
+    p: Params,
+) -> SalidaRealizada:
+    if not datos.confirmar:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Confirma la salida: no se puede deshacer."
+        )
+    baja = servicio.dar_de_baja(
+        sesion, _vecino(sesion, vecino_id).id, datos.motivo, ahora, p, usuario.id
+    )
+    return SalidaRealizada(
+        **baja.model_dump(),
+        mensaje="Listo. Se borraron sus datos personales y se anularon sus puntos.",
+    )

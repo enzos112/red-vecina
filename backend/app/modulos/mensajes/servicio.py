@@ -1,8 +1,11 @@
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.auditoria import auditar
+from app.core.formato import miles
 from app.modulos.mensajes import reglas
 from app.modulos.mensajes.modelos import PlantillaMensaje
 
@@ -43,3 +46,55 @@ def para_whatsapp(sesion: Session, clave: str, datos: dict[str, Any], telefono: 
         "telefono": telefono,
         "whatsapp": reglas.enlace_whatsapp(telefono, texto_final),
     }
+
+
+# --- Edición desde /admin (plantillas editables con vista previa) ---
+
+
+def _base(clave: str) -> dict[str, str]:
+    base = next((t for t in reglas.leer_plantillas() if t["clave"] == clave), None)
+    if base is None:
+        raise ValueError(f"No existe la plantilla {clave}.")
+    return base
+
+
+def permitidas(clave: str) -> set[str]:
+    """Las variables que el código llena para esta plantilla: las del texto base."""
+    return reglas.variables(_base(clave)["texto"])
+
+
+def ejemplo(horas_validacion: int) -> dict[str, str]:
+    """Datos de ejemplo; los plazos salen de los parámetros vigentes."""
+    plazo = "1 hora" if horas_validacion == 1 else f"{miles(horas_validacion)} horas"
+    return {**reglas.leer_ejemplos(), "plazo_validacion": plazo}
+
+
+def listar(sesion: Session) -> list[tuple[dict[str, str], PlantillaMensaje | None]]:
+    guardadas = {p.clave: p for p in sesion.scalars(select(PlantillaMensaje))}
+    return [(b, guardadas.get(b["clave"])) for b in reglas.leer_plantillas()]
+
+
+def editar(
+    sesion: Session, clave: str, texto_nuevo: str, ahora: datetime, usuario_id: int
+) -> PlantillaMensaje:
+    base = _base(clave)
+    texto_nuevo = reglas.validar_texto(texto_nuevo, permitidas(clave))
+    plantilla = sesion.scalar(select(PlantillaMensaje).where(PlantillaMensaje.clave == clave))
+    if plantilla is None:
+        plantilla = PlantillaMensaje(**base)
+        sesion.add(plantilla)
+    anterior = plantilla.texto
+    plantilla.texto = texto_nuevo
+    plantilla.actualizado_en = ahora
+    plantilla.actualizado_por = usuario_id
+    auditar(
+        sesion,
+        "editar_plantilla",
+        "plantilla",
+        None,
+        usuario_id,
+        {"clave": clave, "antes": anterior, "despues": texto_nuevo},
+        ahora,
+    )
+    sesion.flush()
+    return plantilla

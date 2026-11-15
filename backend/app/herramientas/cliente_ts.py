@@ -134,9 +134,11 @@ def funcion(metodo: str, ruta: str, operacion: dict[str, Any]) -> tuple[str, str
     respuesta, es_json = _respuesta(operacion)
     comentario = f"  /** {operacion['summary']} */\n" if operacion.get("summary") else ""
     if not es_json:
+        enlace = f"`/api{plantilla}`"
+        if de_consulta:
+            enlace = f"conConsulta({enlace}, consulta)"
         codigo = (
-            f"{comentario}  {camel(nombre)}: ({', '.join(argumentos)}): string =>\n"
-            f"    `/api{plantilla}`,"
+            f"{comentario}  {camel(nombre)}: ({', '.join(argumentos)}): string =>\n    {enlace},"
         )
     else:
         extra = f", {{ {', '.join(opciones)} }}" if opciones else ""
@@ -155,6 +157,18 @@ def generar(esquema: dict[str, Any]) -> str:
         "  ruta: string,\n"
         "  opciones?: { json?: unknown; form?: FormData; consulta?: Record<string, unknown> },\n"
         ") => Promise<T>\n"
+    )
+    partes.append(
+        "/** Agrega la consulta a una ruta (enlaces de descarga). Omite los valores vacíos. */\n"
+        "export function conConsulta(ruta: string, consulta?: Record<string, unknown>): string {\n"
+        "  const params = new URLSearchParams()\n"
+        "  for (const [clave, valor] of Object.entries(consulta ?? {})) {\n"
+        "    if (valor === null || valor === undefined || valor === '') continue\n"
+        "    params.set(clave, String(valor))\n"
+        "  }\n"
+        "  const texto = params.toString()\n"
+        "  return texto ? `${ruta}?${texto}` : ruta\n"
+        "}\n"
     )
     for nombre, definicion in esquema.get("components", {}).get("schemas", {}).items():
         if nombre in OMITIR:

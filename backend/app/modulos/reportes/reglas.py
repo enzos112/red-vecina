@@ -8,7 +8,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.core.formato import miles, pesos
+from app.core.formato import fecha_hora, miles, pesos
 from app.core.tiempo import inicio_dia_utc
 from app.modulos.parametros.reglas import Parametros
 
@@ -246,3 +246,122 @@ def resumen_mes(nombre_mes: str, actual: CifrasMes, anterior: CifrasMes) -> str:
         clientes = "cliente nuevo" if actual.derivados == 1 else "clientes nuevos"
         frases.append(f"Llegaron {miles(actual.derivados)} {clientes} desde otros locales.")
     return " ".join(frases)
+
+
+# --- Alertas de fraude (sección 9) ---
+
+
+class AlertaFraude(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    clave: str  # concentracion | superpuestos | alza_ventas
+    titulo: str
+    detalle: str
+    accion: str
+    comercio_id: int | None = None
+    vecino_id: int | None = None
+
+
+class CompraVecino(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    vecino_id: int
+    vecino: str
+    comercio_id: int
+    comercio: str
+    momento: datetime
+
+
+def concentracion_boletas(compras: list[CompraVecino], p: Parametros) -> list[AlertaFraude]:
+    """U12: una cuenta con más de N boletas en un mismo local en la semana."""
+    conteo: dict[tuple[int, int], list[CompraVecino]] = {}
+    for c in compras:
+        conteo.setdefault((c.vecino_id, c.comercio_id), []).append(c)
+    alertas = []
+    for (vecino_id, comercio_id), lista in sorted(conteo.items()):
+        if len(lista) > p.U12.boletas_semana:
+            alertas.append(
+                AlertaFraude(
+                    clave="concentracion",
+                    titulo="Muchas boletas de una cuenta en un local",
+                    detalle=(
+                        f"{lista[0].vecino} registró {miles(len(lista))} boletas en "
+                        f"{lista[0].comercio} en la última semana (alerta sobre "
+                        f"{miles(p.U12.boletas_semana)})."
+                    ),
+                    accion=(
+                        "Revisa si es un cajero o el dueño sumando boletas de clientes "
+                        "(A3). Si se confirma, aplica la sanción al vecino."
+                    ),
+                    comercio_id=comercio_id,
+                    vecino_id=vecino_id,
+                )
+            )
+    return alertas
+
+
+def horarios_superpuestos(compras: list[CompraVecino], p: Parametros) -> list[AlertaFraude]:
+    """U13: compras de una misma cuenta en dos locales con menos de N minutos de diferencia.
+
+    Mientras U13 no tenga valor, no alerta (Anexo A.1).
+    """
+    if p.U13.minutos is None:
+        return []
+    ventana = timedelta(minutes=p.U13.minutos)
+    por_vecino: dict[int, list[CompraVecino]] = {}
+    for c in compras:
+        por_vecino.setdefault(c.vecino_id, []).append(c)
+    alertas = []
+    for vecino_id, lista in sorted(por_vecino.items()):
+        lista.sort(key=lambda c: c.momento)
+        for a, b in zip(lista, lista[1:], strict=False):
+            if a.comercio_id != b.comercio_id and b.momento - a.momento < ventana:
+                alertas.append(
+                    AlertaFraude(
+                        clave="superpuestos",
+                        titulo="Horarios de compra superpuestos",
+                        detalle=(
+                            f"{a.vecino} compró en {a.comercio} ({fecha_hora(a.momento)}) y en "
+                            f"{b.comercio} ({fecha_hora(b.momento)}), con menos de "
+                            f"{miles(p.U13.minutos)} minutos de diferencia."
+                        ),
+                        accion=(
+                            "Puede ser una boleta ajena recogida del mesón o del suelo. "
+                            "Compara las fotos y pregunta al vecino."
+                        ),
+                        comercio_id=b.comercio_id,
+                        vecino_id=vecino_id,
+                    )
+                )
+                break  # una alerta por cuenta basta para revisarla
+    return alertas
+
+
+def alza_ventas(
+    comercio_id: int,
+    comercio: str,
+    ventas_anterior: int,
+    ventas_semana: int,
+    vecinos_anterior: int,
+    vecinos_semana: int,
+    p: Parametros,
+) -> AlertaFraude | None:
+    """U14: ventas registradas que suben más de N% de una semana a otra sin más vecinos."""
+    alza = variacion_pct(ventas_semana, ventas_anterior)
+    if alza is None or alza <= p.U14.porcentaje or vecinos_semana > vecinos_anterior:
+        return None
+    return AlertaFraude(
+        clave="alza_ventas",
+        titulo="Salto de ventas registradas",
+        detalle=(
+            f"Las ventas registradas de {comercio} subieron {_entero(alza)}% "
+            f"({pesos(ventas_anterior)} a {pesos(ventas_semana)}) con "
+            f"{miles(vecinos_semana)} vecinos, sin más que la semana anterior "
+            f"({miles(vecinos_anterior)})."
+        ),
+        accion=(
+            "Puede ser una forma de inflar el cupo. Pide al comercio confirmar una muestra "
+            "de boletas en la revisión mensual."
+        ),
+        comercio_id=comercio_id,
+    )

@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pydantic import BaseModel
 from sqlalchemy import func, or_, select
@@ -10,6 +10,7 @@ from app.core.seguridad import token_vecino
 from app.modulos.boletas import servicio as boletas
 from app.modulos.canjes import servicio as canjes
 from app.modulos.parametros.reglas import Parametros
+from app.modulos.puntos import servicio as puntos
 from app.modulos.vecinos import reglas
 from app.modulos.vecinos.esquemas import EstadoVecino
 from app.modulos.vecinos.modelos import Vecino, VecinoEmpleo
@@ -83,6 +84,13 @@ def por_token(sesion: Session, token: str) -> Vecino | None:
     if vecino is None or vecino.estado == EstadoVecino.CERRADO:
         return None
     return vecino
+
+
+def nombres(sesion: Session, ids: set[int]) -> dict[int, str]:
+    if not ids:
+        return {}
+    filas = sesion.execute(select(Vecino.id, Vecino.nombre).where(Vecino.id.in_(ids)))
+    return {i: n for i, n in filas}
 
 
 def regenerar_token(sesion: Session, vecino_id: int, ahora: datetime, usuario_id: int) -> Vecino:
@@ -168,3 +176,85 @@ def registrar_empleo(sesion: Session, vecino_id: int, comercio_id: int) -> None:
     if not trabaja_en(sesion, vecino_id, comercio_id):
         sesion.add(VecinoEmpleo(vecino_id=vecino_id, comercio_id=comercio_id))
         sesion.flush()
+
+
+# --- Salida del programa (sección 8) y cierre por inactividad (sección 5, U18) ---
+
+NOMBRE_RETIRADO = "Vecino retirado"
+
+
+class Baja(BaseModel):
+    puntos_anulados: int
+    codigos_anulados: int
+    boletas: int
+
+
+def dar_de_baja(
+    sesion: Session,
+    vecino_id: int,
+    motivo: str,
+    ahora: datetime,
+    p: Parametros,
+    usuario_id: int | None,
+) -> Baja:
+    """Borra los datos personales y anula los puntos. Boletas, canjes y movimientos quedan,
+    sin nombre ni teléfono, para que los totales de la red y de cada comercio no cambien."""
+    vecino = obtener(sesion, vecino_id)
+    if vecino is None:
+        raise ValueError("No encontramos a este vecino.")
+    if vecino.estado == EstadoVecino.CERRADO:
+        raise ValueError("Este vecino ya salió del programa.")
+    codigos = canjes.anular_activos(sesion, vecino_id, ahora, "Salida del programa")
+    cantidad = boletas.borrar_datos_vecino(
+        sesion, vecino_id, "El vecino salió del programa.", ahora
+    )
+    disponible = puntos.saldos(sesion, vecino_id).disponible
+    if disponible > 0:
+        puntos.ajustar(
+            sesion,
+            vecino_id,
+            -disponible,
+            "Salida del programa: puntos anulados",
+            ahora,
+            p,
+            usuario_id,
+        )
+    for empleo in sesion.scalars(select(VecinoEmpleo).where(VecinoEmpleo.vecino_id == vecino_id)):
+        sesion.delete(empleo)
+    vecino.nombre = NOMBRE_RETIRADO
+    vecino.telefono = f"baja-{vecino.id}"  # único y sin datos; el número queda libre
+    vecino.token = token_vecino()
+    vecino.estado = EstadoVecino.CERRADO
+    auditar(
+        sesion,
+        "salida_vecino",
+        "vecino",
+        vecino_id,
+        usuario_id,
+        {"motivo": motivo, "puntos_anulados": max(disponible, 0), "codigos": codigos},
+        ahora,
+    )
+    sesion.flush()
+    return Baja(puntos_anulados=max(disponible, 0), codigos_anulados=codigos, boletas=cantidad)
+
+
+def cerrar_inactivas(sesion: Session, ahora: datetime, p: Parametros) -> dict[str, int]:
+    """Tarea: cierra las cuentas sin compras en U18 días y borra sus datos (sección 5)."""
+    limite = ahora - timedelta(days=p.U18.dias)
+    candidatos = sesion.scalars(
+        select(Vecino).where(Vecino.estado != EstadoVecino.CERRADO, Vecino.creado_en <= limite)
+    ).all()
+    cerradas = 0
+    for v in candidatos:
+        ultima = max(
+            (
+                m
+                for m in (boletas.ultima_compra(sesion, v.id), canjes.ultimo_uso(sesion, v.id))
+                if m
+            ),
+            default=None,
+        )
+        if ultima is None or ultima <= limite:
+            dar_de_baja(sesion, v.id, f"Sin compras en {p.U18.dias} días", ahora, p, None)
+            cerradas += 1
+    return {"cuentas": cerradas}

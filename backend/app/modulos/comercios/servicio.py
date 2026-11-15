@@ -5,8 +5,14 @@ from sqlalchemy.orm import Session
 
 from app.core.auditoria import auditar
 from app.modulos.comercios import reglas
-from app.modulos.comercios.esquemas import EstadoBeneficio, EstadoComercio
-from app.modulos.comercios.modelos import Beneficio, Comercio, SolicitudComercio
+from app.modulos.comercios.esquemas import (
+    CausaSancion,
+    EstadoBeneficio,
+    EstadoComercio,
+    EstadoSolicitud,
+    TipoSancion,
+)
+from app.modulos.comercios.modelos import Beneficio, Comercio, SancionComercio, SolicitudComercio
 from app.modulos.parametros.reglas import Parametros
 
 
@@ -92,6 +98,7 @@ def cambiar_estado(
         raise ValueError("No encontramos ese comercio.")
     anterior = comercio.estado
     comercio.estado = estado
+    comercio.suspendido_hasta = None  # un cambio a mano no tiene plazo
     auditar(
         sesion,
         "estado_comercio",
@@ -103,6 +110,141 @@ def cambiar_estado(
     )
     sesion.flush()
     return comercio
+
+
+def editar(
+    sesion: Session,
+    comercio_id: int,
+    *,
+    nombre: str | None,
+    rubro: str | None,
+    rut: str | None,
+    direccion: str | None,
+    ahora: datetime,
+    usuario_id: int,
+) -> Comercio:
+    """Corrige los datos del comercio. El slug no cambia: es la dirección del QR impreso."""
+    comercio = obtener(sesion, comercio_id)
+    if comercio is None:
+        raise ValueError("No encontramos ese comercio.")
+    cambios: dict[str, str] = {}
+    if nombre is not None and nombre.strip() != comercio.nombre:
+        if not nombre.strip():
+            raise ValueError("Escribe el nombre del comercio.")
+        cambios["nombre"] = nombre.strip()
+    if rut is not None and rut.strip().upper() != comercio.rut:
+        rut = rut.strip().upper()
+        if not reglas.rut_valido(rut):
+            raise ValueError("El RUT no es válido. Escríbelo sin puntos y con guion: 76543210-3.")
+        if por_rut(sesion, rut):
+            raise ValueError("Ya hay un comercio con ese RUT.")
+        cambios["rut"] = rut
+    if rubro is not None and rubro.strip() != comercio.rubro:
+        cambios["rubro"] = rubro.strip()
+    if direccion is not None and direccion.strip() != comercio.direccion:
+        cambios["direccion"] = direccion.strip()
+    for campo, valor in cambios.items():
+        setattr(comercio, campo, valor)
+    if cambios:
+        auditar(sesion, "editar_comercio", "comercio", comercio_id, usuario_id, cambios, ahora)
+    sesion.flush()
+    return comercio
+
+
+# --- Sanciones (sección 9) ---
+
+
+def sanciones(sesion: Session, comercio_id: int) -> list[SancionComercio]:
+    return list(
+        sesion.scalars(
+            select(SancionComercio)
+            .where(SancionComercio.comercio_id == comercio_id)
+            .order_by(SancionComercio.decidida_en.desc(), SancionComercio.id.desc())
+        )
+    )
+
+
+def sugerencia_sancion(
+    sesion: Session, comercio_id: int, causa: CausaSancion, ahora: datetime, p: Parametros
+) -> reglas.Sugerencia:
+    previas = [
+        reglas.SancionPrevia(tipo=s.tipo, causa=s.causa, decidida_en=s.decidida_en)
+        for s in sanciones(sesion, comercio_id)
+    ]
+    return reglas.sancion_sugerida(previas, causa, ahora, p)
+
+
+def sancionar(
+    sesion: Session,
+    comercio_id: int,
+    *,
+    tipo: TipoSancion,
+    causa: CausaSancion,
+    motivo: str,
+    evidencia: str,
+    ahora: datetime,
+    p: Parametros,
+    usuario_id: int,
+) -> SancionComercio:
+    """Registra la sanción que decidió el operador y aplica su efecto.
+
+    La suspensión deja al comercio sin beneficios visibles por U21 semanas (sus boletas
+    siguen sumando y los códigos ya emitidos se respetan). La salida lo retira de la red.
+    """
+    comercio = obtener(sesion, comercio_id)
+    if comercio is None:
+        raise ValueError("No encontramos ese comercio.")
+    if comercio.estado == EstadoComercio.RETIRADO:
+        raise ValueError("Este comercio ya salió de la red.")
+    if not motivo.strip() or not evidencia.strip():
+        raise ValueError("Anota el motivo y la evidencia de la sanción.")
+    hasta = None
+    if tipo == TipoSancion.SUSPENSION:
+        hasta = reglas.fin_suspension(ahora, p)
+        comercio.estado = EstadoComercio.SUSPENDIDO
+        comercio.suspendido_hasta = hasta
+    elif tipo == TipoSancion.SALIDA:
+        comercio.estado = EstadoComercio.RETIRADO
+        comercio.suspendido_hasta = None
+    sancion = SancionComercio(
+        comercio_id=comercio_id,
+        tipo=tipo,
+        causa=causa,
+        motivo=motivo.strip(),
+        evidencia=evidencia.strip(),
+        hasta=hasta,
+        decidida_por=usuario_id,
+        decidida_en=ahora,
+    )
+    sesion.add(sancion)
+    sesion.flush()
+    auditar(
+        sesion,
+        "sancionar_comercio",
+        "comercio",
+        comercio_id,
+        usuario_id,
+        {"sancion": sancion.id, "tipo": tipo, "causa": causa},
+        ahora,
+    )
+    return sancion
+
+
+def levantar_suspensiones(sesion: Session, ahora: datetime, p: Parametros) -> dict[str, int]:
+    """Tarea: reactiva a los comercios cuya suspensión por sanción ya se cumplió."""
+    cumplidos = sesion.scalars(
+        select(Comercio).where(
+            Comercio.estado == EstadoComercio.SUSPENDIDO,
+            Comercio.suspendido_hasta.is_not(None),
+            Comercio.suspendido_hasta <= ahora,
+        )
+    ).all()
+    for c in cumplidos:
+        c.estado = EstadoComercio.ACTIVO
+        c.suspendido_hasta = None
+        auditar(sesion, "fin_suspension", "comercio", c.id, None, {}, ahora)
+    sesion.flush()
+    return {"comercios": len(cumplidos)}
 
 
 # --- Beneficios ---
@@ -246,7 +388,12 @@ def comercios_con_pendientes(sesion: Session) -> list[int]:
 
 
 def aprobar_propuesta(
-    sesion: Session, comercio_id: int, p: Parametros, ahora: datetime, revisor_id: int
+    sesion: Session,
+    comercio_id: int,
+    p: Parametros,
+    ahora: datetime,
+    revisor_id: int,
+    comentario: str | None = None,
 ) -> list[Beneficio]:
     """B7: el equipo aprueba la propuesta pendiente. Decide desde cuándo rige (A.15)."""
     conjunto = pendientes(sesion, comercio_id)
@@ -260,6 +407,9 @@ def aprobar_propuesta(
     solicitado = min(b.creado_en for b in conjunto)
     desde = reglas.rige_desde_aprobacion(solicitado, ahora, primeros, p)
     _aprobar(sesion, comercio_id, conjunto, desde, revisor_id, ahora)
+    nota = (comentario or "").strip() or None
+    for b in conjunto:
+        b.comentario_revision = nota
     auditar(
         sesion,
         "aprobar_beneficios",
@@ -410,3 +560,41 @@ def solicitudes(sesion: Session) -> list[SolicitudComercio]:
     return list(
         sesion.scalars(select(SolicitudComercio).order_by(SolicitudComercio.creado_en.desc()))
     )
+
+
+def obtener_solicitud(sesion: Session, solicitud_id: int) -> SolicitudComercio | None:
+    return sesion.get(SolicitudComercio, solicitud_id)
+
+
+def atender_solicitud(
+    sesion: Session,
+    solicitud_id: int,
+    *,
+    estado: EstadoSolicitud,
+    nota: str | None,
+    comercio_id: int | None,
+    ahora: datetime,
+    usuario_id: int,
+) -> SolicitudComercio:
+    solicitud = obtener_solicitud(sesion, solicitud_id)
+    if solicitud is None:
+        raise ValueError("No encontramos esa solicitud.")
+    if comercio_id is not None and obtener(sesion, comercio_id) is None:
+        raise ValueError("No encontramos ese comercio.")
+    solicitud.estado = estado
+    solicitud.nota = (nota or "").strip() or None
+    if comercio_id is not None:
+        solicitud.comercio_id = comercio_id
+    solicitud.atendida_por = usuario_id
+    solicitud.atendida_en = ahora
+    auditar(
+        sesion,
+        "atender_solicitud",
+        "solicitud",
+        solicitud_id,
+        usuario_id,
+        {"estado": estado},
+        ahora,
+    )
+    sesion.flush()
+    return solicitud

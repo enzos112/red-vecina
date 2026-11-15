@@ -93,3 +93,15 @@ class VecinoDetalle(VecinoResumen):
 
 class EnlaceNuevo(BaseModel):
     enlace: str
+
+
+class SalidaPrograma(BaseModel):
+    motivo: str = Field(min_length=1, max_length=500)
+    confirmar: bool  # la sección 8 pide confirmación antes de borrar
+
+
+class SalidaRealizada(BaseModel):
+    puntos_anulados: int
+    codigos_anulados: int
+    boletas: int
+    mensaje: str

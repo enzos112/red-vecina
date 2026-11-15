@@ -7,10 +7,40 @@ export type Pedir = <T>(
   opciones?: { json?: unknown; form?: FormData; consulta?: Record<string, unknown> },
 ) => Promise<T>
 
+/** Agrega la consulta a una ruta (enlaces de descarga). Omite los valores vacíos. */
+export function conConsulta(ruta: string, consulta?: Record<string, unknown>): string {
+  const params = new URLSearchParams()
+  for (const [clave, valor] of Object.entries(consulta ?? {})) {
+    if (valor === null || valor === undefined || valor === '') continue
+    params.set(clave, String(valor))
+  }
+  const texto = params.toString()
+  return texto ? `${ruta}?${texto}` : ruta
+}
+
 export type Ajuste = {
   /** Positivo suma, negativo resta. */
   puntos: number
   motivo: string
+}
+
+export type AlertaActivaSalida = {
+  comercio_id: number | null
+  comercio: string | null
+  indicador: IndicadorSalida
+}
+
+export type AlertaFraudeSalida = {
+  clave: string
+  titulo: string
+  detalle: string
+  accion: string
+  comercio_id: number | null
+  vecino_id: number | null
+}
+
+export type Aprobacion = {
+  comentario?: string | null
 }
 
 export type BeneficioNuevo = {
@@ -130,6 +160,7 @@ export type CambioParametroSalida = {
   valor_nuevo: Record<string, unknown>
   motivo: string
   usuario_id: number | null
+  usuario?: string | null
   cambiado_en: string
 }
 
@@ -152,6 +183,8 @@ export type CanjeSalida = {
   vencido_en: string | null
   cuenta_para_p19: boolean
 }
+
+export type CausaSancion = 'nego_codigo' | 'fraude' | 'otra'
 
 export type CifrasMesSalida = {
   inscritos: number
@@ -193,17 +226,35 @@ export type ComercioAdmin = {
   slug: string
   estado: EstadoComercio
   alta_en: string
+  suspendido_hasta?: string | null
   es_demo: boolean
 }
 
+/** Edición del comercio. El slug no cambia: es la dirección del QR ya impreso. */
 export type ComercioCambio = {
-  estado: EstadoComercio
+  nombre?: string | null
+  rubro?: string | null
+  rut?: string | null
+  direccion?: string | null
+  estado?: EstadoComercio | null
 }
 
 export type ComercioDeUsuario = {
   id: number
   nombre: string
   slug: string
+  estado?: string
+  suspendido_hasta?: string | null
+}
+
+export type ComercioDetalle = {
+  comercio: ComercioAdmin
+  usuarios: UsuarioDeComercio[]
+  vigentes: BeneficioSalida[]
+  proximos: BeneficioSalida[]
+  pendientes: BeneficioSalida[]
+  sanciones: SancionSalida[]
+  sugerencias: Record<string, SugerenciaSancion>
 }
 
 export type ComercioNuevo = {
@@ -251,6 +302,21 @@ export type ControlSalida = {
   mensaje: string
   /** Campos del formulario que hay que mirar. */
   campos?: string[]
+}
+
+export type CupoComparadoSalida = {
+  comercio_id: number
+  comercio: string
+  estado: string
+  en_piso: boolean
+  base: number
+  arrastre: number
+  extra: number
+  total: number
+  usado: number
+  reservado: number
+  total_anterior: number | null
+  usado_anterior: number | null
 }
 
 export type CupoExtra = {
@@ -306,6 +372,16 @@ export type EstadoBoleta = 'pendiente' | 'aprobada' | 'rechazada'
 export type EstadoCanje = 'activo' | 'usado' | 'vencido'
 
 export type EstadoComercio = 'activo' | 'suspendido' | 'retirado'
+
+export type EstadoSolicitud = 'nueva' | 'contactada' | 'incorporada' | 'descartada'
+
+export type EstadoTarea = {
+  tarea: string
+  nombre: string
+  ejecutada_en: string | null
+  forzada: boolean
+  resultado: Record<string, unknown>
+}
 
 export type EstadoVecino = 'activo' | 'suspendido' | 'cerrado'
 
@@ -467,6 +543,8 @@ export type ParametroSalida = {
   valor: Record<string, unknown>
   actualizado_en: string
   actualizado_por: number | null
+  actualizado_por_nombre?: string | null
+  esquema?: Record<string, unknown>
 }
 
 export type PedirCodigo = {
@@ -476,6 +554,23 @@ export type PedirCodigo = {
 export type PendientesSalida = {
   boletas: number
   puntos: number
+}
+
+export type PlantillaCambio = {
+  texto: string
+}
+
+export type PlantillaSalida = {
+  clave: string
+  momento: string
+  texto: string
+  texto_base: string
+  variables: string[]
+  ejemplo: Record<string, string>
+  vista_previa: string
+  editada: boolean
+  actualizado_en: string | null
+  actualizado_por: string | null
 }
 
 export type PropuestaBeneficios = {
@@ -568,6 +663,16 @@ export type RevisionDiferido = {
   nota?: string | null
 }
 
+/** Lo que el operador mira cada lunes (sección 10). */
+export type RevisionSemanalSalida = {
+  semana: string
+  semana_anterior: string
+  cupos: CupoComparadoSalida[]
+  red: IndicadorSalida[]
+  alertas: AlertaActivaSalida[]
+  fraude: AlertaFraudeSalida[]
+}
+
 export type Rol = 'admin' | 'operador' | 'comercio'
 
 export type SaldoSalida = {
@@ -575,7 +680,43 @@ export type SaldoSalida = {
   retenido: number
 }
 
+export type SalidaPrograma = {
+  motivo: string
+  confirmar: boolean
+}
+
+export type SalidaRealizada = {
+  puntos_anulados: number
+  codigos_anulados: number
+  boletas: number
+  mensaje: string
+}
+
+export type SancionNueva = {
+  tipo: TipoSancion
+  causa: CausaSancion
+  motivo: string
+  evidencia: string
+}
+
+export type SancionSalida = {
+  id: number
+  tipo: TipoSancion
+  causa: CausaSancion
+  motivo: string
+  evidencia: string
+  hasta: string | null
+  decidida_por: number | null
+  decidida_en: string
+}
+
 export type Semaforo = 'verde' | 'ambar' | 'rojo'
+
+export type SolicitudCambio = {
+  estado: EstadoSolicitud
+  nota?: string | null
+  comercio_id?: number | null
+}
 
 export type SolicitudNueva = {
   comercio: string
@@ -602,6 +743,16 @@ export type SolicitudSalida = {
   direccion: string | null
   mensaje: string | null
   creado_en: string
+  estado: EstadoSolicitud
+  nota: string | null
+  comercio_id: number | null
+  atendida_en: string | null
+}
+
+export type SugerenciaSancion = {
+  tipo: TipoSancion
+  razon: string
+  semanas_suspension: number
 }
 
 export type Tarjeta = {
@@ -623,6 +774,9 @@ export type TipoBeneficio = 'descuento' | 'producto'
 
 export type TipoMovimiento = 'gana' | 'retiene' | 'libera' | 'canjea' | 'vence' | 'ajusta'
 
+/** Sección 9: advertencia escrita, suspensión de beneficios o salida de la red. */
+export type TipoSancion = 'advertencia' | 'suspension' | 'salida'
+
 export type UsoEnCaja = {
   /** Acepta espacios: 482 913. */
   codigo: string
@@ -631,7 +785,17 @@ export type UsoEnCaja = {
 }
 
 export type UsuarioCambio = {
+  activo?: boolean | null
+  nombre?: string | null
+  contrasena?: string | null
+}
+
+export type UsuarioDeComercio = {
+  id: number
+  email: string
+  nombre: string
   activo: boolean
+  creado_en: string
 }
 
 export type UsuarioNuevo = {
@@ -693,6 +857,15 @@ export type VencimientoSalida = {
   puntos: number
 }
 
+export type VistaPrevia = {
+  texto: string
+}
+
+export type VistaPreviaSalida = {
+  texto: string
+  error?: string | null
+}
+
 export type Yo = {
   id: number
   email: string
@@ -725,7 +898,7 @@ export function crearApi(pedir: Pedir) {
       /** Crear un usuario */
       crearUsuario: (cuerpo: UsuarioNuevo) =>
         pedir<UsuarioSalida>('POST', `/admin/usuarios`, { json: cuerpo }),
-      /** Activar o desactivar un usuario */
+      /** Editar nombre o contraseña, activar o desactivar un usuario */
       cambiarUsuario: (usuarioId: number, cuerpo: UsuarioCambio) =>
         pedir<UsuarioSalida>('PATCH', `/admin/usuarios/${encodeURIComponent(String(usuarioId))}`, { json: cuerpo }),
     },
@@ -751,21 +924,30 @@ export function crearApi(pedir: Pedir) {
       /** Dar de alta un comercio (solo admin) */
       crear: (cuerpo: ComercioNuevo) =>
         pedir<ComercioAdmin>('POST', `/admin/comercios`, { json: cuerpo }),
-      /** Suspender, reactivar o retirar un comercio (solo admin) */
+      /** Editar, suspender, reactivar o retirar un comercio (solo admin) */
       cambiar: (comercioId: number, cuerpo: ComercioCambio) =>
         pedir<ComercioAdmin>('PATCH', `/admin/comercios/${encodeURIComponent(String(comercioId))}`, { json: cuerpo }),
+      /** Un comercio con usuarios, beneficios y sanciones */
+      detalle: (comercioId: number) =>
+        pedir<ComercioDetalle>('GET', `/admin/comercios/${encodeURIComponent(String(comercioId))}`),
+      /** Registrar una sanción con su evidencia (sección 9) */
+      sancionar: (comercioId: number, cuerpo: SancionNueva) =>
+        pedir<ComercioDetalle>('POST', `/admin/comercios/${encodeURIComponent(String(comercioId))}/sanciones`, { json: cuerpo }),
       /** Beneficios por aprobar (B7) */
       porAprobar: () =>
         pedir<PropuestaPendiente[]>('GET', `/admin/beneficios/pendientes`),
       /** Aprobar la propuesta de beneficios de un comercio */
-      aprobar: (comercioId: number) =>
-        pedir<BeneficioSalida[]>('POST', `/admin/comercios/${encodeURIComponent(String(comercioId))}/beneficios/aprobar`),
+      aprobar: (comercioId: number, cuerpo: Aprobacion | null) =>
+        pedir<BeneficioSalida[]>('POST', `/admin/comercios/${encodeURIComponent(String(comercioId))}/beneficios/aprobar`, { json: cuerpo }),
       /** Rechazar la propuesta de beneficios con un comentario */
       rechazar: (comercioId: number, cuerpo: Revision) =>
         pedir<BeneficioSalida[]>('POST', `/admin/comercios/${encodeURIComponent(String(comercioId))}/beneficios/rechazar`, { json: cuerpo }),
       /** Comercios interesados en unirse */
       solicitudes: () =>
         pedir<SolicitudSalida[]>('GET', `/admin/solicitudes`),
+      /** Marcar una solicitud como atendida */
+      atender: (solicitudId: number, cuerpo: SolicitudCambio) =>
+        pedir<SolicitudSalida>('PATCH', `/admin/solicitudes/${encodeURIComponent(String(solicitudId))}`, { json: cuerpo }),
     },
     vecinos: {
       /** Inscribir a un vecino (al escanear el QR de un comercio) */
@@ -786,6 +968,9 @@ export function crearApi(pedir: Pedir) {
       /** Generar un enlace nuevo (el anterior deja de funcionar) */
       nuevoEnlace: (vecinoId: number) =>
         pedir<EnlaceNuevo>('POST', `/admin/vecinos/${encodeURIComponent(String(vecinoId))}/enlace`),
+      /** Salida del programa: borra datos personales y anula puntos (sección 8) */
+      salida: (vecinoId: number, cuerpo: SalidaPrograma) =>
+        pedir<SalidaRealizada>('POST', `/admin/vecinos/${encodeURIComponent(String(vecinoId))}/salida`, { json: cuerpo }),
     },
     boletas: {
       /** Subir la foto de una boleta (queda pendiente y se lee sola) */
@@ -869,6 +1054,21 @@ export function crearApi(pedir: Pedir) {
       /** Indicadores de la sección 10, con alertas */
       indicadores: () =>
         pedir<IndicadoresRedSalida>('GET', `/admin/indicadores`),
+      /** Alertas de fraude de la sección 9 */
+      fraude: () =>
+        pedir<AlertaFraudeSalida[]>('GET', `/admin/fraude`),
+      /** Revisión del lunes: cupos contra la semana anterior, cobertura y alertas */
+      revisionSemanal: () =>
+        pedir<RevisionSemanalSalida>('GET', `/admin/revision-semanal`),
+      /** Boletas en CSV (por fecha de recepción) */
+      exportarBoletas: (consulta?: { desde?: string | null; hasta?: string | null }): string =>
+        conConsulta(`/api/admin/exportar/boletas.csv`, consulta),
+      /** Canjes en CSV (por fecha de emisión) */
+      exportarCanjes: (consulta?: { desde?: string | null; hasta?: string | null }): string =>
+        conConsulta(`/api/admin/exportar/canjes.csv`, consulta),
+      /** Reporte por comercio en CSV (ventana de P15 e indicadores) */
+      exportarComercios: (): string =>
+        `/api/admin/exportar/comercios.csv`,
     },
     parametros: {
       /** Valores vigentes del programa para el público */
@@ -877,6 +1077,9 @@ export function crearApi(pedir: Pedir) {
       /** P1 a P20 y umbrales, con su valor vigente */
       listar: () =>
         pedir<ParametroSalida[]>('GET', `/admin/parametros`),
+      /** Últimos cambios de parámetros: quién, qué y cuándo */
+      ultimosCambios: () =>
+        pedir<CambioParametroSalida[]>('GET', `/admin/parametros/cambios`),
       /** Cambiar un parámetro (solo admin) */
       cambiar: (codigo: string, cuerpo: CambioParametroNuevo) =>
         pedir<ParametroSalida>('PUT', `/admin/parametros/${encodeURIComponent(String(codigo))}`, { json: cuerpo }),
@@ -884,7 +1087,21 @@ export function crearApi(pedir: Pedir) {
       cambios: (codigo: string) =>
         pedir<CambioParametroSalida[]>('GET', `/admin/parametros/${encodeURIComponent(String(codigo))}/cambios`),
     },
+    mensajes: {
+      /** Plantillas de mensajes con vista previa (solo admin) */
+      listar: () =>
+        pedir<PlantillaSalida[]>('GET', `/admin/plantillas`),
+      /** Cómo se vería un texto con datos de ejemplo, sin guardarlo */
+      vistaPrevia: (clave: string, cuerpo: VistaPrevia) =>
+        pedir<VistaPreviaSalida>('POST', `/admin/plantillas/${encodeURIComponent(String(clave))}/vista-previa`, { json: cuerpo }),
+      /** Cambiar el texto de una plantilla */
+      editar: (clave: string, cuerpo: PlantillaCambio) =>
+        pedir<PlantillaSalida>('PUT', `/admin/plantillas/${encodeURIComponent(String(clave))}`, { json: cuerpo }),
+    },
     tareas: {
+      /** Última ejecución de cada tarea programada */
+      estado: () =>
+        pedir<EstadoTarea[]>('GET', `/admin/tareas`),
       /** Correr las tareas del día: códigos vencidos, puntos vencidos y cupos (solo admin) */
       ejecutar: (cuerpo: EjecutarTareas) =>
         pedir<ResultadoTareas>('POST', `/admin/tareas`, { json: cuerpo }),

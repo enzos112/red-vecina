@@ -21,6 +21,9 @@ class ParametroSalida(BaseModel):
     valor: dict[str, Any]
     actualizado_en: datetime
     actualizado_por: int | None
+    actualizado_por_nombre: str | None = None
+    # JSON Schema del valor: campos, tipos y rangos válidos, para armar el formulario.
+    esquema: dict[str, Any] = {}
 
 
 class CambioParametroNuevo(BaseModel):
@@ -37,6 +40,7 @@ class CambioParametroSalida(BaseModel):
     valor_nuevo: dict[str, Any]
     motivo: str
     usuario_id: int | None
+    usuario: str | None = None
     cambiado_en: datetime
 
 

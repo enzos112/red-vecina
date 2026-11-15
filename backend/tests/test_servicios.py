@@ -222,6 +222,8 @@ def test_tareas_idempotentes(sesion, p, red):
     assert forzada == {
         "liberar_codigos": {"codigos": 0},
         "vencer_puntos": {"vecinos": 0, "puntos": 0},
+        "levantar_suspensiones": {"comercios": 0},
+        "cerrar_inactivas": {"cuentas": 0},
         "recalcular_cupos": {"creados": 0},
     }
     tareas.ejecutar(sesion, ahora + timedelta(days=1))  # otro día, sin efectos nuevos

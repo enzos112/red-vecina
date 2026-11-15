@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter
@@ -16,6 +17,28 @@ class EjecutarTareas(BaseModel):
 
 class ResultadoTareas(BaseModel):
     resultados: dict[str, dict[str, Any]]  # vacío si no había nada pendiente
+
+
+class EstadoTarea(BaseModel):
+    tarea: str
+    nombre: str
+    ejecutada_en: datetime | None
+    forzada: bool
+    resultado: dict[str, Any]
+
+
+@router.get("/admin/tareas", summary="Última ejecución de cada tarea programada")
+def estado(_: Admin, sesion: SesionDB) -> list[EstadoTarea]:
+    return [
+        EstadoTarea(
+            tarea=nombre,
+            nombre=servicio.NOMBRES[nombre],
+            ejecutada_en=e.ejecutada_en if e else None,
+            forzada=e.forzada if e else False,
+            resultado=e.resultado if e else {},
+        )
+        for nombre, e in servicio.ultimas(sesion).items()
+    ]
 
 
 @router.post(

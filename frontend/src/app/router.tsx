@@ -93,8 +93,28 @@ export const router = createBrowserRouter([
         lazy: async () => ({ Component: (await import('@/features/admin/vecinos/PaginaVecino')).PaginaVecino }),
       },
       { path: 'canjes', lazy: async () => ({ Component: (await import('@/features/admin/canjes/PaginaCanjes')).PaginaCanjes }) },
-      // Comercios, red y parámetros llegan en la fase 7.
-      { path: ':seccion', lazy: async () => ({ Component: (await import('@/features/admin/PaginaSeccion')).PaginaSeccion }) },
+      {
+        path: 'comercios',
+        lazy: async () => ({ Component: (await import('@/features/admin/comercios/PaginaComercios')).PaginaComercios }),
+      },
+      {
+        path: 'comercios/:id',
+        lazy: async () => ({ Component: (await import('@/features/admin/comercios/PaginaComercio')).PaginaComercio }),
+      },
+      { path: 'red', lazy: async () => ({ Component: (await import('@/features/admin/red/PaginaRed')).PaginaRed }) },
+      {
+        path: 'parametros',
+        lazy: async () => ({ Component: (await import('@/features/admin/parametros/PaginaParametros')).PaginaParametros }),
+      },
+      {
+        path: 'mensajes',
+        lazy: async () => ({ Component: (await import('@/features/admin/mensajes/PaginaMensajes')).PaginaMensajes }),
+      },
+      {
+        path: 'sistema',
+        lazy: async () => ({ Component: (await import('@/features/admin/sistema/PaginaSistema')).PaginaSistema }),
+      },
+      { path: '*', lazy: async () => ({ Component: (await import('@/features/admin/PaginaSeccion')).IrAlInicioAdmin }) },
     ],
   },
 ])

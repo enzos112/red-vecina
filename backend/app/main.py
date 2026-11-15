@@ -14,6 +14,7 @@ from app.modulos.canjes.rutas import router as canjes
 from app.modulos.comercios.rutas import router as comercios
 from app.modulos.cuentas.rutas import router as cuentas
 from app.modulos.equilibrio.rutas import router as cupos
+from app.modulos.mensajes.rutas import router as mensajes
 from app.modulos.parametros.rutas import router as parametros
 from app.modulos.reportes.rutas import router as reportes
 from app.modulos.vecinos.rutas import router as vecinos
@@ -34,7 +35,18 @@ ETIQUETAS = [
     {"name": "Salud", "description": "Monitor del servicio. No consulta la base."},
 ]
 
-MODULOS = [cuentas, comercios, vecinos, boletas, canjes, cupos, reportes, parametros, tareas]
+MODULOS = [
+    cuentas,
+    comercios,
+    vecinos,
+    boletas,
+    canjes,
+    cupos,
+    reportes,
+    parametros,
+    mensajes,
+    tareas,
+]
 
 
 def id_operacion(ruta: APIRoute) -> str:

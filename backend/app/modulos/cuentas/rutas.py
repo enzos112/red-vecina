@@ -95,9 +95,21 @@ def crear_usuario(
     return UsuarioSalida.model_validate(usuario)
 
 
-@router.patch("/admin/usuarios/{usuario_id}", summary="Activar o desactivar un usuario")
+@router.patch(
+    "/admin/usuarios/{usuario_id}",
+    summary="Editar nombre o contraseña, activar o desactivar un usuario",
+)
 def cambiar_usuario(
     usuario_id: int, datos: UsuarioCambio, admin: Admin, sesion: SesionDB, ahora: Ahora
 ) -> UsuarioSalida:
-    usuario = servicio.cambiar_activo(sesion, usuario_id, datos.activo, ahora, admin.id)
+    usuario = servicio.editar(
+        sesion,
+        usuario_id,
+        nombre=datos.nombre,
+        contrasena=datos.contrasena,
+        ahora=ahora,
+        admin_id=admin.id,
+    )
+    if datos.activo is not None and datos.activo != usuario.activo:
+        usuario = servicio.cambiar_activo(sesion, usuario_id, datos.activo, ahora, admin.id)
     return UsuarioSalida.model_validate(usuario)

@@ -147,13 +147,20 @@ Admin = Annotated[Usuario, Depends(requiere(Rol.ADMIN))]
 UsuarioComercio = Annotated[Usuario, Depends(requiere(Rol.COMERCIO))]
 
 
-def comercio_actual(usuario: UsuarioComercio, sesion: SesionDB) -> Comercio:
+def comercio_actual(usuario: UsuarioComercio, sesion: SesionDB, ahora: Ahora) -> Comercio:
     """El comercio del usuario. Las rutas del comercio nunca reciben un comercio_id: así un
-    comercio no puede pedir datos de otro."""
+    comercio no puede pedir datos de otro.
+
+    Un comercio que salió de la red conserva el portal mientras tenga códigos vigentes: la
+    salida respeta los códigos ya emitidos (sección 5).
+    """
+    from app.modulos.canjes import servicio as canjes
     from app.modulos.comercios import servicio as comercios
 
     comercio = comercios.obtener(sesion, usuario.comercio_id) if usuario.comercio_id else None
-    if comercio is None or not comercios.en_red(comercio):
+    if comercio is None or (
+        not comercios.en_red(comercio) and not canjes.tiene_activos(sesion, comercio.id, ahora)
+    ):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Tu comercio ya no está en la red.")
     return comercio
 

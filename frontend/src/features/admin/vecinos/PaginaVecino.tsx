@@ -1,4 +1,4 @@
-import { ArrowLeft, KeyRound, LoaderCircle, Scale } from 'lucide-react'
+import { ArrowLeft, KeyRound, LoaderCircle, LogOut, Scale } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import type { TipoMovimiento, VecinoDetalle } from '@/lib/api'
 import { codigo, dia, fechaHora, numero, pesos } from '@/lib/formato'
 import { enlaceWhatsapp } from '@/features/vecino/consultas'
-import { mensajeError, useAjustar, useNuevoEnlace, useVecino } from '../consultas'
+import { mensajeError, useAjustar, useNuevoEnlace, useSalidaVecino, useVecino } from '../consultas'
 import { EstadoBoletaBadge, EstadoCanjeBadge, EstadoLista, MensajeParaVecino } from '../partes'
 
 const TIPO: Record<TipoMovimiento, string> = {
@@ -135,7 +135,63 @@ function Enlace({ v }: { v: VecinoDetalle }) {
   )
 }
 
-/** /admin/vecinos/:id — saldo, movimientos, boletas y canjes; ajuste y enlace. */
+/** Sección 8: el vecino pide salir. Se borran sus datos y se anulan sus puntos, previa confirmación. */
+function Salida({ v }: { v: VecinoDetalle }) {
+  const id = useId()
+  const salida = useSalidaVecino(v.id)
+  const [motivo, setMotivo] = useState('')
+  const [confirmar, setConfirmar] = useState(false)
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <LogOut className="size-5" aria-hidden="true" />
+          Salida del programa
+        </CardTitle>
+        <CardDescription>
+          Si el vecino lo pide: se borran su nombre, teléfono y fotos de boletas, y se anulan sus{' '}
+          {numero(v.saldo.disponible + v.saldo.retenido)} puntos. Las compras y canjes quedan sin datos personales para
+          los totales de la red. No se puede deshacer.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <Field>
+          <FieldLabel htmlFor={`${id}-motivo`}>Cómo lo pidió</FieldLabel>
+          <Input
+            id={`${id}-motivo`}
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            placeholder="Por ejemplo: lo pidió por WhatsApp el 15/11"
+            maxLength={500}
+          />
+        </Field>
+        {confirmar ? (
+          <div className="flex flex-col gap-3 rounded-lg border-2 border-peligro bg-peligro-fondo p-4">
+            <p className="font-bold">¿Confirmas la salida de {v.nombre}? Sus datos se borran ahora.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="destructive" onClick={() => salida.mutate(motivo)} disabled={salida.isPending}>
+                {salida.isPending && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+                Sí, borrar sus datos
+              </Button>
+              <Button variant="ghost" onClick={() => setConfirmar(false)}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button variant="outline" className="self-start" disabled={!motivo.trim()} onClick={() => setConfirmar(true)}>
+            Dar de baja
+          </Button>
+        )}
+        {salida.isError && <p className="text-peligro-texto">{mensajeError(salida.error)}</p>}
+        {salida.isSuccess && <p className="text-exito-texto">{salida.data.mensaje}</p>}
+      </CardContent>
+    </Card>
+  )
+}
+
+/** /admin/vecinos/:id — saldo, movimientos, boletas y canjes; ajuste, enlace y salida. */
 export function PaginaVecino() {
   const { id } = useParams()
   const vecino = useVecino(Number(id))
@@ -192,10 +248,17 @@ export function PaginaVecino() {
         </Alert>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Ajuste v={v} />
-        <Enlace v={v} />
-      </div>
+      {v.estado === 'cerrado' ? (
+        <Alert>
+          <AlertDescription>Esta cuenta está cerrada: sus datos personales se borraron y su enlace no funciona.</AlertDescription>
+        </Alert>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Ajuste v={v} />
+          <Enlace v={v} />
+          <Salida v={v} />
+        </div>
+      )}
 
       <Tabs defaultValue="movimientos">
         <TabsList>

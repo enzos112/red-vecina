@@ -569,3 +569,73 @@ def puntos_emitidos(sesion: Session, desde: datetime, hasta: datetime) -> int:
         )
         or 0
     )
+
+
+def borrar_datos_vecino(sesion: Session, vecino_id: int, motivo: str, ahora: datetime) -> int:
+    """Salida del vecino: las pendientes se cierran sin puntos y se borran las fotos y su
+    lectura. Montos, fechas y comercio quedan para los totales anónimos."""
+    almacen = AlmacenBaseDatos(sesion)
+    lista = sesion.scalars(select(Boleta).where(Boleta.vecino_id == vecino_id)).all()
+    for b in lista:
+        if b.estado == EstadoBoleta.PENDIENTE:
+            b.estado = EstadoBoleta.RECHAZADA
+            b.motivo = motivo
+            b.revisada_en = ahora
+        if b.archivo_id is not None:
+            archivo_id = b.archivo_id
+            b.archivo_id = None
+            sesion.flush()
+            almacen.borrar(archivo_id)
+        b.lectura = None
+        b.controles = None
+    sesion.flush()
+    return len(lista)
+
+
+def ultima_compra(sesion: Session, vecino_id: int) -> datetime | None:
+    return sesion.scalar(
+        select(func.max(Boleta.fecha_compra)).where(Boleta.vecino_id == vecino_id, _APROBADA)
+    )
+
+
+# --- Para alertas de fraude (sección 9) y exportación ---
+
+
+def compras_para_fraude(
+    sesion: Session, desde: datetime, hasta: datetime
+) -> list[tuple[int, int, datetime]]:
+    """(vecino_id, comercio_id, fecha_compra) de las boletas no rechazadas del periodo."""
+    filas = sesion.execute(
+        select(Boleta.vecino_id, Boleta.comercio_id, Boleta.fecha_compra).where(
+            Boleta.estado != EstadoBoleta.RECHAZADA,
+            Boleta.comercio_id.is_not(None),
+            Boleta.fecha_compra >= desde,
+            Boleta.fecha_compra < hasta,
+        )
+    ).all()
+    return [(v, c, f) for v, c, f in filas]
+
+
+def vecinos_con_compras(sesion: Session, comercio_id: int, desde: datetime, hasta: datetime) -> int:
+    """Vecinos distintos con boletas aprobadas en el comercio, por fecha de compra."""
+    return (
+        sesion.scalar(
+            select(func.count(func.distinct(Boleta.vecino_id))).where(
+                Boleta.comercio_id == comercio_id,
+                _APROBADA,
+                Boleta.fecha_compra >= desde,
+                Boleta.fecha_compra < hasta,
+            )
+        )
+        or 0
+    )
+
+
+def para_exportar(sesion: Session, desde: datetime | None, hasta: datetime | None) -> list[Boleta]:
+    """Por fecha de recepción."""
+    consulta = select(Boleta).order_by(Boleta.recibida_en, Boleta.id)
+    if desde is not None:
+        consulta = consulta.where(Boleta.recibida_en >= desde)
+    if hasta is not None:
+        consulta = consulta.where(Boleta.recibida_en < hasta)
+    return list(sesion.scalars(consulta))

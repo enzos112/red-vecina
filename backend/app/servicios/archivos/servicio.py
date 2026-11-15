@@ -16,6 +16,8 @@ class Almacen(Protocol):
 
     def leer(self, archivo_id: int) -> tuple[bytes, str] | None: ...
 
+    def borrar(self, archivo_id: int) -> None: ...
+
 
 class AlmacenBaseDatos:
     def __init__(self, sesion: Session) -> None:
@@ -30,3 +32,9 @@ class AlmacenBaseDatos:
     def leer(self, archivo_id: int) -> tuple[bytes, str] | None:
         archivo = self.sesion.get(Archivo, archivo_id)
         return (archivo.datos, archivo.tipo_mime) if archivo else None
+
+    def borrar(self, archivo_id: int) -> None:
+        archivo = self.sesion.get(Archivo, archivo_id)
+        if archivo is not None:
+            self.sesion.delete(archivo)
+            self.sesion.flush()

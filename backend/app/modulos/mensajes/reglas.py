@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 RUTA_PLANTILLAS = Path(__file__).with_name("plantillas.json")
+RUTA_EJEMPLOS = Path(__file__).with_name("ejemplos.json")
 VARIABLE = re.compile(r"\{(\w+)\}")
 
 
@@ -18,6 +19,26 @@ def armar(texto: str, datos: dict[str, Any]) -> str:
     if faltan:
         raise ValueError(f"Faltan datos para el mensaje: {', '.join(sorted(faltan))}.")
     return VARIABLE.sub(lambda m: str(datos[m.group(1)]), texto).strip()
+
+
+def validar_texto(texto: str, permitidas: set[str]) -> str:
+    """Un texto editado solo puede usar las variables que la plantilla sabe llenar."""
+    texto = texto.strip()
+    if not texto:
+        raise ValueError("Escribe el texto del mensaje.")
+    if texto.count("{") != texto.count("}"):
+        raise ValueError("Revisa las llaves: cada variable va entre { y }.")
+    desconocidas = variables(texto) - permitidas
+    if desconocidas:
+        lista = ", ".join("{" + v + "}" for v in sorted(desconocidas))
+        raise ValueError(
+            f"Esta plantilla no sabe llenar {lista}. Usa solo las variables de la lista."
+        )
+    return texto
+
+
+def leer_ejemplos() -> dict[str, str]:
+    return json.loads(RUTA_EJEMPLOS.read_text(encoding="utf-8"))
 
 
 def leer_plantillas() -> list[dict[str, str]]:

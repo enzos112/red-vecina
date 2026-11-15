@@ -3,7 +3,7 @@
 from app.core.auditoria import RegistroAuditoria
 from app.modulos.boletas.modelos import Boleta
 from app.modulos.canjes.modelos import Canje, IngresoDiferido
-from app.modulos.comercios.modelos import Beneficio, Comercio, SolicitudComercio
+from app.modulos.comercios.modelos import Beneficio, Comercio, SancionComercio, SolicitudComercio
 from app.modulos.cuentas.modelos import Usuario
 from app.modulos.equilibrio.modelos import CupoSemanal
 from app.modulos.mensajes.modelos import PlantillaMensaje
@@ -27,6 +27,7 @@ __all__ = [
     "Parametro",
     "PlantillaMensaje",
     "RegistroAuditoria",
+    "SancionComercio",
     "SolicitudComercio",
     "Usuario",
     "Vecino",

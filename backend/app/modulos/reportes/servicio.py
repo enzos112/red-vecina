@@ -4,13 +4,15 @@ Se miran los lunes al recalcular cupos (sección 10), así que el uso del cupo s
 sobre semanas cerradas: la semana en curso todavía no dice nada.
 """
 
-from datetime import datetime, timedelta
+import csv
+import io
+from datetime import date, datetime, timedelta
 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.formato import MESES
-from app.core.tiempo import dia_local, inicio_dia_utc
+from app.core.tiempo import a_local, dia_local, inicio_dia_utc
 from app.modulos.boletas import servicio as boletas
 from app.modulos.canjes import servicio as canjes
 from app.modulos.comercios import servicio as comercios
@@ -161,3 +163,291 @@ def reporte_mensual(
         mes_anterior=anterior,
         resumen=reglas.resumen_mes(nombre, actual, anterior),
     )
+
+
+# --- Alertas de fraude (sección 9) ---
+
+UNA_SEMANA_DIAS = 7
+
+
+def alertas_fraude(sesion: Session, ahora: datetime, p: Parametros) -> list[reglas.AlertaFraude]:
+    """Concentración de boletas (U12) y horarios superpuestos (U13) en los últimos 7 días;
+    salto de ventas (U14) entre las dos últimas semanas cerradas."""
+    desde = ahora - timedelta(days=UNA_SEMANA_DIAS)
+    filas = boletas.compras_para_fraude(sesion, desde, ahora)
+    nombres_v = vecinos.nombres(sesion, {v for v, _, _ in filas})
+    nombres_c = comercios.nombres(sesion, {c for _, c, _ in filas})
+    compras = [
+        reglas.CompraVecino(
+            vecino_id=v,
+            vecino=nombres_v.get(v, f"Vecino {v}"),
+            comercio_id=c,
+            comercio=nombres_c.get(c, f"Comercio {c}"),
+            momento=f,
+        )
+        for v, c, f in filas
+    ]
+    alertas = reglas.concentracion_boletas(compras, p) + reglas.horarios_superpuestos(compras, p)
+
+    semana = equilibrio.semana_actual(ahora, p)
+    cerrada = inicio_dia_utc(semana - UNA_SEMANA)
+    anterior = inicio_dia_utc(semana - 2 * UNA_SEMANA)
+    fin = inicio_dia_utc(semana)
+    for c in comercios.activos(sesion):
+        alerta = reglas.alza_ventas(
+            c.id,
+            c.nombre,
+            boletas.ventas(sesion, c.id, anterior, cerrada),
+            boletas.ventas(sesion, c.id, cerrada, fin),
+            boletas.vecinos_con_compras(sesion, c.id, anterior, cerrada),
+            boletas.vecinos_con_compras(sesion, c.id, cerrada, fin),
+            p,
+        )
+        if alerta:
+            alertas.append(alerta)
+    return alertas
+
+
+# --- Revisión del lunes (sección 10) ---
+
+
+class CupoComparado(BaseModel):
+    comercio_id: int
+    comercio: str
+    estado: str
+    en_piso: bool
+    base: int
+    arrastre: int
+    extra: int
+    total: int
+    usado: int
+    reservado: int
+    total_anterior: int | None  # semana anterior; None si el comercio no existía
+    usado_anterior: int | None
+
+
+class AlertaActiva(BaseModel):
+    comercio_id: int | None
+    comercio: str | None
+    indicador: reglas.Indicador
+
+
+class RevisionSemanal(BaseModel):
+    semana: date
+    semana_anterior: date
+    cupos: list[CupoComparado]
+    red: list[reglas.Indicador]
+    alertas: list[AlertaActiva]
+    fraude: list[reglas.AlertaFraude]
+
+
+def revision_semanal(sesion: Session, ahora: datetime, p: Parametros) -> RevisionSemanal:
+    ind = indicadores_red(sesion, ahora, p)  # también asegura los cupos de la semana
+    semana = equilibrio.semana_actual(ahora, p)
+    previa = semana - UNA_SEMANA
+    cupos = []
+    for c in comercios.todos(sesion):
+        if not comercios.en_red(c):
+            continue
+        actual = equilibrio.obtener(sesion, c.id, semana)
+        if actual is None:
+            continue
+        antes = equilibrio.obtener(sesion, c.id, previa)
+        cupos.append(
+            CupoComparado(
+                comercio_id=c.id,
+                comercio=c.nombre,
+                estado=c.estado,
+                en_piso=actual.en_piso,
+                base=actual.base,
+                arrastre=actual.arrastre,
+                extra=actual.extra,
+                total=actual.total,
+                usado=actual.usado,
+                reservado=actual.reservado,
+                total_anterior=antes.total if antes else None,
+                usado_anterior=antes.usado if antes else None,
+            )
+        )
+    alertas = [
+        AlertaActiva(comercio_id=None, comercio=None, indicador=i) for i in ind.red if i.alerta
+    ]
+    for r in ind.comercios:
+        alertas += [
+            AlertaActiva(comercio_id=r.comercio_id, comercio=r.comercio, indicador=i)
+            for i in r.indicadores
+            if i.alerta
+        ]
+    return RevisionSemanal(
+        semana=semana,
+        semana_anterior=previa,
+        cupos=cupos,
+        red=ind.red,
+        alertas=alertas,
+        fraude=alertas_fraude(sesion, ahora, p),
+    )
+
+
+# --- Exportar a CSV ---
+#
+# Punto y coma y BOM: Excel en español lo abre directo con columnas y tildes.
+
+
+def _csv(encabezado: list[str], filas: list[list]) -> str:
+    salida = io.StringIO()
+    escritor = csv.writer(salida, delimiter=";", lineterminator="\r\n")
+    escritor.writerow(encabezado)
+    escritor.writerows(filas)
+    return "\ufeff" + salida.getvalue()
+
+
+def _local(momento: datetime | None) -> str:
+    return a_local(momento).strftime("%Y-%m-%d %H:%M") if momento else ""
+
+
+def _vacio(valor) -> object:
+    return "" if valor is None else valor
+
+
+def _dec(valor) -> str:
+    """Decimales con coma, como los espera Excel en Chile."""
+    if valor is None:
+        return ""
+    return f"{float(valor):.1f}".replace(".", ",")
+
+
+def _si(valor: bool) -> str:
+    return "sí" if valor else "no"
+
+
+ENCABEZADO_BOLETAS = [
+    "id",
+    "recibida",
+    "fecha_compra",
+    "comercio",
+    "vecino_id",
+    "origen",
+    "folio",
+    "monto_total",
+    "monto_valido",
+    "puntos",
+    "estado",
+    "motivo",
+    "revisada",
+]
+
+
+def csv_boletas(sesion: Session, desde: datetime | None, hasta: datetime | None) -> str:
+    lista = boletas.para_exportar(sesion, desde, hasta)
+    nombres = comercios.nombres(sesion, {b.comercio_id for b in lista if b.comercio_id})
+    filas = [
+        [
+            b.id,
+            _local(b.recibida_en),
+            _local(b.fecha_compra),
+            nombres.get(b.comercio_id or 0, ""),
+            b.vecino_id,
+            b.origen,
+            _vacio(b.folio),
+            _vacio(b.monto_total),
+            _vacio(b.monto_valido),
+            _vacio(b.puntos),
+            b.estado,
+            _vacio(b.motivo),
+            _local(b.revisada_en),
+        ]
+        for b in lista
+    ]
+    return _csv(ENCABEZADO_BOLETAS, filas)
+
+
+ENCABEZADO_CANJES = [
+    "id",
+    "emitido",
+    "comercio",
+    "vecino_id",
+    "nivel",
+    "puntos",
+    "valor_pesos",
+    "compra_minima",
+    "estado",
+    "vence",
+    "usado",
+    "monto_ticket",
+    "sin_internet",
+    "vencido",
+    "cuenta_p19",
+]
+
+
+def csv_canjes(sesion: Session, desde: datetime | None, hasta: datetime | None) -> str:
+    lista = canjes.para_exportar(sesion, desde, hasta)
+    nombres = comercios.nombres(sesion, {c.comercio_id for c in lista})
+    filas = [
+        [
+            c.id,
+            _local(c.emitido_en),
+            nombres.get(c.comercio_id, ""),
+            c.vecino_id,
+            c.nivel,
+            c.puntos,
+            c.valor_pesos,
+            c.compra_minima,
+            c.estado,
+            _local(c.vence_en),
+            _local(c.usado_en),
+            _vacio(c.monto_ticket),
+            _si(c.ingreso_diferido),
+            _local(c.vencido_en),
+            _si(c.cuenta_para_p19),
+        ]
+        for c in lista
+    ]
+    return _csv(ENCABEZADO_CANJES, filas)
+
+
+ENCABEZADO_COMERCIOS = [
+    "comercio",
+    "desde",
+    "hasta",
+    "vecinos_inscritos",
+    "ventas_registradas",
+    "canjes_recibidos",
+    "canjes_pesos",
+    "clientes_derivados",
+    "cupo_semana",
+    "cupo_usado",
+    "cupo_reservado",
+    "en_piso",
+]
+
+
+def csv_comercios(sesion: Session, ahora: datetime, p: Parametros) -> str:
+    ind = indicadores_red(sesion, ahora, p)
+    claves = [i.clave for i in ind.comercios[0].indicadores] if ind.comercios else []
+    filas = []
+    for r in ind.comercios:
+        cupo = equilibrio.cupo_vigente(sesion, r.comercio_id, ahora, p)
+        por_clave = {i.clave: i for i in r.indicadores}
+        fila = [
+            r.comercio,
+            _local(r.desde),
+            _local(r.hasta),
+            r.vecinos_inscritos,
+            r.ventas,
+            r.canjes_recibidos,
+            r.canjes_pesos,
+            r.clientes_derivados_total,
+            cupo.total,
+            cupo.usado,
+            cupo.reservado,
+            _si(cupo.en_piso),
+        ]
+        for clave in claves:
+            i = por_clave.get(clave)
+            fila += [_dec(i.valor) if i else "", _si(bool(i and i.alerta))]
+        filas.append(fila)
+    encabezado = list(ENCABEZADO_COMERCIOS)
+    for clave in claves:
+        encabezado += [clave, f"{clave}_alerta"]
+    return _csv(encabezado, filas)

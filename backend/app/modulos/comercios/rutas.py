@@ -13,21 +13,30 @@ from app.core.dependencias import (
 )
 from app.modulos.comercios import reglas, servicio
 from app.modulos.comercios.esquemas import (
+    Aprobacion,
     BeneficioSalida,
     BeneficiosComercio,
+    CausaSancion,
     ComercioAdmin,
     ComercioCambio,
+    ComercioDetalle,
     ComercioNuevo,
     ComercioPublico,
     NivelSalida,
     PropuestaBeneficios,
     PropuestaPendiente,
     Revision,
+    SancionNueva,
+    SancionSalida,
+    SolicitudCambio,
     SolicitudNueva,
     SolicitudRecibida,
     SolicitudSalida,
+    SugerenciaSancion,
+    UsuarioDeComercio,
 )
 from app.modulos.comercios.modelos import Beneficio
+from app.modulos.cuentas import servicio as cuentas
 from app.modulos.parametros.reglas import Parametros, nivel, niveles
 from app.modulos.vecinos import reglas as reglas_vecinos
 
@@ -189,13 +198,91 @@ def crear(datos: ComercioNuevo, admin: Admin, sesion: SesionDB, ahora: Ahora) ->
 
 @router.patch(
     "/admin/comercios/{comercio_id}",
-    summary="Suspender, reactivar o retirar un comercio (solo admin)",
+    summary="Editar, suspender, reactivar o retirar un comercio (solo admin)",
 )
 def cambiar(
     comercio_id: int, datos: ComercioCambio, admin: Admin, sesion: SesionDB, ahora: Ahora
 ) -> ComercioAdmin:
-    comercio = servicio.cambiar_estado(sesion, comercio_id, datos.estado, ahora, admin.id)
+    comercio = servicio.editar(
+        sesion,
+        comercio_id,
+        nombre=datos.nombre,
+        rubro=datos.rubro,
+        rut=datos.rut,
+        direccion=datos.direccion,
+        ahora=ahora,
+        usuario_id=admin.id,
+    )
+    if datos.estado is not None and datos.estado != comercio.estado:
+        comercio = servicio.cambiar_estado(sesion, comercio_id, datos.estado, ahora, admin.id)
     return ComercioAdmin.model_validate(comercio)
+
+
+def _detalle(sesion, comercio_id: int, ahora, p: Parametros) -> ComercioDetalle:
+    comercio = servicio.obtener(sesion, comercio_id)
+    if comercio is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese comercio.")
+
+    def lista(bs: list[Beneficio]) -> list[BeneficioSalida]:
+        return [beneficio_salida(b, p) for b in bs]
+
+    sugerencias = {}
+    for causa in CausaSancion:
+        s = servicio.sugerencia_sancion(sesion, comercio_id, causa, ahora, p)
+        sugerencias[causa] = SugerenciaSancion(
+            tipo=s.tipo, razon=s.razon, semanas_suspension=p.U21.semanas_suspension
+        )
+    return ComercioDetalle(
+        comercio=ComercioAdmin.model_validate(comercio),
+        usuarios=[
+            UsuarioDeComercio.model_validate(u)
+            for u in cuentas.listar(sesion)
+            if u.comercio_id == comercio_id
+        ],
+        vigentes=lista(servicio.beneficios_vigentes(sesion, comercio_id, ahora)),
+        proximos=lista(servicio.beneficios_proximos(sesion, comercio_id, ahora)),
+        pendientes=lista(servicio.pendientes(sesion, comercio_id)),
+        sanciones=[
+            SancionSalida.model_validate(x) for x in servicio.sanciones(sesion, comercio_id)
+        ],
+        sugerencias=sugerencias,
+    )
+
+
+@router.get(
+    "/admin/comercios/{comercio_id}", summary="Un comercio con usuarios, beneficios y sanciones"
+)
+def detalle(
+    comercio_id: int, _: Equipo, sesion: SesionDB, ahora: Ahora, p: Params
+) -> ComercioDetalle:
+    return _detalle(sesion, comercio_id, ahora, p)
+
+
+@router.post(
+    "/admin/comercios/{comercio_id}/sanciones",
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar una sanción con su evidencia (sección 9)",
+)
+def sancionar(
+    comercio_id: int,
+    datos: SancionNueva,
+    usuario: Equipo,
+    sesion: SesionDB,
+    ahora: Ahora,
+    p: Params,
+) -> ComercioDetalle:
+    servicio.sancionar(
+        sesion,
+        comercio_id,
+        tipo=datos.tipo,
+        causa=datos.causa,
+        motivo=datos.motivo,
+        evidencia=datos.evidencia,
+        ahora=ahora,
+        p=p,
+        usuario_id=usuario.id,
+    )
+    return _detalle(sesion, comercio_id, ahora, p)
 
 
 @router.get("/admin/beneficios/pendientes", summary="Beneficios por aprobar (B7)")
@@ -224,9 +311,15 @@ def por_aprobar(_: Equipo, sesion: SesionDB, ahora: Ahora, p: Params) -> list[Pr
     summary="Aprobar la propuesta de beneficios de un comercio",
 )
 def aprobar(
-    comercio_id: int, usuario: Equipo, sesion: SesionDB, ahora: Ahora, p: Params
+    comercio_id: int,
+    usuario: Equipo,
+    sesion: SesionDB,
+    ahora: Ahora,
+    p: Params,
+    datos: Aprobacion | None = None,
 ) -> list[BeneficioSalida]:
-    conjunto = servicio.aprobar_propuesta(sesion, comercio_id, p, ahora, usuario.id)
+    comentario = datos.comentario if datos else None
+    conjunto = servicio.aprobar_propuesta(sesion, comercio_id, p, ahora, usuario.id, comentario)
     return [beneficio_salida(b, p) for b in conjunto]
 
 
@@ -249,3 +342,19 @@ def rechazar(
 @router.get("/admin/solicitudes", summary="Comercios interesados en unirse")
 def solicitudes(_: Equipo, sesion: SesionDB) -> list[SolicitudSalida]:
     return [SolicitudSalida.model_validate(s) for s in servicio.solicitudes(sesion)]
+
+
+@router.patch("/admin/solicitudes/{solicitud_id}", summary="Marcar una solicitud como atendida")
+def atender(
+    solicitud_id: int, datos: SolicitudCambio, usuario: Equipo, sesion: SesionDB, ahora: Ahora
+) -> SolicitudSalida:
+    solicitud = servicio.atender_solicitud(
+        sesion,
+        solicitud_id,
+        estado=datos.estado,
+        nota=datos.nota,
+        comercio_id=datos.comercio_id,
+        ahora=ahora,
+        usuario_id=usuario.id,
+    )
+    return SolicitudSalida.model_validate(solicitud)

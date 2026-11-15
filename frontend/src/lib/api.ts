@@ -5,7 +5,7 @@
  * Las funciones y los tipos salen de api-generada.ts, que se genera desde el OpenAPI con
  * `python -m app.cli cliente-ts`. Uso: `api.canjes.consultar({ codigo: '482913' })`.
  */
-import { crearApi, type Pedir } from './api-generada'
+import { conConsulta, crearApi, type Pedir } from './api-generada'
 
 export type * from './api-generada'
 
@@ -20,16 +20,6 @@ export class ErrorApi extends Error {
     this.name = 'ErrorApi'
     this.estado = estado
   }
-}
-
-function conConsulta(ruta: string, consulta?: Record<string, unknown>): string {
-  if (!consulta) return ruta
-  const parametros = new URLSearchParams()
-  for (const [clave, valor] of Object.entries(consulta)) {
-    if (valor !== undefined && valor !== null && valor !== '') parametros.set(clave, String(valor))
-  }
-  const texto = parametros.toString()
-  return texto ? `${ruta}?${texto}` : ruta
 }
 
 export const pedir: Pedir = async <T>(

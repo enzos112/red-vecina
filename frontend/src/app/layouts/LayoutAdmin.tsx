@@ -1,4 +1,4 @@
-import { Inbox, LogOut, Settings2, Store, Ticket, TrendingUp, Users, type LucideIcon } from 'lucide-react'
+import { Inbox, LogOut, MessageSquareText, Settings2, Store, Ticket, TrendingUp, Users, Wrench, type LucideIcon } from 'lucide-react'
 import { Navigate, NavLink, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
 import { Logo } from '@/components/marca/Logo'
 import { Button } from '@/components/ui/button'
@@ -44,26 +44,40 @@ const SECCIONES_OPERADOR: Seccion[] = [
     icono: Ticket,
     descripcion: 'Códigos emitidos, usados y vencidos.',
   },
-]
-
-const SECCIONES_ADMIN: Seccion[] = [
+  // A.15 y secciones 9 y 10: el operador aprueba beneficios, registra sanciones y hace la
+  // revisión del lunes. Lo que es solo del admin queda oculto dentro de cada pantalla.
   {
     a: '/admin/comercios',
     texto: 'Comercios',
     icono: Store,
-    descripcion: 'Alta de comercios y usuarios, aprobación de beneficios y suspensiones.',
+    descripcion: 'Alta y edición, beneficios por aprobar, sanciones y solicitudes.',
   },
   {
     a: '/admin/red',
     texto: 'Red',
     icono: TrendingUp,
-    descripcion: 'Indicadores de la red, con alertas.',
+    descripcion: 'Revisión del lunes, indicadores y alertas de fraude.',
   },
+]
+
+const SECCIONES_ADMIN: Seccion[] = [
   {
     a: '/admin/parametros',
     texto: 'Parámetros',
     icono: Settings2,
     descripcion: 'Parámetros de la red, editables y con registro de cambios.',
+  },
+  {
+    a: '/admin/mensajes',
+    texto: 'Mensajes',
+    icono: MessageSquareText,
+    descripcion: 'Plantillas de los mensajes al vecino.',
+  },
+  {
+    a: '/admin/sistema',
+    texto: 'Tareas y datos',
+    icono: Wrench,
+    descripcion: 'Tareas programadas y exportación a CSV.',
   },
 ]
 

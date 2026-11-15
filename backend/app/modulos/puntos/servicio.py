@@ -73,7 +73,7 @@ def ajustar(
     motivo: str,
     ahora: datetime,
     p: Parametros,
-    usuario_id: int,
+    usuario_id: int | None,
 ) -> MovimientoPuntos:
     """Corrección del operador con motivo (A16). Un ajuste positivo crea puntos que vencen
     a P8 días (Anexo A.14); uno negativo puede dejar el saldo en deuda."""

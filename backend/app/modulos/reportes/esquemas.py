@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -51,3 +51,44 @@ class ReporteMensualSalida(ReporteComercioSalida):
 class IndicadoresRedSalida(BaseModel):
     red: list[IndicadorSalida]
     comercios: list[ReporteComercioSalida]
+
+
+class AlertaFraudeSalida(BaseModel):
+    clave: str
+    titulo: str
+    detalle: str
+    accion: str
+    comercio_id: int | None
+    vecino_id: int | None
+
+
+class CupoComparadoSalida(BaseModel):
+    comercio_id: int
+    comercio: str
+    estado: str
+    en_piso: bool
+    base: int
+    arrastre: int
+    extra: int
+    total: int
+    usado: int
+    reservado: int
+    total_anterior: int | None
+    usado_anterior: int | None
+
+
+class AlertaActivaSalida(BaseModel):
+    comercio_id: int | None
+    comercio: str | None
+    indicador: IndicadorSalida
+
+
+class RevisionSemanalSalida(BaseModel):
+    """Lo que el operador mira cada lunes (sección 10)."""
+
+    semana: date
+    semana_anterior: date
+    cupos: list[CupoComparadoSalida]
+    red: list[IndicadorSalida]
+    alertas: list[AlertaActivaSalida]
+    fraude: list[AlertaFraudeSalida]

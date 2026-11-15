@@ -24,6 +24,8 @@ class ComercioDeUsuario(BaseModel):
     id: int
     nombre: str
     slug: str
+    estado: str = "activo"  # activo | suspendido | retirado
+    suspendido_hasta: datetime | None = None
 
 
 class Yo(BaseModel):
@@ -55,4 +57,6 @@ class UsuarioNuevo(BaseModel):
 
 
 class UsuarioCambio(BaseModel):
-    activo: bool
+    activo: bool | None = None
+    nombre: str | None = Field(default=None, min_length=1, max_length=120)
+    contrasena: str | None = Field(default=None, min_length=1, max_length=200)  # nueva

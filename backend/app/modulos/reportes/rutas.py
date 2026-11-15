@@ -1,11 +1,16 @@
-from fastapi import APIRouter
+from datetime import date, timedelta
 
-from app.core.dependencias import Ahora, ComercioActual, Equipo, Params, SesionDB
+from fastapi import APIRouter, Response
+
+from app.core.dependencias import Admin, Ahora, ComercioActual, Equipo, Params, SesionDB
+from app.core.tiempo import inicio_dia_utc
 from app.modulos.reportes import servicio
 from app.modulos.reportes.esquemas import (
+    AlertaFraudeSalida,
     CifrasMesSalida,
     IndicadoresRedSalida,
     ReporteMensualSalida,
+    RevisionSemanalSalida,
 )
 
 router = APIRouter(tags=["Reportes"])
@@ -44,3 +49,68 @@ def indicadores(_: Equipo, sesion: SesionDB, ahora: Ahora, p: Params) -> Indicad
     return IndicadoresRedSalida.model_validate(
         servicio.indicadores_red(sesion, ahora, p).model_dump()
     )
+
+
+@router.get("/admin/fraude", summary="Alertas de fraude de la sección 9")
+def fraude(_: Equipo, sesion: SesionDB, ahora: Ahora, p: Params) -> list[AlertaFraudeSalida]:
+    return [AlertaFraudeSalida(**a.model_dump()) for a in servicio.alertas_fraude(sesion, ahora, p)]
+
+
+@router.get(
+    "/admin/revision-semanal",
+    summary="Revisión del lunes: cupos contra la semana anterior, cobertura y alertas",
+)
+def revision_semanal(_: Equipo, sesion: SesionDB, ahora: Ahora, p: Params) -> RevisionSemanalSalida:
+    return RevisionSemanalSalida.model_validate(
+        servicio.revision_semanal(sesion, ahora, p).model_dump()
+    )
+
+
+# --- Exportar a CSV (solo admin) ---
+
+
+def _archivo(contenido: str, nombre: str) -> Response:
+    return Response(
+        content=contenido.encode("utf-8"),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{nombre}"'},
+    )
+
+
+def _rango(desde: date | None, hasta: date | None):
+    """Días locales, ambos incluidos."""
+    return (
+        inicio_dia_utc(desde) if desde else None,
+        inicio_dia_utc(hasta + timedelta(days=1)) if hasta else None,
+    )
+
+
+@router.get(
+    "/admin/exportar/boletas.csv",
+    summary="Boletas en CSV (por fecha de recepción)",
+    response_class=Response,
+)
+def exportar_boletas(
+    _: Admin, sesion: SesionDB, desde: date | None = None, hasta: date | None = None
+) -> Response:
+    return _archivo(servicio.csv_boletas(sesion, *_rango(desde, hasta)), "boletas.csv")
+
+
+@router.get(
+    "/admin/exportar/canjes.csv",
+    summary="Canjes en CSV (por fecha de emisión)",
+    response_class=Response,
+)
+def exportar_canjes(
+    _: Admin, sesion: SesionDB, desde: date | None = None, hasta: date | None = None
+) -> Response:
+    return _archivo(servicio.csv_canjes(sesion, *_rango(desde, hasta)), "canjes.csv")
+
+
+@router.get(
+    "/admin/exportar/comercios.csv",
+    summary="Reporte por comercio en CSV (ventana de P15 e indicadores)",
+    response_class=Response,
+)
+def exportar_comercios(_: Admin, sesion: SesionDB, ahora: Ahora, p: Params) -> Response:
+    return _archivo(servicio.csv_comercios(sesion, ahora, p), "reporte-comercios.csv")

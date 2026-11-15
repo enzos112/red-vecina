@@ -78,3 +78,34 @@ def cambiar_activo(
     auditar(sesion, "activar_usuario", "usuario", usuario_id, admin_id, {"activo": activo}, ahora)
     sesion.flush()
     return usuario
+
+
+def editar(
+    sesion: Session,
+    usuario_id: int,
+    *,
+    nombre: str | None,
+    contrasena: str | None,
+    ahora: datetime,
+    admin_id: int,
+) -> Usuario:
+    usuario = obtener(sesion, usuario_id)
+    if usuario is None:
+        raise ValueError("No encontramos ese usuario.")
+    cambios: list[str] = []
+    if nombre is not None and nombre.strip() and nombre.strip() != usuario.nombre:
+        usuario.nombre = nombre.strip()
+        cambios.append("nombre")
+    if contrasena is not None:
+        if len(contrasena) < LARGO_MINIMO_CONTRASENA:
+            raise ValueError(
+                f"La contraseña debe tener al menos {LARGO_MINIMO_CONTRASENA} caracteres."
+            )
+        usuario.contrasena_cifrada = cifrar_contrasena(contrasena)
+        cambios.append("contrasena")
+    if cambios:
+        auditar(
+            sesion, "editar_usuario", "usuario", usuario_id, admin_id, {"campos": cambios}, ahora
+        )
+    sesion.flush()
+    return usuario
