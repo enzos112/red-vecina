@@ -27,6 +27,7 @@ class CupoSalida(BaseModel):
     ventas_ventana: int  # V con que se calculó la base
     dias_historia: int
     proxima_liberacion: date
+    explicacion: str  # cómo se calcula, en una frase
 
 
 class CupoExtra(BaseModel):

@@ -40,6 +40,9 @@ class Configuracion(BaseSettings):
 
     FRONTEND_DIST: Path = RAIZ_REPO / "frontend" / "dist"
 
+    # WhatsApp del equipo de Red Vecina, impreso en la tarjeta de la caja (sección 8).
+    CONTACTO_WHATSAPP: str | None = None
+
     # Primer administrador y contraseñas iniciales de los comandos de carga (app/cli.py).
     ADMIN_EMAIL: str | None = None
     ADMIN_PASSWORD: SecretStr | None = None

@@ -12,21 +12,25 @@ from app.core.dependencias import (
     ip,
     limitador,
 )
+from app.core.tiempo import dia_local, inicio_dia_utc
 from app.modulos.canjes import servicio
 from app.modulos.canjes.esquemas import (
     CanjeSalida,
     CodigoEnCaja,
     CodigoSalida,
     EstadoCanje,
+    IngresoDiferidoNuevo,
+    IngresoDiferidoSalida,
     MotivoSalida,
     OpcionesSalida,
     OpcionSalida,
     PedirCodigo,
     ResultadoCaja,
     ResultadoCajaSalida,
+    RevisionDiferido,
     UsoEnCaja,
 )
-from app.modulos.canjes.modelos import Canje
+from app.modulos.canjes.modelos import Canje, IngresoDiferido
 from app.modulos.canjes.reglas import Validacion
 from app.modulos.comercios import servicio as comercios
 from app.modulos.cuentas.modelos import Usuario
@@ -37,6 +41,31 @@ router = APIRouter(tags=["Canjes"])
 LIMITE_LISTA = 200  # tamaño de página, no regla de negocio
 # Respuestas que delatan un intento de adivinar códigos: cuentan para el límite.
 SOSPECHOSAS = {ResultadoCaja.NO_EXISTE, ResultadoCaja.OTRO_LOCAL}
+
+
+def diferidos_salida(sesion: Session, lista: list[IngresoDiferido]) -> list[IngresoDiferidoSalida]:
+    nombres = comercios.nombres(sesion, {d.comercio_id for d in lista})
+    salida = []
+    for d in lista:
+        canje = servicio.obtener(sesion, d.canje_id) if d.canje_id else None
+        salida.append(
+            IngresoDiferidoSalida(
+                id=d.id,
+                comercio_id=d.comercio_id,
+                comercio=nombres.get(d.comercio_id, ""),
+                codigo=d.codigo,
+                monto_compra=d.monto_compra,
+                aplicado_en=d.aplicado_en,
+                registrado_en=d.registrado_en,
+                resultado=ResultadoCaja(d.resultado),
+                mensaje=d.mensaje,
+                descontado=canje is not None,
+                valor_pesos=canje.valor_pesos if canje else None,
+                revisado_en=d.revisado_en,
+                nota_revision=d.nota_revision,
+            )
+        )
+    return salida
 
 
 def codigo_salida(sesion: Session, c: Canje) -> CodigoSalida:
@@ -197,7 +226,66 @@ def usar(
     return salida
 
 
+@router.post(
+    "/comercio/codigos/diferido",
+    status_code=status.HTTP_201_CREATED,
+    summary="Ingresar un código que se aplicó sin internet (queda para revisión)",
+)
+def diferido(
+    datos: IngresoDiferidoNuevo,
+    request: Request,
+    usuario: UsuarioComercio,
+    comercio: ComercioActual,
+    sesion: SesionDB,
+    ahora: Ahora,
+    p: Params,
+) -> IngresoDiferidoSalida:
+    limite = limitador(request, "codigo")
+    claves = (f"usuario:{usuario.id}", f"ip:{ip(request)}")
+    limite.exigir(*claves)
+    ingreso = servicio.registrar_diferido(
+        sesion,
+        datos.codigo,
+        comercio.id,
+        datos.aplicado_en or ahora,
+        datos.monto_compra,
+        ahora,
+        p,
+        usuario.id,
+    )
+    if ResultadoCaja(ingreso.resultado) in SOSPECHOSAS:
+        limite.fallo(*claves)
+    return diferidos_salida(sesion, [ingreso])[0]
+
+
+@router.get("/comercio/codigos/diferidos", summary="Códigos que ingresé sin internet hoy")
+def mis_diferidos(
+    comercio: ComercioActual, sesion: SesionDB, ahora: Ahora
+) -> list[IngresoDiferidoSalida]:
+    lista = servicio.diferidos(
+        sesion, comercio_id=comercio.id, desde=inicio_dia_utc(dia_local(ahora)), limite=LIMITE_LISTA
+    )
+    return diferidos_salida(sesion, lista)
+
+
 # --- Equipo (operador y admin) ---
+
+
+@router.get("/admin/canjes/diferidos", summary="Códigos ingresados sin internet, por revisar")
+def diferidos_por_revisar(
+    _: Equipo, sesion: SesionDB, pendientes: bool = True
+) -> list[IngresoDiferidoSalida]:
+    return diferidos_salida(
+        sesion, servicio.diferidos(sesion, pendientes=pendientes, limite=LIMITE_LISTA)
+    )
+
+
+@router.post("/admin/canjes/diferidos/{ingreso_id}/revisado", summary="Marcar un ingreso revisado")
+def marcar_revisado(
+    ingreso_id: int, datos: RevisionDiferido, usuario: Equipo, sesion: SesionDB, ahora: Ahora
+) -> IngresoDiferidoSalida:
+    ingreso = servicio.revisar_diferido(sesion, ingreso_id, datos.nota, ahora, usuario.id)
+    return diferidos_salida(sesion, [ingreso])[0]
 
 
 @router.get("/admin/canjes", summary="Códigos emitidos, usados y vencidos")

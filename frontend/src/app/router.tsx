@@ -52,16 +52,25 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    path: '/comercio/login',
+    lazy: async () => ({ Component: (await import('@/features/comercio/PaginaEntrar')).PaginaEntrar }),
+  },
+  {
     path: '/comercio',
     lazy: async () => ({ Component: (await import('@/app/layouts/LayoutComercio')).LayoutComercio }),
     children: [
-      { index: true, lazy: async () => ({ Component: (await import('@/features/comercio/PaginasComercio')).PaginaValidar }) },
-      { path: 'cupo', lazy: async () => ({ Component: (await import('@/features/comercio/PaginasComercio')).PaginaCupo }) },
+      { index: true, lazy: async () => ({ Component: (await import('@/features/comercio/PaginaValidar')).PaginaValidar }) },
+      {
+        path: 'sin-internet',
+        lazy: async () => ({ Component: (await import('@/features/comercio/PaginaSinInternet')).PaginaSinInternet }),
+      },
+      { path: 'cupo', lazy: async () => ({ Component: (await import('@/features/comercio/PaginaCupo')).PaginaCupo }) },
       {
         path: 'beneficios',
-        lazy: async () => ({ Component: (await import('@/features/comercio/PaginasComercio')).PaginaBeneficios }),
+        lazy: async () => ({ Component: (await import('@/features/comercio/PaginaBeneficios')).PaginaBeneficios }),
       },
-      { path: 'reporte', lazy: async () => ({ Component: (await import('@/features/comercio/PaginasComercio')).PaginaReporte }) },
+      { path: 'reporte', lazy: async () => ({ Component: (await import('@/features/comercio/PaginaReporte')).PaginaReporte }) },
+      { path: 'afiche', lazy: async () => ({ Component: (await import('@/features/comercio/PaginaAfiche')).PaginaAfiche }) },
     ],
   },
   {

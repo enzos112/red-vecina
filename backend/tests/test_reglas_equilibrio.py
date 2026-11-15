@@ -204,3 +204,17 @@ def test_comercio_nuevo_se_muestra_primero(p):
     red = [*RED, comercio(7, "Nuevo", 5_000, 5_000, niveles=(2,))]
     r = opciones_canje(600, red, compro_en={1, 2, 3, 6}, bloqueados_p12=set(), ahora=local(16), p=p)
     assert r.destacadas[0].comercio == "Nuevo"
+
+
+def test_explicacion_del_cupo_sale_de_los_parametros(p):
+    from app.modulos.equilibrio.reglas import explicacion_cupo
+
+    texto = explicacion_cupo(False, 60, p)
+    assert texto.startswith(
+        "Cada lunes se calcula como el 3% de tus ventas registradas de los últimos 28 días "
+        "repartido en 4 semanas, con un piso de $5.000"
+    )
+    assert "proyectan" not in texto
+    assert explicacion_cupo(True, 10, p).endswith(
+        "tus ventas se proyectan con los días que llevas. Hoy estás en el piso."
+    )

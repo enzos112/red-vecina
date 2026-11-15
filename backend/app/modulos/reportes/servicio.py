@@ -9,7 +9,8 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.core.tiempo import inicio_dia_utc
+from app.core.formato import MESES
+from app.core.tiempo import dia_local, inicio_dia_utc
 from app.modulos.boletas import servicio as boletas
 from app.modulos.canjes import servicio as canjes
 from app.modulos.comercios import servicio as comercios
@@ -32,6 +33,16 @@ class ReporteComercio(BaseModel):
     canjes_pesos: int
     clientes_derivados_total: int  # desde el inicio, una vez por par vecino-comercio
     indicadores: list[reglas.Indicador]
+
+
+class ReporteMensual(BaseModel):
+    nombre_mes: str
+    mes_desde: datetime
+    anterior_desde: datetime
+    anterior_hasta: datetime
+    mes: reglas.CifrasMes
+    mes_anterior: reglas.CifrasMes
+    resumen: str
 
 
 class IndicadoresRed(BaseModel):
@@ -104,4 +115,49 @@ def indicadores_red(sesion: Session, ahora: datetime, p: Parametros) -> Indicado
     return IndicadoresRed(
         red=red,
         comercios=[reporte_comercio(sesion, c.id, ahora, p) for c in comercios.activos(sesion)],
+    )
+
+
+def _cifras(
+    sesion: Session,
+    comercio_id: int,
+    desde: datetime,
+    hasta: datetime,
+    derivados: list[vecinos.Derivado],
+) -> reglas.CifrasMes:
+    recibidos = canjes.recibidos(sesion, comercio_id, desde, hasta)
+    del_tramo = [d for d in derivados if desde <= d.primera_compra < hasta]
+    return reglas.CifrasMes(
+        inscritos=vecinos.contar_por_origen(sesion, comercio_id, desde, hasta),
+        derivados=len(del_tramo),
+        recompras=sum(1 for d in del_tramo if d.recompra),
+        canjes=len(recibidos),
+        canjes_pesos=sum(r.valor_pesos for r in recibidos),
+        ventas=boletas.ventas(sesion, comercio_id, desde, hasta),
+    )
+
+
+def reporte_mensual(
+    sesion: Session, comercio_id: int, ahora: datetime, p: Parametros
+) -> ReporteMensual:
+    """El mes en curso (hora de Santiago) contra el mismo tramo del mes anterior, para que
+    la comparación sea justa aunque el mes vaya a la mitad."""
+    hoy = dia_local(ahora)
+    inicio = hoy.replace(day=1)
+    inicio_anterior = (inicio - timedelta(days=1)).replace(day=1)
+    mes_desde = inicio_dia_utc(inicio)
+    anterior_desde = inicio_dia_utc(inicio_anterior)
+    anterior_hasta = min(anterior_desde + (ahora - mes_desde), mes_desde)
+    derivados = vecinos.derivados(sesion, comercio_id, p)
+    actual = _cifras(sesion, comercio_id, mes_desde, ahora, derivados)
+    anterior = _cifras(sesion, comercio_id, anterior_desde, anterior_hasta, derivados)
+    nombre = MESES[inicio.month - 1]
+    return ReporteMensual(
+        nombre_mes=nombre,
+        mes_desde=mes_desde,
+        anterior_desde=anterior_desde,
+        anterior_hasta=anterior_hasta,
+        mes=actual,
+        mes_anterior=anterior,
+        resumen=reglas.resumen_mes(nombre, actual, anterior),
     )

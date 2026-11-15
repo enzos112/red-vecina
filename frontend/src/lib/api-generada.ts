@@ -40,6 +40,8 @@ export type BeneficioSalida = {
 
 export type BeneficiosComercio = {
   niveles: NivelSalida[]
+  dias_minimos: number
+  rige_si_pides_hoy: string
   vigentes: BeneficioSalida[]
   proximos: BeneficioSalida[]
   pendientes: BeneficioSalida[]
@@ -151,6 +153,16 @@ export type CanjeSalida = {
   cuenta_para_p19: boolean
 }
 
+export type CifrasMesSalida = {
+  inscritos: number
+  derivados: number
+  recompras: number
+  canjes: number
+  canjes_pesos: number
+  ventas: number
+  costo_pct: number | null
+}
+
 export type CodigoEnCaja = {
   /** Acepta espacios: 482 913. */
   codigo: string
@@ -211,6 +223,7 @@ export type ComercioPublico = {
 
 /** Valores vigentes que el público necesita para entender el programa. */
 export type CondicionesRed = {
+  contacto_whatsapp?: string | null
   pesos_por_punto: number
   compra_minima_sumar: number
   maximo_puntos_boleta: number
@@ -259,6 +272,7 @@ export type CupoSalida = {
   ventas_ventana: number
   dias_historia: number
   proxima_liberacion: string
+  explicacion: string
 }
 
 /** Lo que el operador confirma o corrige al revisar la boleta. */
@@ -327,6 +341,32 @@ export type IndicadoresRedSalida = {
   comercios: ReporteComercioSalida[]
 }
 
+/** Sección 8: código ya aplicado sin internet, ingresado ese mismo día. */
+export type IngresoDiferidoNuevo = {
+  /** Acepta espacios: 482 913. */
+  codigo: string
+  /** Total de la compra antes del descuento (opcional). */
+  monto_compra?: number | null
+  /** Cuándo se aplicó en caja. Si falta, ahora. */
+  aplicado_en?: string | null
+}
+
+export type IngresoDiferidoSalida = {
+  id: number
+  comercio_id: number
+  comercio: string
+  codigo: string
+  monto_compra: number | null
+  aplicado_en: string
+  registrado_en: string
+  resultado: ResultadoCaja
+  mensaje: string
+  descontado: boolean
+  valor_pesos: number | null
+  revisado_en: string | null
+  nota_revision: string | null
+}
+
 export type Inscripcion = {
   nombre: string
   telefono: string
@@ -390,6 +430,7 @@ export type NivelSalida = {
   puntos: number
   valor_pesos: number
   compra_minima_tope: number
+  obligatorio?: boolean
 }
 
 export type OpcionSalida = {
@@ -476,6 +517,27 @@ export type ReporteComercioSalida = {
   indicadores: IndicadorSalida[]
 }
 
+/** Reporte del comercio: los indicadores de la ventana más el mes en curso comparado con el mismo tramo del mes anterior. */
+export type ReporteMensualSalida = {
+  comercio_id: number
+  comercio: string
+  desde: string
+  hasta: string
+  vecinos_inscritos: number
+  ventas: number
+  canjes_recibidos: number
+  canjes_pesos: number
+  clientes_derivados_total: number
+  indicadores: IndicadorSalida[]
+  nombre_mes: string
+  mes_desde: string
+  anterior_desde: string
+  anterior_hasta: string
+  mes: CifrasMesSalida
+  mes_anterior: CifrasMesSalida
+  resumen: string
+}
+
 export type ResultadoCaja = 'valido' | 'no_existe' | 'otro_local' | 'vencido' | 'usado' | 'dia_no_permitido' | 'bajo_minimo'
 
 export type ResultadoCajaSalida = {
@@ -500,6 +562,10 @@ export type ResumenCola = {
 
 export type Revision = {
   comentario: string
+}
+
+export type RevisionDiferido = {
+  nota?: string | null
 }
 
 export type Rol = 'admin' | 'operador' | 'comercio'
@@ -560,8 +626,8 @@ export type TipoMovimiento = 'gana' | 'retiene' | 'libera' | 'canjea' | 'vence' 
 export type UsoEnCaja = {
   /** Acepta espacios: 482 913. */
   codigo: string
-  /** Total de la compra antes del descuento. */
-  monto_compra: number
+  /** Total de la compra antes del descuento (opcional). */
+  monto_compra?: number | null
 }
 
 export type UsuarioCambio = {
@@ -769,6 +835,18 @@ export function crearApi(pedir: Pedir) {
       /** Paso 2: usar el código con el monto de la compra */
       usar: (cuerpo: UsoEnCaja) =>
         pedir<ResultadoCajaSalida>('POST', `/comercio/codigos/usar`, { json: cuerpo }),
+      /** Ingresar un código que se aplicó sin internet (queda para revisión) */
+      diferido: (cuerpo: IngresoDiferidoNuevo) =>
+        pedir<IngresoDiferidoSalida>('POST', `/comercio/codigos/diferido`, { json: cuerpo }),
+      /** Códigos que ingresé sin internet hoy */
+      misDiferidos: () =>
+        pedir<IngresoDiferidoSalida[]>('GET', `/comercio/codigos/diferidos`),
+      /** Códigos ingresados sin internet, por revisar */
+      diferidosPorRevisar: (consulta?: { pendientes?: boolean }) =>
+        pedir<IngresoDiferidoSalida[]>('GET', `/admin/canjes/diferidos`, { consulta }),
+      /** Marcar un ingreso revisado */
+      marcarRevisado: (ingresoId: number, cuerpo: RevisionDiferido) =>
+        pedir<IngresoDiferidoSalida>('POST', `/admin/canjes/diferidos/${encodeURIComponent(String(ingresoId))}/revisado`, { json: cuerpo }),
       /** Códigos emitidos, usados y vencidos */
       listar: (consulta?: { estado?: EstadoCanje | null; comercio_id?: number | null; vecino_id?: number | null }) =>
         pedir<CanjeSalida[]>('GET', `/admin/canjes`, { consulta }),
@@ -787,7 +865,7 @@ export function crearApi(pedir: Pedir) {
     reportes: {
       /** Mi reporte: inscritos, derivados, recompra y costo de canjes */
       reporte: () =>
-        pedir<ReporteComercioSalida>('GET', `/comercio/reporte`),
+        pedir<ReporteMensualSalida>('GET', `/comercio/reporte`),
       /** Indicadores de la sección 10, con alertas */
       indicadores: () =>
         pedir<IndicadoresRedSalida>('GET', `/admin/indicadores`),

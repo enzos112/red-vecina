@@ -1,33 +1,10 @@
 /** Consultas y acciones del panel del equipo (operador y admin). */
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, ErrorApi, type DatosBoleta, type EstadoBoleta, type EstadoCanje, type Rechazo } from '@/lib/api'
+import { api, type DatosBoleta, type EstadoBoleta, type EstadoCanje, type Rechazo } from '@/lib/api'
 
 const MEDIO_MINUTO = 30 * 1000
 
-/** Quién está conectado. Un 401 significa que hay que iniciar sesión. */
-export function useYo() {
-  return useQuery({ queryKey: ['yo'], queryFn: api.cuentas.yo, retry: false, staleTime: Infinity })
-}
-
-export function sinSesion(error: unknown): boolean {
-  return error instanceof ErrorApi && (error.estado === 401 || error.estado === 403)
-}
-
-export function useEntrar() {
-  const cliente = useQueryClient()
-  return useMutation({
-    mutationFn: api.cuentas.login,
-    onSuccess: (yo) => cliente.setQueryData(['yo'], yo),
-  })
-}
-
-export function useSalir() {
-  const cliente = useQueryClient()
-  return useMutation({
-    mutationFn: api.cuentas.logout,
-    onSettled: () => cliente.clear(),
-  })
-}
+export { mensajeError, sinSesion, useEntrar, useSalir, useYo } from '@/lib/sesion'
 
 /** Todos los comercios, para los filtros y el selector de la revisión. */
 export function useComercios() {
@@ -168,7 +145,15 @@ export function useLocalCerrado() {
   })
 }
 
-/** Mensaje de error de una acción, listo para mostrar. */
-export function mensajeError(error: unknown): string {
-  return error instanceof Error ? error.message : 'Algo falló. Intenta otra vez.'
+/** Códigos ingresados sin internet que esperan revisión (sección 8). */
+export function useDiferidos() {
+  return useQuery({ queryKey: ['admin', 'canjes', 'diferidos'], queryFn: () => api.canjes.diferidosPorRevisar() })
+}
+
+export function useRevisarDiferido() {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, nota }: { id: number; nota: string }) => api.canjes.marcarRevisado(id, { nota: nota || null }),
+    onSuccess: () => cliente.invalidateQueries({ queryKey: ['admin', 'canjes'] }),
+  })
 }

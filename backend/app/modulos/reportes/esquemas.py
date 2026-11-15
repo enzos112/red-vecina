@@ -25,6 +25,29 @@ class ReporteComercioSalida(BaseModel):
     indicadores: list[IndicadorSalida]
 
 
+class CifrasMesSalida(BaseModel):
+    inscritos: int
+    derivados: int
+    recompras: int
+    canjes: int
+    canjes_pesos: int
+    ventas: int
+    costo_pct: float | None  # canjes ÷ ventas del tramo
+
+
+class ReporteMensualSalida(ReporteComercioSalida):
+    """Reporte del comercio: los indicadores de la ventana más el mes en curso comparado
+    con el mismo tramo del mes anterior."""
+
+    nombre_mes: str
+    mes_desde: datetime
+    anterior_desde: datetime
+    anterior_hasta: datetime
+    mes: CifrasMesSalida
+    mes_anterior: CifrasMesSalida
+    resumen: str
+
+
 class IndicadoresRedSalida(BaseModel):
     red: list[IndicadorSalida]
     comercios: list[ReporteComercioSalida]

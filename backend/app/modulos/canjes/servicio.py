@@ -11,8 +11,8 @@ from sqlalchemy.orm import Session
 from app.core.auditoria import auditar
 from app.core.tiempo import dia_local, inicio_dia_utc
 from app.modulos.canjes import reglas
-from app.modulos.canjes.esquemas import EstadoCanje
-from app.modulos.canjes.modelos import Canje
+from app.modulos.canjes.esquemas import EstadoCanje, ResultadoCaja
+from app.modulos.canjes.modelos import Canje, IngresoDiferido
 from app.modulos.comercios import servicio as comercios
 from app.modulos.equilibrio import reglas as reglas_equilibrio
 from app.modulos.equilibrio import servicio as equilibrio
@@ -208,6 +208,26 @@ def consultar(
     return reglas.validar_en_caja(en_caja, comercio_id, ahora, monto_compra)
 
 
+def _quemar(
+    sesion: Session,
+    canje: Canje,
+    momento: datetime,
+    monto_compra: int | None,
+    usuario_id: int | None,
+    diferido: bool = False,
+) -> None:
+    """Marca el código usado, descuenta los puntos retenidos y consume el cupo reservado."""
+    canje.estado = EstadoCanje.USADO
+    canje.usado_en = momento
+    canje.monto_ticket = monto_compra
+    canje.validado_por = usuario_id
+    canje.ingreso_diferido = diferido
+    puntos.registrar(
+        sesion, canje.vecino_id, TipoMovimiento.CANJEA, canje.puntos, momento, canje_id=canje.id
+    )
+    equilibrio.consumir(sesion, canje.comercio_id, canje.semana_cupo, canje.valor_pesos)
+
+
 def usar(
     sesion: Session,
     codigo: str,
@@ -223,17 +243,101 @@ def usar(
         return validacion
     canje = _por_codigo(sesion, codigo)
     assert canje is not None
-    canje.estado = EstadoCanje.USADO
-    canje.usado_en = ahora
-    canje.monto_ticket = monto_compra
-    canje.validado_por = usuario_id
-    puntos.registrar(
-        sesion, canje.vecino_id, TipoMovimiento.CANJEA, canje.puntos, ahora, canje_id=canje.id
-    )
-    equilibrio.consumir(sesion, canje.comercio_id, canje.semana_cupo, canje.valor_pesos)
+    _quemar(sesion, canje, ahora, monto_compra, usuario_id)
     auditar(sesion, "usar_codigo", "canje", canje.id, usuario_id, {"monto": monto_compra}, ahora)
     sesion.flush()
     return validacion
+
+
+def registrar_diferido(
+    sesion: Session,
+    codigo: str,
+    comercio_id: int,
+    aplicado_en: datetime,
+    monto_compra: int | None,
+    ahora: datetime,
+    p: Parametros,
+    usuario_id: int | None = None,
+) -> IngresoDiferido:
+    """Sección 8, local sin internet: el cajero aplicó el descuento y lo ingresa ese mismo
+    día. Si el código era válido cuando se aplicó, se usa como siempre; si no, no se
+    descuenta del cupo del local. En ambos casos queda para revisión del operador."""
+    if aplicado_en > ahora:
+        raise ValueError("La hora en que aplicaste el código no puede ser futura.")
+    if dia_local(aplicado_en) != dia_local(ahora):
+        raise ValueError("Solo puedes ingresar hoy los códigos que aplicaste hoy.")
+    canje = _por_codigo(sesion, codigo)
+    if canje is not None and canje.emitido_en > aplicado_en:
+        validacion = reglas.Validacion(
+            resultado=ResultadoCaja.NO_EXISTE,
+            mensaje="Ese código aún no existía a la hora que indicaste.",
+        )
+    else:
+        validacion = consultar(sesion, codigo, comercio_id, aplicado_en, monto_compra)
+    ingreso = IngresoDiferido(
+        comercio_id=comercio_id,
+        codigo=codigo,
+        monto_compra=monto_compra,
+        aplicado_en=aplicado_en,
+        registrado_en=ahora,
+        usuario_id=usuario_id,
+        resultado=validacion.resultado.value,
+        mensaje=validacion.mensaje,
+    )
+    if validacion.se_puede_usar:
+        assert canje is not None
+        _quemar(sesion, canje, aplicado_en, monto_compra, usuario_id, diferido=True)
+        ingreso.canje_id = canje.id
+    sesion.add(ingreso)
+    sesion.flush()
+    auditar(
+        sesion,
+        "ingreso_diferido",
+        "ingreso_diferido",
+        ingreso.id,
+        usuario_id,
+        {"codigo": codigo, "resultado": ingreso.resultado},
+        ahora,
+    )
+    return ingreso
+
+
+def diferidos(
+    sesion: Session,
+    *,
+    comercio_id: int | None = None,
+    pendientes: bool = False,
+    desde: datetime | None = None,
+    limite: int,
+) -> list[IngresoDiferido]:
+    consulta = (
+        select(IngresoDiferido)
+        .order_by(IngresoDiferido.registrado_en.desc(), IngresoDiferido.id.desc())
+        .limit(limite)
+    )
+    if comercio_id is not None:
+        consulta = consulta.where(IngresoDiferido.comercio_id == comercio_id)
+    if pendientes:
+        consulta = consulta.where(IngresoDiferido.revisado_en.is_(None))
+    if desde is not None:
+        consulta = consulta.where(IngresoDiferido.registrado_en >= desde)
+    return list(sesion.scalars(consulta))
+
+
+def revisar_diferido(
+    sesion: Session, ingreso_id: int, nota: str | None, ahora: datetime, usuario_id: int | None
+) -> IngresoDiferido:
+    ingreso = sesion.get(IngresoDiferido, ingreso_id)
+    if ingreso is None:
+        raise ValueError("No encontramos ese ingreso.")
+    if ingreso.revisado_en is not None:
+        raise ValueError("Este ingreso ya fue revisado.")
+    ingreso.revisado_en = ahora
+    ingreso.revisado_por = usuario_id
+    ingreso.nota_revision = (nota or "").strip() or None
+    auditar(sesion, "revisar_diferido", "ingreso_diferido", ingreso.id, usuario_id, {}, ahora)
+    sesion.flush()
+    return ingreso
 
 
 def liberar_vencidos(sesion: Session, ahora: datetime, p: Parametros) -> dict[str, int]:

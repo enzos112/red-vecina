@@ -8,7 +8,7 @@ from decimal import ROUND_FLOOR, Decimal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.core.formato import fecha
+from app.core.formato import DIAS, fecha, pesos
 from app.core.tiempo import dia_local, inicio_semana
 from app.modulos.canjes.reglas import alcanza_dia_permitido, vence_en
 from app.modulos.equilibrio.esquemas import Semaforo
@@ -219,3 +219,21 @@ def opciones_canje(
         proxima_liberacion=proxima,
         mensaje_sin_opciones=mensaje,
     )
+
+
+def explicacion_cupo(en_piso: bool, dias_historia: int, p: Parametros) -> str:
+    """Cómo se calcula el cupo, en una frase para el dueño (sección 6.1)."""
+    dias = p.P15.dias_ventas
+    semanas = Decimal(dias) / DIAS_SEMANA
+    semanas_txt = str(int(semanas)) if semanas == int(semanas) else str(semanas).replace(".", ",")
+    frase = (
+        f"Cada {DIAS[p.P17.dia_inicio]} se calcula como el {p.P15.porcentaje}% de tus ventas "
+        f"registradas de los últimos {dias} días repartido en {semanas_txt} semanas, "
+        f"con un piso de {pesos(p.P16.pesos_semana)}, más lo que no usaste la semana pasada "
+        "y el extra que agregues."
+    )
+    if dias_historia < dias:
+        frase += " Mientras juntas historia, tus ventas se proyectan con los días que llevas."
+    if en_piso:
+        frase += " Hoy estás en el piso."
+    return frase

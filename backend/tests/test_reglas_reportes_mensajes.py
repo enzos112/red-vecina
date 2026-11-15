@@ -120,3 +120,30 @@ def test_validacion_de_un_parametro():
         validar_valor("P9", {"puntos": [500, 250], "nombres": ["a", "b"], "obligatorio": 1})
     with pytest.raises(ValueError, match="Faltan"):
         construir_parametros({})
+
+
+def _mes(**cifras):
+    from app.modulos.reportes.reglas import CifrasMes
+
+    base = dict(inscritos=0, derivados=0, recompras=0, canjes=0, canjes_pesos=0, ventas=0)
+    return CifrasMes(**{**base, **cifras})
+
+
+def test_resumen_del_mes_compara_y_da_el_costo():
+    from app.modulos.reportes.reglas import resumen_mes
+
+    actual = _mes(ventas=120_000, canjes=3, canjes_pesos=6_000, derivados=2)
+    texto = resumen_mes("noviembre", actual, _mes(ventas=100_000))
+    assert texto == (
+        "En noviembre llevas $120.000 en ventas registradas, 20% más que a esta altura del "
+        "mes pasado. Los 3 canjes que recibiste costaron $6.000 (5% de esas ventas). "
+        "Llegaron 2 clientes nuevos desde otros locales."
+    )
+    baja = resumen_mes("noviembre", _mes(ventas=50_000), _mes(ventas=100_000))
+    assert baja.endswith("50% menos que a esta altura del mes pasado.")
+
+
+def test_resumen_del_mes_sin_movimiento():
+    from app.modulos.reportes.reglas import resumen_mes
+
+    assert resumen_mes("marzo", _mes(), _mes()).startswith("En marzo aún no hay ventas")

@@ -105,7 +105,7 @@ http://127.0.0.1:8000, documentación interactiva en http://127.0.0.1:8000/docs.
 
 Ver `.env.example`. `ENTORNO`, `DATABASE_URL`, `SECRET_KEY`, `LECTOR_PROVEEDOR`
 (`manual` | `gemini` | `anthropic`), `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `ADMIN_EMAIL`,
-`ADMIN_PASSWORD`, `OPERADOR_PASSWORD`, `COMERCIO_PASSWORD`, y en la imagen `PORT` y
+`ADMIN_PASSWORD`, `OPERADOR_PASSWORD`, `COMERCIO_PASSWORD`, `CONTACTO_WHATSAPP`, y en la imagen `PORT` y
 `FRONTEND_DIST`. En producción la app se niega a arrancar con la `SECRET_KEY` de
 desarrollo o con SQLite.
 

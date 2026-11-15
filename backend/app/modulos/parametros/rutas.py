@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.core.dependencias import Admin, Ahora, Equipo, Params, SesionDB
+from app.core.dependencias import Admin, Ahora, Config, Equipo, Params, SesionDB
 from app.modulos.parametros import reglas, servicio
 from app.modulos.parametros.esquemas import (
     CambioParametroNuevo,
@@ -14,8 +14,9 @@ router = APIRouter(tags=["Parámetros"])
 
 
 @router.get("/red/condiciones", summary="Valores vigentes del programa para el público")
-def condiciones(p: Params) -> CondicionesRed:
+def condiciones(p: Params, config: Config) -> CondicionesRed:
     return CondicionesRed(
+        contacto_whatsapp=config.CONTACTO_WHATSAPP,
         pesos_por_punto=p.P1.pesos_por_punto,
         compra_minima_sumar=p.P3.pesos,
         maximo_puntos_boleta=p.P4.puntos,

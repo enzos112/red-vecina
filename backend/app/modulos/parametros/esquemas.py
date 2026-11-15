@@ -50,6 +50,8 @@ class NivelPublico(BaseModel):
 class CondicionesRed(BaseModel):
     """Valores vigentes que el público necesita para entender el programa."""
 
+    contacto_whatsapp: str | None = None  # del equipo de Red Vecina (configuración)
+
     pesos_por_punto: int  # P1
     compra_minima_sumar: int  # P3
     maximo_puntos_boleta: int  # P4

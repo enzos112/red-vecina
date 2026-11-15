@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
+from app.core.formato import miles, pesos
 from app.core.tiempo import inicio_dia_utc
 from app.modulos.parametros.reglas import Parametros
 
@@ -186,3 +187,62 @@ def puntos_sin_canjear(saldo_red: int, cupo_semanal_red: int, p: Parametros) -> 
         senal=f"Más de {p.U6.semanas_cupo} semanas de cupo total" if alerta else None,
         accion="Semana de canje con mensaje a todos los vecinos." if alerta else None,
     )
+
+
+# --- Reporte mensual del comercio (sección 10, último párrafo) ---
+
+
+class CifrasMes(BaseModel):
+    """Lo que pasó en el comercio en un tramo de un mes."""
+
+    model_config = ConfigDict(frozen=True)
+
+    inscritos: int  # vecinos que se inscribieron con el QR del local
+    derivados: int  # clientes de otro comercio de origen con su primera compra aquí
+    recompras: int  # de esos derivados, los que volvieron a comprar sin código
+    canjes: int
+    canjes_pesos: int
+    ventas: int  # ventas registradas (boletas aprobadas)
+
+    @property
+    def costo_pct(self) -> Decimal | None:
+        return _pct(self.canjes_pesos, self.ventas)
+
+
+def variacion_pct(actual: int, anterior: int) -> Decimal | None:
+    """Cambio porcentual frente al mes anterior. None si antes no hubo nada."""
+    return None if anterior <= 0 else (Decimal(actual) - anterior) * CIEN / anterior
+
+
+def _entero(valor: Decimal) -> str:
+    return str(int(valor.to_integral_value()))
+
+
+def resumen_mes(nombre_mes: str, actual: CifrasMes, anterior: CifrasMes) -> str:
+    """Una frase para el dueño: ventas, comparación, costo de canjes y clientes nuevos."""
+    if actual.ventas == 0 and actual.canjes == 0 and actual.derivados == 0:
+        return (
+            f"En {nombre_mes} aún no hay ventas registradas con Red Vecina. "
+            "Invita a tus clientes a sumarse con el afiche de la caja."
+        )
+    frases = [f"En {nombre_mes} llevas {pesos(actual.ventas)} en ventas registradas"]
+    cambio = variacion_pct(actual.ventas, anterior.ventas)
+    if cambio is None or cambio == 0:
+        frases[0] += "."
+    elif cambio > 0:
+        frases[0] += f", {_entero(cambio)}% más que a esta altura del mes pasado."
+    else:
+        frases[0] += f", {_entero(-cambio)}% menos que a esta altura del mes pasado."
+    if actual.canjes:
+        costo = actual.costo_pct
+        detalle = f" ({_entero(costo)}% de esas ventas)" if costo is not None else ""
+        canjes = (
+            "el canje que recibiste costó"
+            if actual.canjes == 1
+            else (f"los {miles(actual.canjes)} canjes que recibiste costaron")
+        )
+        frases.append(f"{canjes[0].upper()}{canjes[1:]} {pesos(actual.canjes_pesos)}{detalle}.")
+    if actual.derivados:
+        clientes = "cliente nuevo" if actual.derivados == 1 else "clientes nuevos"
+        frases.append(f"Llegaron {miles(actual.derivados)} {clientes} desde otros locales.")
+    return " ".join(frases)

@@ -124,7 +124,12 @@ def _beneficios_comercio(sesion, comercio_id: int, ahora, p: Parametros) -> Bene
         return [beneficio_salida(b, p) for b in bs]
 
     return BeneficiosComercio(
-        niveles=[NivelSalida(**n.model_dump()) for n in niveles(p)],
+        niveles=[
+            NivelSalida(**n.model_dump(), obligatorio=n.numero == p.P9.obligatorio)
+            for n in niveles(p)
+        ],
+        dias_minimos=p.U9.dias_minimos,
+        rige_si_pides_hoy=reglas.rige_desde(ahora, p),
         vigentes=lista(servicio.beneficios_vigentes(sesion, comercio_id, ahora)),
         proximos=lista(servicio.beneficios_proximos(sesion, comercio_id, ahora)),
         pendientes=lista(servicio.pendientes(sesion, comercio_id)),

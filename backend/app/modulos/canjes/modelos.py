@@ -37,3 +37,25 @@ class Canje(Base):
     cuenta_para_p19: Mapped[bool] = mapped_column(default=True)
     nota: Mapped[str | None] = mapped_column(Text)
     es_demo: Mapped[bool] = mapped_column(default=False)
+
+
+class IngresoDiferido(Base):
+    """Sección 8: el local no tenía internet, aplicó el descuento y anotó el código. Lo
+    ingresa ese mismo día y queda para revisión del operador."""
+
+    __tablename__ = "ingresos_diferidos"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    comercio_id: Mapped[int] = mapped_column(ForeignKey("comercios.id"), index=True)
+    codigo: Mapped[str] = mapped_column(String(20))
+    monto_compra: Mapped[int | None]
+    aplicado_en: Mapped[datetime] = mapped_column(FechaHoraUTC)  # cuando se aplicó en caja
+    registrado_en: Mapped[datetime] = mapped_column(FechaHoraUTC, default=ahora_utc)
+    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))
+    resultado: Mapped[str] = mapped_column(String(30))  # ResultadoCaja al ingresarlo
+    mensaje: Mapped[str] = mapped_column(Text)
+    # Solo si el código era válido: ese canje sí se descontó del cupo.
+    canje_id: Mapped[int | None] = mapped_column(ForeignKey("canjes.id"))
+    revisado_en: Mapped[datetime | None] = mapped_column(FechaHoraUTC, index=True)
+    revisado_por: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))
+    nota_revision: Mapped[str | None] = mapped_column(Text)

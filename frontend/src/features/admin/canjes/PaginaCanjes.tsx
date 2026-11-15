@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { CanjeSalida, EstadoCanje } from '@/lib/api'
+import type { CanjeSalida, EstadoCanje, IngresoDiferidoSalida } from '@/lib/api'
 import { codigo, fechaHora, numero, pesos } from '@/lib/formato'
-import { mensajeError, useCanjes, useLocalCerrado } from '../consultas'
+import { mensajeError, useCanjes, useDiferidos, useLocalCerrado, useRevisarDiferido } from '../consultas'
 import { EstadoCanjeBadge, EstadoLista, FiltroComercio } from '../partes'
 
 const ESTADOS: { valor: EstadoCanje | 'todos'; texto: string }[] = [
@@ -43,6 +46,62 @@ function Detalle({ c }: { c: CanjeSalida }) {
   return <span className="text-muted-foreground">vence {fechaHora(c.vence_en)}</span>
 }
 
+function Diferido({ d }: { d: IngresoDiferidoSalida }) {
+  const revisar = useRevisarDiferido()
+  const [nota, setNota] = useState('')
+  return (
+    <li className="flex flex-col gap-3 rounded-lg border-2 border-border bg-card p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-lg">
+          <strong>{d.comercio}</strong> · código <strong className="tabular-nums">{codigo(d.codigo)}</strong>
+          {d.monto_compra !== null && <> · compra {pesos(d.monto_compra)}</>}
+        </p>
+        <p className="text-muted-foreground">
+          Aplicado {fechaHora(d.aplicado_en)} · ingresado {fechaHora(d.registrado_en)}
+        </p>
+      </div>
+      <p className={d.descontado ? 'text-exito-texto' : 'text-peligro-texto'}>
+        {d.descontado
+          ? `Válido: se descontaron ${pesos(d.valor_pesos ?? 0)} de su cupo.`
+          : `${d.mensaje} No se descontó del cupo.`}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Input
+          aria-label="Nota de revisión"
+          placeholder="Nota (opcional)"
+          value={nota}
+          onChange={(e) => setNota(e.target.value)}
+          className="max-w-md"
+        />
+        <Button variant="secondary" onClick={() => revisar.mutate({ id: d.id, nota })} disabled={revisar.isPending}>
+          Marcar revisado
+        </Button>
+      </div>
+      {revisar.isError && <p className="text-peligro-texto">{mensajeError(revisar.error)}</p>}
+    </li>
+  )
+}
+
+/** Sección 8: códigos que los comercios aplicaron sin internet y esperan revisión. */
+function Diferidos() {
+  const diferidos = useDiferidos()
+  const lista = diferidos.data ?? []
+  if (lista.length === 0) return null
+  return (
+    <Alert variant="alerta">
+      <AlertTitle>Ingresados sin internet ({lista.length})</AlertTitle>
+      <AlertDescription className="flex flex-col gap-3">
+        <p>Los comercios aplicaron estos códigos sin señal. Revísalos y, si algo no cuadra, habla con el local.</p>
+        <ul className="flex flex-col gap-3">
+          {lista.map((d) => (
+            <Diferido key={d.id} d={d} />
+          ))}
+        </ul>
+      </AlertDescription>
+    </Alert>
+  )
+}
+
 /** /admin/canjes — códigos emitidos, usados y vencidos. */
 export function PaginaCanjes() {
   const [params, setParams] = useSearchParams()
@@ -60,6 +119,7 @@ export function PaginaCanjes() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Diferidos />
       <div className="flex flex-wrap items-center gap-3">
         <Tabs value={estado} onValueChange={(v) => cambiar('estado', v === 'todos' ? null : v)}>
           <TabsList>

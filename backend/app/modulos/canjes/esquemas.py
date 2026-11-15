@@ -85,7 +85,37 @@ class CodigoEnCaja(BaseModel):
 
 
 class UsoEnCaja(CodigoEnCaja):
-    monto_compra: int = Field(ge=0, description="Total de la compra antes del descuento.")
+    monto_compra: int | None = Field(
+        default=None, ge=0, description="Total de la compra antes del descuento (opcional)."
+    )
+
+
+class IngresoDiferidoNuevo(UsoEnCaja):
+    """Sección 8: código ya aplicado sin internet, ingresado ese mismo día."""
+
+    aplicado_en: datetime | None = Field(
+        default=None, description="Cuándo se aplicó en caja. Si falta, ahora."
+    )
+
+
+class IngresoDiferidoSalida(BaseModel):
+    id: int
+    comercio_id: int
+    comercio: str
+    codigo: str
+    monto_compra: int | None
+    aplicado_en: datetime
+    registrado_en: datetime
+    resultado: ResultadoCaja
+    mensaje: str
+    descontado: bool  # True si el código era válido y se descontó del cupo
+    valor_pesos: int | None
+    revisado_en: datetime | None
+    nota_revision: str | None
+
+
+class RevisionDiferido(BaseModel):
+    nota: str | None = Field(default=None, max_length=500)
 
 
 class ResultadoCajaSalida(BaseModel):

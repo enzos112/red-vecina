@@ -109,11 +109,19 @@ def buscar(sesion: Session, texto: str, limite: int) -> list[Vecino]:
     return list(sesion.scalars(consulta))
 
 
-def contar_por_origen(sesion: Session, comercio_id: int) -> int:
-    return (
-        sesion.scalar(select(func.count(Vecino.id)).where(Vecino.comercio_origen_id == comercio_id))
-        or 0
-    )
+def contar_por_origen(
+    sesion: Session,
+    comercio_id: int,
+    desde: datetime | None = None,
+    hasta: datetime | None = None,
+) -> int:
+    """Vecinos inscritos con el QR del comercio, opcionalmente en [desde, hasta)."""
+    consulta = select(func.count(Vecino.id)).where(Vecino.comercio_origen_id == comercio_id)
+    if desde is not None:
+        consulta = consulta.where(Vecino.creado_en >= desde)
+    if hasta is not None:
+        consulta = consulta.where(Vecino.creado_en < hasta)
+    return sesion.scalar(consulta) or 0
 
 
 class Derivado(BaseModel):

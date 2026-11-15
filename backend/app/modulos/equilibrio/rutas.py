@@ -26,6 +26,7 @@ def cupo_salida(c: CupoSemanal, ahora: datetime, p: Parametros) -> CupoSalida:
         ventas_ventana=c.ventas_ventana,
         dias_historia=c.dias_historia,
         proxima_liberacion=reglas.proximo_inicio_semana(ahora, p),
+        explicacion=reglas.explicacion_cupo(c.en_piso, c.dias_historia, p),
     )
 
 

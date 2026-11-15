@@ -33,6 +33,7 @@ class NivelSalida(BaseModel):
     puntos: int
     valor_pesos: int
     compra_minima_tope: int
+    obligatorio: bool = False  # P9: el nivel que todo comercio debe ofrecer
 
 
 class BeneficioSalida(BaseModel):
@@ -103,6 +104,8 @@ class PropuestaBeneficios(BaseModel):
 
 class BeneficiosComercio(BaseModel):
     niveles: list[NivelSalida]
+    dias_minimos: int  # U9: días a la semana en que debe valer una restricción
+    rige_si_pides_hoy: datetime  # U23: desde cuándo regiría una propuesta enviada ahora
     vigentes: list[BeneficioSalida]
     proximos: list[BeneficioSalida]  # aprobados que todavía no rigen
     pendientes: list[BeneficioSalida]  # esperan aprobación

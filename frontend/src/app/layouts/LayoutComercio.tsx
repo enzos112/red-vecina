@@ -1,6 +1,9 @@
-import { BarChart3, Gauge, Gift, ScanLine } from 'lucide-react'
-import { NavLink, Outlet, ScrollRestoration } from 'react-router'
+import { BarChart3, Gauge, Gift, LogOut, QrCode, ScanLine } from 'lucide-react'
+import { Link, Navigate, NavLink, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
 import { Logo } from '@/components/marca/Logo'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { sinSesion, useSalir, useYo } from '@/lib/sesion'
 import { cn } from '@/lib/utils'
 
 const SECCIONES = [
@@ -12,12 +15,53 @@ const SECCIONES = [
 
 /** Zona del comercio: celular, con las secciones siempre visibles abajo (sin menú oculto). */
 export function LayoutComercio() {
+  const yo = useYo()
+  const salir = useSalir()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  if (yo.isPending) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col gap-4 px-4 py-16">
+        <Skeleton className="h-12 w-2/3" />
+        <Skeleton className="h-40" />
+      </div>
+    )
+  }
+  if ((yo.isError && sinSesion(yo.error)) || (yo.data && yo.data.rol !== 'comercio')) {
+    return <Navigate to="/comercio/login" replace state={{ desde: pathname }} />
+  }
+  if (yo.isError) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-16 text-lg">
+        <p className="mb-4">{yo.error.message}</p>
+        <Button onClick={() => yo.refetch()}>Reintentar</Button>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-svh flex-col">
       <header className="sobre-oscuro bg-barrio">
-        <div className="mx-auto flex h-16 max-w-md items-center justify-between px-4">
+        <div className="mx-auto flex h-16 max-w-md items-center justify-between gap-2 px-4">
           <Logo tono="oscuro" />
-          <span className="text-sm font-semibold text-crema/85">Comercio</span>
+          <div className="flex min-w-0 items-center gap-1">
+            <span className="truncate text-sm font-semibold text-crema/85">{yo.data.comercio?.nombre ?? 'Comercio'}</span>
+            <Button variant="oscuro-secundario" size="icon" className="border-transparent" asChild>
+              <Link to="/comercio/afiche" aria-label="Afiche y tarjeta para la caja">
+                <QrCode aria-hidden="true" />
+              </Link>
+            </Button>
+            <Button
+              variant="oscuro-secundario"
+              size="icon"
+              className="border-transparent"
+              aria-label="Salir"
+              onClick={() => salir.mutate(undefined, { onSettled: () => navigate('/comercio/login', { replace: true }) })}
+            >
+              <LogOut aria-hidden="true" />
+            </Button>
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-md flex-1 px-4 pt-6 pb-32">
