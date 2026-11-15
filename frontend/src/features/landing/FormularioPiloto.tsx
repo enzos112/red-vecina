@@ -78,7 +78,7 @@ export function FormularioPiloto() {
     return (
       <Card className="aparecer">
         <CardContent className="flex flex-col items-start gap-4" role="status">
-          <span className="flex size-14 items-center justify-center rounded-full bg-exito-fondo text-exito-texto">
+          <span className="flex size-14 items-center justify-center border-2 border-exito bg-exito-fondo text-exito-texto">
           </span>
           <h3 className="text-3xl font-extrabold">¡Gracias, {campos.contacto.trim().split(' ')[0]}!</h3>
           <p className="text-lg text-muted-foreground">{enviar.data.mensaje}</p>

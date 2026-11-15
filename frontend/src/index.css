@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/archivo/wdth.css";
 
 /*
  * Identidad visual de Red Vecina (docs/construccion.md, sección 6).
@@ -12,8 +12,19 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
     --font-heading: var(--font-sans);
+    --font-libreta: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+
+    /* La libreta del almacén: tapa, tinta, cuadrícula, papel y lápiz. */
+    --color-tapa: var(--tapa);
+    --color-tapa-hover: var(--tapa-hover);
+    --color-tinta-azul: var(--tinta-azul);
+    --color-cuadricula: var(--cuadricula);
+    --color-papel: var(--papel);
+    --color-papel-hover: var(--papel-hover);
+    --color-lapiz: var(--lapiz);
+    --color-tapa-texto: var(--tapa-texto);
 
     /* Escala de texto: nada bajo 15 px; el texto base es de 17 px. */
     --text-xs: 0.9375rem;
@@ -115,17 +126,17 @@
 :root {
     /* Paleta de la sección 6: azul de confianza + naranja de barrio, sobre papel crema. */
     --barrio: #053073;          /* azul noche: hero y bloques de énfasis */
-    --barrio-claro: #0B3F8F;    /* formas geométricas sobre el azul noche */
-    --vecina: #074EBC;          /* azul: acción principal sobre fondo claro (blanco 7,4:1) */
-    --vecina-oscuro: #053F99;   /* su estado al pasar el cursor */
+    --barrio-claro: #0A3D8A;    /* formas geométricas sobre el azul noche */
+    --vecina: #0B47A8;          /* azul: acción principal sobre fondo claro (blanco 7,4:1) */
+    --vecina-oscuro: #08398A;   /* su estado al pasar el cursor */
     --vecina-claro: #1B71F6;    /* azul brillante: foco y detalles gráficos, nunca texto chico */
     --mango: #F79D18;           /* naranja: acento y acción sobre azul noche, con texto azul noche */
     --mango-oscuro: #EB9310;    /* hover del naranja (azul noche encima: 5,2:1) */
     --mango-texto: #9A5B00;     /* naranja para texto chico sobre claro (5,2:1) */
-    --vecina-forma: #0E5BD0;    /* formas geométricas sobre el azul */
-    --crema: #FFF9F2;           /* fondo general */
+    --vecina-forma: #0A3D8A;    /* formas geométricas sobre el azul */
+    --crema: #FAFCFF;           /* fondo general */
     --tinta: #0B1B33;           /* texto (16,5:1) */
-    --musgo: #5A6478;           /* texto secundario (5,7:1) */
+    --musgo: #5F6B80;           /* texto secundario (5,7:1) */
 
     /* Estados. Separados de la marca y siempre con una palabra: nunca solo el color. */
     --exito: #1E7A46;
@@ -146,7 +157,7 @@
     --barrio-activo: #0A3D8A;
     --secundario-hover: #D6E2F5;
     --secundario-activo: #C5D5EF;
-    --esqueleto: #EFE6D8;
+    --esqueleto: #E3EBF7;
 
     --background: var(--crema);
     --foreground: var(--tinta);
@@ -158,29 +169,40 @@
     --primary-foreground: #FFFFFF;
     --secondary: #E7EEF9;
     --secondary-foreground: var(--tinta);
-    --muted: #F5EEE3;
+    --muted: #EEF3FB;
     --muted-foreground: var(--musgo);
     --accent: #E7EEF9;
     --accent-foreground: var(--tinta);
     --destructive: var(--peligro);
-    --border: #E8DFD2;
-    --input: #CBC1B2;
-    --ring: var(--vecina-claro);
+    --border: #CBD9F0;
+    --input: #053073;
+    --ring: var(--tinta-azul);
     --chart-1: var(--vecina);
-    --chart-2: var(--mango);
+    --chart-2: #8FA8D6;
     --chart-3: var(--barrio);
     --chart-4: var(--vecina-claro);
     --chart-5: var(--musgo);
-    --radius: 1rem;
+    --radius: 0rem;
 
-    --sidebar: #FFFFFF;
+    /* Libreta (landing y tarjeta del vecino). Un renglón mide 2 rem; todo calza en él. */
+    --tapa: #053073;            /* tapa de la libreta: cabeceras, cierre, total (12,9:1 sobre papel) */
+    --tapa-hover: #0A3D8A;
+    --tinta-azul: #0B47A8;      /* lo anotado y confirmado (8,4:1 sobre papel) */
+    --cuadricula: #CBD9F0;      /* líneas de la hoja */
+    --papel: #FAFCFF;           /* la hoja */
+    --papel-hover: #E6EEFA;
+    --lapiz: #5F6B80;           /* lo pendiente, aún a lápiz (5,4:1 sobre papel) */
+    --tapa-texto: #C9D6EC;      /* texto secundario sobre la tapa (9,6:1) */
+    --renglon: 2rem;
+
+    --sidebar: var(--papel);
     --sidebar-foreground: var(--tinta);
-    --sidebar-primary: var(--vecina);
+    --sidebar-primary: var(--tapa);
     --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #E7EEF9;
+    --sidebar-accent: #E6EEFA;
     --sidebar-accent-foreground: var(--tinta);
-    --sidebar-border: #E8DFD2;
-    --sidebar-ring: var(--vecina-claro);
+    --sidebar-border: var(--tapa);
+    --sidebar-ring: var(--tinta-azul);
 }
 
 @layer base {
@@ -197,21 +219,103 @@
   }
   h1, h2, h3 {
     @apply font-heading text-balance;
+    font-stretch: 88%;
+    letter-spacing: -0.01em;
   }
   p {
     @apply text-pretty;
   }
   ::selection {
-    background: var(--mango);
-    color: var(--tinta);
+    background: var(--tinta-azul);
+    color: var(--papel);
   }
   :focus-visible {
-    outline: 3px solid var(--vecina-claro);
-    outline-offset: 2px;
+    outline: 3px solid var(--tinta-azul);
+    outline-offset: 3px;
   }
-  .sobre-oscuro :focus-visible {
+  .sobre-tapa :focus-visible {
     outline-color: var(--mango);
   }
+}
+
+/*
+ * Libreta del almacén. `.libreta` cambia la voz tipográfica y el papel de una zona entera;
+ * `hoja` dibuja la cuadrícula de 2 rem. Las líneas son trazos de 1 px, no degradados de color.
+ */
+.libreta {
+  font-family: var(--font-libreta);
+  background-color: var(--papel);
+  color: var(--tinta);
+  font-variant-numeric: tabular-nums;
+}
+.libreta ::selection {
+  background: var(--tinta-azul);
+  color: var(--papel);
+}
+.libreta :focus-visible {
+  outline: 3px solid var(--tinta-azul);
+  outline-offset: 3px;
+}
+.libreta .sobre-tapa :focus-visible {
+  outline-color: var(--mango);
+}
+
+@utility hoja {
+  background-color: var(--papel);
+  background-image:
+    linear-gradient(var(--cuadricula) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+  background-size: var(--renglon) var(--renglon);
+}
+
+/* Solo renglones horizontales: para listas y cuentas dentro de la hoja. */
+@utility renglones {
+  background-image: linear-gradient(transparent calc(var(--renglon) - 1px), var(--cuadricula) 0);
+  background-size: 100% var(--renglon);
+}
+
+/* Titulares de la libreta: grotesca pesada y algo angosta, como rótulo de columna. */
+@utility rotulo {
+  font-family: var(--font-libreta);
+  font-weight: 850;
+  font-stretch: 88%;
+  letter-spacing: -0.01em;
+}
+
+/*
+ * La cuenta se escribe en pasos de renglón: cada fila entra un renglón exacto, se descubre
+ * de izquierda a derecha como si se anotara y se asienta con un rebote corto.
+ */
+@keyframes anotar {
+  0% { clip-path: inset(0 100% 0 0); transform: translateY(calc(var(--renglon) * 0.5)); }
+  70% { clip-path: inset(0 0 0 0); transform: translateY(-2px); }
+  100% { clip-path: inset(0 0 0 0); transform: none; }
+}
+@keyframes tachar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes trazar {
+  from { stroke-dashoffset: var(--largo, 600); }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes entintar {
+  from { color: var(--lapiz); }
+  to { color: var(--tinta-azul); }
+}
+
+/* Tachado que se traza, también en textos de dos líneas (cada línea lleva su trazo). */
+@keyframes tachar-texto {
+  from { background-size: 0% 3px; }
+  to { background-size: 100% 3px; }
+}
+@utility tachado {
+  background-image: linear-gradient(var(--tinta-azul), var(--tinta-azul));
+  background-repeat: no-repeat;
+  background-position: 0 58%;
+  background-size: 100% 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 /* Aparición suave al cargar; se apaga con movimiento reducido. */

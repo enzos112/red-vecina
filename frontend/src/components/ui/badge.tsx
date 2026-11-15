@@ -8,7 +8,7 @@ import { Slot } from "radix-ui"
  * estado y el texto en su tono oscuro (contraste AA). El color nunca va solo: siempre con texto.
  */
 const badgeVariants = cva(
-  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full border border-transparent px-3 py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200 [&>svg]:pointer-events-none [&>svg]:size-4!",
+  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-2 overflow-hidden rounded-none border border-transparent px-3 py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200 [&>svg]:pointer-events-none [&>svg]:size-4!",
   {
     variants: {
       variant: {
@@ -16,11 +16,11 @@ const badgeVariants = cva(
         secondary: "bg-secondary text-secondary-foreground",
         mango: "bg-mango text-barrio",
         exito:
-          "bg-exito-fondo text-exito-texto before:size-2.5 before:rounded-full before:bg-exito before:content-['']",
+          "bg-exito-fondo text-exito-texto before:size-2.5 before:rounded-none before:bg-exito before:content-['']",
         alerta:
-          "bg-alerta-fondo text-alerta-texto before:size-2.5 before:rounded-full before:bg-alerta before:content-['']",
+          "bg-alerta-fondo text-alerta-texto before:size-2.5 before:rounded-none before:bg-alerta before:content-['']",
         peligro:
-          "bg-peligro-fondo text-peligro-texto before:size-2.5 before:rounded-full before:bg-peligro before:content-['']",
+          "bg-peligro-fondo text-peligro-texto before:size-2.5 before:rounded-none before:bg-peligro before:content-['']",
         destructive: "bg-peligro-oscuro text-white",
         outline: "border-input bg-card text-foreground",
         ghost: "text-muted-foreground",

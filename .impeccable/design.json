@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-15T00:00:00Z",
+  "title": "Design System: Red Vecina",
+  "extensions": {
+    "colorMeta": {
+      "tapa": { "role": "primary", "displayName": "Tapa azul noche", "canonical": "#053073", "tonalRamp": ["#021633", "#03214F", "#053073", "#0A3D8A", "#3A63A6", "#7590C2", "#B3C4E0", "#E6EEFA"] },
+      "tapa-hover": { "role": "primary", "displayName": "Tapa gastada", "canonical": "#0A3D8A", "tonalRamp": ["#041A3D", "#072B63", "#0A3D8A", "#2A57A0", "#5379B6", "#8BA3CF", "#C1D0E8", "#EDF2FA"] },
+      "tinta-azul": { "role": "primary", "displayName": "Tinta azul", "canonical": "#0B47A8", "tonalRamp": ["#051F4A", "#08337A", "#0B47A8", "#2F65BC", "#5A86CC", "#8FADDD", "#C4D4EE", "#EEF3FB"] },
+      "mango": { "role": "secondary", "displayName": "Naranja mango", "canonical": "#F79D18", "tonalRamp": ["#5C3700", "#9A5B00", "#DE870A", "#EB9310", "#F79D18", "#FAB956", "#FCD69C", "#FEF1DE"] },
+      "mango-oscuro": { "role": "secondary", "displayName": "Mango al pasar", "canonical": "#EB9310", "tonalRamp": ["#573300", "#8F5500", "#D07E08", "#EB9310", "#F3A93B", "#F7C477", "#FBDDB2", "#FEF3E3"] },
+      "mango-activo": { "role": "secondary", "displayName": "Mango presionado", "canonical": "#DE870A", "tonalRamp": ["#522F00", "#874F00", "#C27506", "#DE870A", "#EAA33A", "#F2C076", "#F8DBB1", "#FDF2E2"] },
+      "papel": { "role": "neutral", "displayName": "Papel", "canonical": "#FAFCFF", "tonalRamp": ["#1A2230", "#3B4659", "#6A7990", "#9DADC6", "#CBD9F0", "#E6EEFA", "#F2F6FD", "#FAFCFF"] },
+      "papel-hover": { "role": "neutral", "displayName": "Papel tocado", "canonical": "#E6EEFA", "tonalRamp": ["#1B2433", "#3C495E", "#687B98", "#99AECB", "#C3D3EC", "#E6EEFA", "#F1F5FC", "#FAFCFF"] },
+      "cuadricula": { "role": "neutral", "displayName": "Cuadrícula", "canonical": "#CBD9F0", "tonalRamp": ["#17233A", "#2E4366", "#557299", "#8AA4C8", "#CBD9F0", "#DCE6F5", "#ECF2FA", "#F8FAFE"] },
+      "tinta": { "role": "neutral", "displayName": "Tinta negra", "canonical": "#0B1B33", "tonalRamp": ["#0B1B33", "#1D2E4A", "#364866", "#56688A", "#8392AD", "#B2BDD0", "#DCE2EC", "#F3F5F9"] },
+      "lapiz": { "role": "neutral", "displayName": "Lápiz", "canonical": "#5F6B80", "tonalRamp": ["#1C212A", "#323A47", "#485366", "#5F6B80", "#838DA0", "#A9B1C0", "#D0D5DE", "#F1F3F6"] },
+      "tapa-texto": { "role": "neutral", "displayName": "Texto de tapa", "canonical": "#C9D6EC", "tonalRamp": ["#1A2539", "#33466A", "#56709E", "#8BA2CA", "#C9D6EC", "#DAE3F2", "#EBF0F8", "#F8FAFD"] },
+      "peligro": { "role": "neutral", "displayName": "Peligro", "canonical": "#C0392B", "tonalRamp": ["#3D110C", "#772018", "#A12D22", "#C0392B", "#D3685D", "#E39A92", "#F1CBC6", "#FBE7E4"] },
+      "peligro-texto": { "role": "neutral", "displayName": "Peligro en texto", "canonical": "#A12D22", "tonalRamp": ["#330E0A", "#5E1A13", "#8E271D", "#A12D22", "#C0574D", "#D88E87", "#EDC4C0", "#FBE7E4"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Rótulo de portada", "purpose": "Solo el titular de portada; cada línea ocupa cuatro renglones." },
+      "headline": { "displayName": "Rótulo de sección", "purpose": "Titulares de sección, 14 a 16 caracteres por línea." },
+      "title": { "displayName": "Rótulo de fila", "purpose": "Pasos, nombres de comercio, saludo y subtítulos de la tarjeta." },
+      "cifra": { "displayName": "Cifra", "purpose": "Montos de cada fila, tabulares, en tinta azul si están firmes." },
+      "body": { "displayName": "Texto", "purpose": "Texto corrido con interlínea de un renglón (32 px)." },
+      "body-lead": { "displayName": "Bajada", "purpose": "Bajada bajo un titular de sección o de portada." },
+      "label": { "displayName": "Etiqueta", "purpose": "Fechas de margen y de fila, encabezados de tabla, notas; el mínimo de 15 px." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "anotar", "value": "520ms cubic-bezier(0.2, 0.9, 0.25, 1.15)", "purpose": "Cada fila de una cuenta entra en su turno: se descubre de izquierda a derecha y sube medio renglón." },
+      { "name": "entintar", "value": "500ms ease-out", "purpose": "La cifra pasa de lápiz a tinta azul al confirmarse." },
+      { "name": "tachar-texto", "value": "420ms ease-out", "purpose": "El tachado del canje se traza de 0 a 100 %." },
+      { "name": "tachar", "value": "600ms cubic-bezier(0.45, 0, 0.2, 1)", "purpose": "Subrayado del titular que se traza al cargar." },
+      { "name": "trazar", "value": "700ms cubic-bezier(0.45, 0, 0.2, 1)", "purpose": "El círculo que encierra el total se dibuja." },
+      { "name": "color", "value": "200ms ease-out", "purpose": "Cambio de fondo de botones y enlaces; sin saltos de tamaño." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón principal (libreta)",
+      "kind": "button",
+      "refersTo": "button-libreta",
+      "description": "La única acción naranja de la pantalla.",
+      "html": "<button class=\"ds-btn-libreta\">Ver comercios</button>",
+      "css": ".ds-btn-libreta { display: inline-flex; align-items: center; justify-content: center; height: 56px; padding: 0 32px; background: var(--mango, #F79D18); color: var(--tapa, #053073); border: 2px solid var(--tapa, #053073); border-radius: 0; font-family: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif; font-size: 1.1875rem; font-weight: 800; cursor: pointer; transition: background-color 200ms ease-out; } .ds-btn-libreta:hover { background: var(--mango-oscuro, #EB9310); } .ds-btn-libreta:active { background: var(--mango-activo, #DE870A); } .ds-btn-libreta:focus-visible { outline: 3px solid var(--tinta-azul, #0B47A8); outline-offset: 3px; }"
+    },
+    {
+      "name": "Botón secundario (libreta)",
+      "kind": "button",
+      "refersTo": "button-libreta-secundario",
+      "description": "Acciones secundarias sobre papel.",
+      "html": "<button class=\"ds-btn-libreta-sec\">Cómo funciona</button>",
+      "css": ".ds-btn-libreta-sec { display: inline-flex; align-items: center; justify-content: center; height: 56px; padding: 0 32px; background: var(--papel, #FAFCFF); color: var(--tapa, #053073); border: 2px solid var(--tapa, #053073); border-radius: 0; font-family: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif; font-size: 1.1875rem; font-weight: 800; cursor: pointer; transition: background-color 200ms ease-out; } .ds-btn-libreta-sec:hover { background: var(--papel-hover, #E6EEFA); } .ds-btn-libreta-sec:active { background: var(--cuadricula, #CBD9F0); } .ds-btn-libreta-sec:focus-visible { outline: 3px solid var(--tinta-azul, #0B47A8); outline-offset: 3px; }"
+    },
+    {
+      "name": "Botón sobre la tapa",
+      "kind": "button",
+      "refersTo": "button-libreta-tapa",
+      "description": "Acción secundaria dentro de un bloque azul noche.",
+      "html": "<div style=\"background:#053073;padding:16px\"><button class=\"ds-btn-libreta-tapa\">Ahora no</button></div>",
+      "css": ".ds-btn-libreta-tapa { display: inline-flex; align-items: center; justify-content: center; height: 52px; padding: 0 28px; background: transparent; color: var(--papel, #FAFCFF); border: 2px solid var(--tapa-texto, #C9D6EC); border-radius: 0; font-family: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif; font-size: 1.0625rem; font-weight: 800; cursor: pointer; transition: background-color 200ms ease-out, border-color 200ms ease-out; } .ds-btn-libreta-tapa:hover { background: var(--tapa-hover, #0A3D8A); border-color: var(--papel, #FAFCFF); } .ds-btn-libreta-tapa:focus-visible { outline: 3px solid var(--mango, #F79D18); outline-offset: 3px; }"
+    },
+    {
+      "name": "Cuenta de la libreta",
+      "kind": "card",
+      "refersTo": "cuenta-cabecera",
+      "description": "Cuenta con cabecera de tapa, filas por estado (tinta, tachado, lápiz) y total encerrado.",
+      "html": "<figure class=\"ds-cuenta\"><figcaption class=\"ds-cuenta-cab\"><span class=\"ds-rotulo\">Cuenta de Rosa</span><span class=\"ds-cuenta-etq\">Ejemplo</span></figcaption><ol class=\"ds-cuenta-filas\"><li><span class=\"ds-fecha\">lun 10</span><span>Saldo anterior</span><span class=\"ds-cifra\">450</span></li><li><span class=\"ds-fecha\">mié 12</span><span class=\"ds-tachado\">Canje en Panadería La Espiga</span><span class=\"ds-cifra\">−250</span></li><li class=\"ds-lapiz\"><span class=\"ds-fecha\">sáb 15</span><span>A lápiz: la estamos revisando</span><span class=\"ds-cifra-lapiz\">+78</span></li></ol></figure>",
+      "css": ".ds-cuenta { margin: 0; max-width: 30rem; border: 2px solid var(--tapa, #053073); background: var(--papel, #FAFCFF); color: var(--tinta, #0B1B33); font-family: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums; } .ds-cuenta-cab { display: flex; align-items: center; justify-content: space-between; height: 64px; padding: 0 16px; background: var(--tapa, #053073); color: var(--papel, #FAFCFF); } .ds-rotulo { font-size: 1.625rem; font-weight: 850; font-stretch: 88%; letter-spacing: -0.01em; } .ds-cuenta-etq { font-size: 0.9375rem; font-weight: 600; color: var(--tapa-texto, #C9D6EC); } .ds-cuenta-filas { list-style: none; margin: 0; padding: 0; } .ds-cuenta-filas li { display: grid; grid-template-columns: 4.5rem 1fr auto; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; border-bottom: 1px solid var(--cuadricula, #CBD9F0); font-weight: 600; } .ds-cuenta-filas li:last-child { border-bottom: 0; } .ds-fecha { font-size: 0.9375rem; color: var(--tapa, #053073); } .ds-cifra { font-size: 1.625rem; font-weight: 800; color: var(--tinta-azul, #0B47A8); text-align: right; } .ds-tachado { background-image: linear-gradient(var(--tinta-azul, #0B47A8), var(--tinta-azul, #0B47A8)); background-repeat: no-repeat; background-position: 0 58%; background-size: 100% 3px; } .ds-lapiz { color: var(--lapiz, #5F6B80); } .ds-lapiz .ds-fecha { color: inherit; } .ds-cifra-lapiz { font-size: 1.625rem; font-weight: 500; text-align: right; text-decoration: underline dashed 2px; text-underline-offset: 6px; }"
+    },
+    {
+      "name": "Hoja con margen",
+      "kind": "custom",
+      "refersTo": "cuenta-fila",
+      "description": "La hoja cuadriculada de 32 px con su margen doble en tapa; contenedor de toda sección.",
+      "html": "<section class=\"ds-hoja\"><span class=\"ds-margen\"></span><h2 class=\"ds-titular\">Así se anota tu compra.</h2><p class=\"ds-texto\">Cada compra queda anotada y la cuenta siempre cuadra.</p></section>",
+      "css": ".ds-hoja { position: relative; padding: 64px 16px 64px 48px; background-color: var(--papel, #FAFCFF); background-image: linear-gradient(var(--cuadricula, #CBD9F0) 1px, transparent 1px), linear-gradient(90deg, var(--cuadricula, #CBD9F0) 1px, transparent 1px); background-size: 32px 32px; color: var(--tinta, #0B1B33); font-family: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif; } .ds-margen { position: absolute; top: 0; bottom: 0; left: 24px; width: 6px; border-left: 2px solid var(--tapa, #053073); border-right: 2px solid var(--tapa, #053073); box-sizing: border-box; } .ds-titular { margin: 0; max-width: 16ch; font-size: 2.5rem; line-height: 1.05; font-weight: 850; font-stretch: 88%; letter-spacing: -0.035em; color: var(--tapa, #053073); } .ds-texto { margin: 24px 0 0; max-width: 36rem; font-size: 1.1875rem; line-height: 2rem; }"
+    },
+    {
+      "name": "Enlace de navegación",
+      "kind": "nav",
+      "refersTo": "cuenta-fila",
+      "description": "Encabezado de papel con regla inferior de tapa y enlaces que se subrayan en tinta azul.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" class=\"ds-nav-link\">Cómo funciona</a><a href=\"#\" class=\"ds-nav-link\">Comercios</a><a href=\"#\" class=\"ds-nav-link\">Preguntas</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 4px; align-items: center; height: 80px; padding: 0 16px; background: var(--papel, #FAFCFF); border-bottom: 2px solid var(--tapa, #053073); font-family: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif; } .ds-nav-link { display: inline-flex; align-items: center; min-height: 48px; padding: 0 12px; font-size: 1.0625rem; font-weight: 600; color: var(--tinta, #0B1B33); text-decoration: none; text-decoration-thickness: 2px; text-underline-offset: 6px; text-decoration-color: var(--tinta-azul, #0B47A8); transition: color 200ms ease-out; } .ds-nav-link:hover { color: var(--tinta-azul, #0B47A8); text-decoration-line: underline; } .ds-nav-link:focus-visible { outline: 3px solid var(--tinta-azul, #0B47A8); outline-offset: 3px; }"
+    },
+    {
+      "name": "Código de canje",
+      "kind": "custom",
+      "refersTo": "cuenta-cabecera",
+      "description": "Bloque de tapa con los seis dígitos, cada uno en su cuadro.",
+      "html": "<section class=\"ds-codigo\"><p class=\"ds-codigo-tit\">Tu código de canje</p><p class=\"ds-digitos\"><span>4</span><span>8</span><span>1</span><span>9</span><span>0</span><span>3</span></p><p class=\"ds-codigo-vence\">Vence en 47 h 12 min</p></section>",
+      "css": ".ds-codigo { max-width: 28rem; padding: 20px; background: var(--tapa, #053073); color: var(--papel, #FAFCFF); border: 2px solid var(--tapa, #053073); font-family: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif; } .ds-codigo-tit { margin: 0; font-size: 1.1875rem; font-weight: 700; } .ds-digitos { display: flex; gap: 6px; margin: 12px 0 0; } .ds-digitos span { flex: 1; display: grid; place-items: center; aspect-ratio: 4 / 5; border: 2px solid rgba(201, 214, 236, 0.6); font-size: 2.75rem; line-height: 1; font-weight: 850; font-stretch: 88%; font-variant-numeric: tabular-nums; } .ds-codigo-vence { margin: 16px 0 0; font-size: 1.375rem; font-weight: 800; font-variant-numeric: tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La libreta del almacén",
+    "overview": "Red Vecina se dibuja como la libreta de fiado del almacén de la esquina, pero llevada entre todos los locales. La página es una hoja cuadriculada de tinta azul con su margen doble; la cabecera de las cuentas, los bloques de cierre y el pie son la tapa azul noche. Lo firme se escribe en tinta, lo pendiente queda a lápiz, el canje se tacha con un trazo y el total se encierra en un círculo. La confianza no viene de adornos sino de que la cuenta cuadra a la vista.\n\nLa densidad es la de un cuaderno: todo calza en un renglón de 32 px, las filas miden dos renglones, los titulares bajan en pasos enteros de renglón. La tipografía hace el trabajo de la imagen: una grotesca pesada y algo angosta (Archivo) como rótulo de columna, con cifras tabulares. Esquinas rectas, bordes de 2 px, colores planos, sin sombras, sin fotos y sin íconos. El naranja aparece solo donde se toca.\n\nEl movimiento cuenta una sola historia: la cuenta se escribe sola fila por fila, lo pendiente pasa de lápiz a tinta, el canje se tacha y el total se encierra. Con movimiento reducido todo aparece en su estado final.\n\nAlcance actual: este mundo rige la zona pública (encabezado, landing `/` y pie) y la zona del vecino (`/t/<token>`). Las zonas de comercio y administración, y los cuerpos de `/comercios` y `/condiciones`, siguen en el sistema anterior (Plus Jakarta sobre crema) y están pendientes de migrar; no son referencia para pantallas nuevas.",
+    "keyCharacteristics": [
+      "Hoja cuadriculada de 32 px con margen doble azul noche a 128 px (24 px en el celular).",
+      "Tapa azul noche para cabeceras de cuenta, bloques de cierre, código de canje y pie.",
+      "Un estado, un trazo: tinta azul para lo firme, lápiz gris con subrayado discontinuo para lo pendiente, tachado de tinta para lo canjeado.",
+      "Archivo variable: rótulos a peso 850 y ancho 88 %, cifras tabulares en toda la zona.",
+      "Rectángulos de esquina recta y borde de 2 px; sin sombras ni radios.",
+      "Naranja solo en acciones."
+    ],
+    "rules": [
+      { "name": "The Naranja-Que-Se-Toca Rule", "body": "El naranja marca solo lo accionable: botones principales, foco sobre la tapa, enlaces del pie. La única excepción es el punto naranja de la marca. Nunca como fondo de bloque, titular o adorno.", "section": "colors" },
+      { "name": "The Una-Tinta-Por-Rol Rule", "body": "Tapa para estructura y títulos, tinta azul para lo confirmado, lápiz para lo pendiente, tinta negra para leer. Un color no cambia de rol entre pantallas.", "section": "colors" },
+      { "name": "The Lo-Dice-En-Palabras Rule", "body": "Ningún estado depende solo del color o del trazo: \"A lápiz: la estamos revisando\", \"(canje usado)\", \"Venció\".", "section": "colors" },
+      { "name": "The Interlínea-De-Renglón Rule", "body": "El texto corrido usa interlínea de 32 px (un renglón) y los titulares, múltiplos de renglón.", "section": "typography" },
+      { "name": "The Rótulo-No-Kicker Rule", "body": "El rótulo es para titulares y cifras. No hay sobretítulos, etiquetas en mayúsculas ni kickers sobre los titulares; las fechas y folios van en el margen, como en una libreta.", "section": "typography" },
+      { "name": "The Paso-De-Renglón Rule", "body": "Alturas de fila, interlíneas y desplazamientos de animación son múltiplos o fracciones exactas del renglón (32 px).", "section": "layout" },
+      { "name": "The Papel-Y-Tapa Rule", "body": "Lo que destaca cambia de material (papel a tapa) o gana un borde de 2 px; nunca flota con una sombra.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do poner cada pantalla del vecino y cada página pública nueva dentro de la libreta: papel, cuadrícula de 32 px y margen doble en tapa.",
+      "Do escribir cada cifra según su estado: tinta azul si está firme, lápiz con subrayado discontinuo si está pendiente, tachado de 3 px si ya se usó, y siempre con su palabra.",
+      "Do usar esquinas rectas y bordes de 2 px en tapa para todo bloque que destaque.",
+      "Do dejar una sola acción naranja por pantalla, con texto tapa.",
+      "Do alinear alturas e interlíneas al renglón de 32 px y usar cifras tabulares.",
+      "Do rotular como ejemplo toda cuenta ilustrativa (\"Ejemplo\", \"Ilustración con datos de ejemplo\")."
+    ],
+    "donts": [
+      "Don't usar íconos, ni los que traen los componentes de shadcn; acciones y estados se dicen en palabras.",
+      "Don't usar el naranja en fondos de bloque, titulares o adornos.",
+      "Don't agregar sombras, radios ni botones en píldora dentro de la libreta.",
+      "Don't usar degradados de color; los gradientes lineales solo dibujan líneas de 1 a 3 px.",
+      "Don't poner sobretítulos o kickers sobre los titulares; fechas y folios van en el margen.",
+      "Don't bajar texto de 15 px ni dejar táctiles bajo 48 px.",
+      "Don't tomar las zonas de comercio y administración (Plus Jakarta sobre crema) como referencia de este mundo."
+    ]
+  }
+}

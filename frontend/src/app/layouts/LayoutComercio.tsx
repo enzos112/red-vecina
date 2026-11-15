@@ -41,24 +41,24 @@ export function LayoutComercio() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col">
-      <header className="sobre-oscuro bg-barrio">
+    <div className="libreta hoja flex min-h-svh flex-col">
+      <header className="sobre-tapa bg-tapa">
         <div className="mx-auto flex h-16 max-w-md items-center justify-between gap-2 px-4">
           <Logo tono="oscuro" />
           <div className="flex min-w-0 items-center gap-4">
-            <span className="hidden truncate text-sm font-semibold text-crema/85 min-[400px]:block">
+            <span className="hidden truncate text-[0.9375rem] font-semibold text-tapa-texto min-[400px]:block">
               {yo.data.comercio?.nombre ?? 'Comercio'}
             </span>
             <Link
               to="/comercio/afiche"
-              className="text-sm font-bold text-crema underline-offset-4 hover:underline"
+              className="inline-flex min-h-12 items-center text-base font-bold text-papel underline decoration-tapa-texto decoration-2 underline-offset-[6px] hover:decoration-papel"
               aria-label="Afiche y tarjeta para la caja"
             >
               Afiche
             </Link>
             <button
               type="button"
-              className="cursor-pointer text-sm font-bold text-mango underline-offset-4 hover:underline"
+              className="inline-flex min-h-12 cursor-pointer items-center text-base font-bold text-papel underline decoration-tapa-texto decoration-2 underline-offset-[6px] hover:decoration-papel"
               onClick={() => salir.mutate(undefined, { onSettled: () => navigate('/comercio/login', { replace: true }) })}
             >
               Salir
@@ -68,14 +68,14 @@ export function LayoutComercio() {
       </header>
       <main className="mx-auto w-full max-w-md flex-1 px-4 pt-6 pb-32">
         {yo.data.comercio?.estado === 'suspendido' && (
-          <p className="mb-6 rounded-lg border-2 border-l-4 border-border border-l-alerta bg-alerta-fondo px-4 py-3">
+          <p className="mb-6 border-2 border-alerta bg-alerta-fondo px-4 py-3">
             Tus beneficios están suspendidos
             {yo.data.comercio.suspendido_hasta ? ` hasta el ${dia(yo.data.comercio.suspendido_hasta)}` : ''}: los vecinos
             no los ven. Los códigos ya emitidos se respetan y tus boletas siguen sumando.
           </p>
         )}
         {yo.data.comercio?.estado === 'retirado' && (
-          <p className="mb-6 rounded-lg border-2 border-l-4 border-border border-l-alerta bg-alerta-fondo px-4 py-3">
+          <p className="mb-6 border-2 border-alerta bg-alerta-fondo px-4 py-3">
             Tu comercio salió de la red. Puedes validar los códigos que ya se emitieron hasta que venzan.
           </p>
         )}
@@ -83,7 +83,7 @@ export function LayoutComercio() {
       </main>
       <nav
         aria-label="Secciones del comercio"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-tapa bg-papel pb-[env(safe-area-inset-bottom)]"
       >
         <ul className="mx-auto grid max-w-md grid-cols-4">
           {SECCIONES.map(({ a, texto, exacta }) => (
@@ -94,10 +94,10 @@ export function LayoutComercio() {
                 className={({ isActive }) =>
                   cn(
                     'relative flex min-h-16 items-center justify-center text-base font-bold transition-colors duration-200',
-                    'before:absolute before:inset-x-3 before:top-0 before:h-1 before:rounded-b-full before:transition-colors',
+                    'before:absolute before:inset-x-0 before:top-0 before:h-1 before:transition-colors',
                     isActive
-                      ? 'text-barrio before:bg-mango'
-                      : 'text-muted-foreground before:bg-transparent hover:text-foreground',
+                      ? 'bg-papel-hover text-tapa before:bg-tapa'
+                      : 'text-lapiz before:bg-transparent hover:text-tapa',
                   )
                 }
               >

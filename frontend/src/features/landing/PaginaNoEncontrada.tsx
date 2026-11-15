@@ -1,20 +1,19 @@
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
-import { Contenedor } from './partes'
+import { Hoja } from '@/components/marca/libreta'
 
 export function PaginaNoEncontrada() {
   return (
-    <Contenedor className="py-24 sm:py-32">
-      <p className="text-sm font-bold tracking-wide text-vecina uppercase">Página no encontrada</p>
-      <h1 className="mt-3 max-w-2xl text-4xl font-extrabold tracking-tight sm:text-6xl">
+    <Hoja etiqueta="titulo-404" className="py-20 sm:py-32">
+      <h1 id="titulo-404" className="rotulo max-w-2xl text-[3rem] leading-[1.05] tracking-[-0.035em] text-tapa sm:text-7xl">
         No encontramos esta página.
       </h1>
-      <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+      <p className="mt-6 max-w-xl text-xl leading-8">
         Puede que el enlace esté incompleto. Vuelve al inicio y sigue desde ahí.
       </p>
-      <Button asChild size="lg" className="mt-8">
+      <Button asChild variant="libreta" size="lg" className="mt-10">
         <Link to="/">Volver al inicio</Link>
       </Button>
-    </Contenedor>
+    </Hoja>
   )
 }

@@ -35,22 +35,22 @@ function validar(c: Campos): Errores {
 function Presentacion({ comercio }: { comercio: ComercioPublico }) {
   const b = comercio.destacado
   return (
-    <section className="sobre-oscuro rounded-3xl bg-barrio p-6 text-crema">
-      <p className="inline-flex items-center gap-2 text-base font-semibold text-mango">
+    <section className="sobre-tapa border-2 border-tapa bg-tapa p-5 text-papel">
+      <p className="text-base font-semibold text-tapa-texto">
         Te invita {comercio.nombre}
       </p>
-      <h1 className="mt-3 text-4xl font-extrabold tracking-tight">Únete a Red Vecina</h1>
+      <h1 className="rotulo mt-2 text-4xl leading-tight">Únete a Red Vecina</h1>
       <p className="mt-3 text-lg">
         Sube tus boletas, junta puntos y canjéalos por descuentos en los locales del barrio.
       </p>
       {b && (
-        <p className="mt-4 rounded-2xl bg-barrio-claro p-4 text-base">
-          En {comercio.nombre}: <strong className="text-mango">{pesos(b.valor_pesos)} de descuento</strong> con{' '}
+        <p className="mt-4 border-2 border-tapa-texto/50 p-4 text-base">
+          En {comercio.nombre}: <strong className="text-papel">{pesos(b.valor_pesos)} de descuento</strong> con{' '}
           {puntos(b.puntos)}.
         </p>
       )}
       {comercio.direccion && (
-        <p className="mt-4 inline-flex items-center gap-2 text-base text-crema/90">
+        <p className="mt-4 text-base text-tapa-texto">
           {comercio.direccion}
         </p>
       )}

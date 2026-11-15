@@ -26,7 +26,7 @@ function Pantalla({ tono, children }: { tono: 'verde' | 'rojo'; children: React.
       role="alert"
       className={
         'aparecer fixed inset-0 z-50 flex flex-col overflow-y-auto px-6 pt-10 pb-[max(2rem,env(safe-area-inset-bottom))] text-white ' +
-        (tono === 'verde' ? 'sobre-oscuro bg-exito-texto' : 'bg-peligro-oscuro')
+        (tono === 'verde' ? 'sobre-tapa bg-exito-texto' : 'bg-peligro-oscuro')
       }
     >
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6">{children}</div>

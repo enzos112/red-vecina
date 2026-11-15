@@ -49,7 +49,7 @@ export function PaginaHistorial() {
                       : 'Cuando ocurra, lo verás aquí.'}
                   </Vacio>
                 ) : (
-                  <ul className="flex flex-col gap-3">
+                  <ul className="border-t-2 border-tapa">
                     {items.map((item) => (
                       <FilaHistorial key={item.clave} item={item} />
                     ))}

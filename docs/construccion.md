@@ -193,33 +193,33 @@ red-vecina/
 
 ## 6. Diseño
 
-La dirección es la que pides: colores planos, tipografía grande y botones redondeados con transición suave. De la referencia de Wise se toman los principios, no la marca: un titular enorme, una frase de apoyo, dos botones (uno principal y uno secundario) y secciones que alternan bloque visual con texto corto.
+**La libreta del almacén** (desde el 15 de noviembre de 2026). Red Vecina se dibuja como la libreta de cuentas del almacén, llevada entre todos los locales: cada compra se anota, cada canje se tacha y la cuenta siempre cuadra. La página es una hoja cuadriculada con margen doble; los bloques de cierre y las cabeceras son la tapa azul noche. El detalle completo (tokens, componentes y reglas) está en `DESIGN.md`.
 
-**Paleta** (colores propios, sin degradados). Azul de confianza y naranja de barrio, sobre papel crema: el azul dice que detrás hay alguien serio (puntos que valen plata, datos personales); el naranja trae la calidez del comercio. Son complementarios y la pareja más segura para daltónicos.
+**Paleta** (colores propios, sin degradados). Azul de confianza y naranja de barrio, sobre papel cuadriculado: el azul dice que detrás hay alguien serio (puntos que valen plata, datos personales); el naranja trae la calidez del comercio. Son complementarios y la pareja más segura para daltónicos.
 
 | Uso | Nombre | Hex | Contraste |
 | --- | --- | --- | --- |
-| Fondo del hero y de los bloques de énfasis | Azul noche (`barrio`) | `#053073` | Titular crema 12,0:1 |
-| Acción principal sobre fondo claro, enlaces | Azul (`vecina`) | `#074EBC` | Texto blanco 7,4:1 |
-| Foco y detalles gráficos (nunca texto chico) | Azul brillante (`vecina-claro`) | `#1B71F6` | — |
-| Acento: cifras clave, acción sobre azul noche | Naranja (`mango`) | `#F79D18` | Siempre con texto azul noche, 5,8:1. Nunca texto blanco (2,1:1) |
+| Tapa: cabeceras, bloques de cierre, titulares | Azul noche (`tapa`, `barrio`) | `#053073` | 12,9:1 sobre papel |
+| Tinta: lo anotado y confirmado, enlaces | Tinta azul (`tinta-azul`, `vecina`) | `#0B47A8` | 8,4:1 sobre papel |
+| Líneas de la hoja | Cuadrícula (`cuadricula`) | `#CBD9F0` | — |
+| Acción: solo lo que se toca | Naranja (`mango`) | `#F79D18` | Siempre con texto azul noche, 5,8:1. Nunca texto blanco (2,1:1) |
 | Texto naranja chico sobre claro | Naranja texto (`mango-texto`) | `#9A5B00` | 5,2:1 |
-| Fondo general | Crema | `#FFF9F2` | — |
+| Fondo general: la hoja | Papel (`papel`, `crema`) | `#FAFCFF` | — |
 | Tarjetas | Blanco | `#FFFFFF` | — |
 | Texto | Tinta | `#0B1B33` | 16,5:1 |
-| Texto secundario | Grafito (`musgo`) | `#5A6478` | 5,7:1 |
+| Lo pendiente y lo secundario | Lápiz (`lapiz`, `musgo`) | `#5F6B80` | 5,4:1 |
 | Estados | Verde `#1E7A46`, ámbar `#B86E00`, rojo `#C0392B` | | Separados de la marca y siempre con una palabra |
 
 Los nombres entre paréntesis son las variables de `frontend/src/index.css`.
 
 **Reglas visuales**
 
-- **Tipografía:** Plus Jakarta Sans, alojada en el proyecto. Titulares en peso 800 y tamaño grande; texto base de 17 a 18 px. Nada bajo 15 px.
-- **Botones:** forma de píldora, 52 px de alto en móvil, color plano. Al pasar el cursor o tocar, el color de fondo cambia en 200 ms; sin sombras ni saltos de tamaño.
-- **Tarjetas:** esquinas de 20 a 24 px, borde fino, sin sombras fuertes.
-- **Movimiento:** solo transiciones de color y apariciones suaves al cargar. Se respeta la preferencia de movimiento reducido del teléfono.
-- **Hero de la landing:** fondo azul noche a pantalla completa, titular crema, botón naranja, y a la derecha una ilustración de la tarjeta del vecino (saldo, avance y el beneficio que viene), rotulada como ilustración y sin botones falsos. Formas geométricas planas de fondo en un azul apenas más claro.
-- **Sin íconos.** La imagen la hacen la tipografía y la composición: números grandes, pasos numerados, barras y bloques de color planos, etiquetas en mayúsculas pequeñas. Los estados se dicen con palabras ("Válido", "Revisar"), no con símbolos. La marca es una R trazada en un cuadrado azul noche con un punto naranja.
+- **Tipografía:** Archivo (variable, alojada en el proyecto). Titulares como rótulos de columna: peso 850, algo angostos. Cifras tabulares. Texto base de 17 a 19 px. Nada bajo 15 px.
+- **Botones y tarjetas:** rectángulos de esquinas rectas con borde de 2 px azul noche, sin sombras. El naranja marca la acción principal; al pasar el cursor solo cambia el color (200 ms).
+- **Estados por trazo:** lo pendiente va a lápiz (gris con subrayado discontinuo), lo confirmado en tinta azul, el canje usado tachado. Siempre con su palabra.
+- **Movimiento:** una sola secuencia: la cuenta se escribe fila por fila en pasos de renglón, lo pendiente pasa de lápiz a tinta, el canje se tacha y el total se encierra en un círculo. Con movimiento reducido todo aparece terminado.
+- **Portada de la landing:** hoja cuadriculada con fechas en el margen, titular grande en azul noche y a la derecha la cuenta de una vecina de ejemplo que se escribe sola, rotulada como ilustración.
+- **Sin íconos.** La imagen la hacen la tipografía y la composición: números grandes, pasos numerados, barras y bloques de color planos, renglones y tachados. Los estados se dicen con palabras ("Válido", "Revisar"), no con símbolos. La marca es una R trazada en un cuadrado azul noche con un punto naranja.
 - **Móvil primero:** la tarjeta del vecino y el validador se usan en celular; el panel del operador, en computador.
 
 **Pensado para tu público** (mujeres a cargo de las compras del hogar y hombres sobre 40)

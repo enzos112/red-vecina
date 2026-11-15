@@ -13,11 +13,11 @@ export function Encabezado({ token, titulo, children }: { token: string; titulo:
     <header className="mb-6">
       <Link
         to={`/t/${token}`}
-        className="-ml-2 inline-flex min-h-12 items-center gap-2 rounded-full px-2 font-semibold text-vecina hover:text-vecina-oscuro"
+        className="inline-flex min-h-12 items-center font-semibold text-tinta-azul underline decoration-2 underline-offset-[6px] hover:text-tapa"
       >
         Volver a mi tarjeta
       </Link>
-      <h1 className="mt-2 text-4xl font-extrabold tracking-tight">{titulo}</h1>
+      <h1 className="rotulo mt-2 text-4xl leading-tight text-tapa">{titulo}</h1>
       {children && <div className="mt-2 text-lg text-muted-foreground">{children}</div>}
     </header>
   )
@@ -34,9 +34,9 @@ export function Vacio({
   className?: string
 }) {
   return (
-    <div className={cn('flex flex-col items-start gap-2 rounded-2xl border-2 border-dashed border-border p-6', className)}>
-      <p className="text-xl font-extrabold">{titulo}</p>
-      {children && <div className="text-base text-muted-foreground">{children}</div>}
+    <div className={cn('flex flex-col items-start gap-2 border-2 border-dashed border-tapa/50 bg-papel p-5', className)}>
+      <p className="rotulo text-2xl text-tapa">{titulo}</p>
+      {children && <div className="text-base text-lapiz">{children}</div>}
     </div>
   )
 }

@@ -99,9 +99,9 @@ function useSiguiente(actual: number) {
 // --- Controles ---
 
 const COLOR: Record<ControlSalida['color'], { etiqueta: string; clase: string; texto: string }> = {
-  verde: { etiqueta: 'text-exito-texto', clase: 'border-l-exito', texto: 'Bien' },
-  ambar: { etiqueta: 'text-alerta-texto', clase: 'border-l-alerta bg-alerta-fondo', texto: 'Revisar' },
-  rojo: { etiqueta: 'text-peligro-texto', clase: 'border-l-peligro bg-peligro-fondo', texto: 'Rechazo' },
+  verde: { etiqueta: 'text-exito-texto', clase: 'border-exito', texto: 'Bien' },
+  ambar: { etiqueta: 'text-alerta-texto', clase: 'border-alerta bg-alerta-fondo', texto: 'Revisar' },
+  rojo: { etiqueta: 'text-peligro-texto', clase: 'border-peligro bg-peligro-fondo', texto: 'Rechazo' },
 }
 
 const ORDEN = { rojo: 0, ambar: 1, verde: 2 }
@@ -111,7 +111,7 @@ function Controles({ controles }: { controles: ControlSalida[] }) {
   return (
     <ul className="flex flex-col gap-2" aria-label="Controles">
       {ordenados.map((c) => (
-        <li key={c.clave} className={cn('flex items-start gap-3 rounded-md border border-l-4 border-border px-3 py-2', COLOR[c.color].clase)}>
+        <li key={c.clave} className={cn('flex items-start gap-3 border-2 px-3 py-2', COLOR[c.color].clase)}>
           <span className={cn('w-20 shrink-0 pt-0.5 text-xs font-extrabold tracking-wide uppercase', COLOR[c.color].etiqueta)}>
             {COLOR[c.color].texto}
           </span>

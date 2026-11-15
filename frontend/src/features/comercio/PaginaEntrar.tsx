@@ -35,7 +35,7 @@ export function PaginaEntrar() {
 
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="sobre-oscuro bg-barrio">
+      <header className="sobre-tapa bg-barrio">
         <div className="mx-auto flex h-16 max-w-md items-center px-4">
           <Logo tono="oscuro" />
         </div>

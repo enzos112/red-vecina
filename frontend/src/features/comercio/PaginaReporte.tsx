@@ -55,7 +55,7 @@ function Cifra({
 
 function Alerta({ i }: { i: IndicadorSalida }) {
   return (
-    <li className="flex gap-3 rounded-lg border border-l-4 border-border border-l-alerta bg-alerta-fondo px-4 py-3">
+    <li className="flex gap-3 border-2 border-alerta bg-alerta-fondo px-4 py-3">
       <span>
         <strong>{i.nombre}:</strong> {i.senal}. {i.accion}
       </span>

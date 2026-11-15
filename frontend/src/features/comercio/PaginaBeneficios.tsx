@@ -163,7 +163,7 @@ function EditorNivel({
                       aria-label={DIAS_LARGOS[d]}
                       onClick={() => set('dias', marcado ? b.dias.filter((x) => x !== d) : [...b.dias, d].sort())}
                       className={cn(
-                        'size-12 cursor-pointer rounded-full border-2 font-bold transition-colors duration-200',
+                        'size-12 cursor-pointer border-2 font-bold transition-colors duration-200',
                         marcado ? 'border-vecina bg-vecina text-white' : 'border-input bg-card text-foreground hover:bg-muted',
                       )}
                     >

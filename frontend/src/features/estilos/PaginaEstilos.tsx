@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { FormasFondo } from '@/components/marca/FormasFondo'
 import { Logo } from '@/components/marca/Logo'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -98,8 +97,7 @@ const FILAS = [
 export function PaginaEstilos() {
   return (
     <div className="min-h-svh">
-      <header className="sobre-oscuro relative isolate overflow-hidden bg-barrio py-16">
-        <FormasFondo variante="bloque" className="-z-10" />
+      <header className="sobre-tapa bg-tapa py-16">
         <Contenedor>
           <Logo tono="oscuro" />
           <h1 className="mt-8 text-5xl font-extrabold tracking-tight text-crema sm:text-7xl">Estilos</h1>
@@ -128,7 +126,7 @@ export function PaginaEstilos() {
         </Bloque>
 
         <Bloque titulo="Tipografía">
-          <p className="text-muted-foreground">Plus Jakarta Sans, alojada en el proyecto. Nada bajo 15 px.</p>
+          <p className="text-muted-foreground">Archivo, alojada en el proyecto. Nada bajo 15 px.</p>
           <div className="mt-6 flex flex-col gap-5">
             <p className="text-6xl font-extrabold tracking-tight sm:text-7xl">Titular 800</p>
             <p className="text-5xl font-extrabold tracking-tight">Sección 800</p>
@@ -164,7 +162,7 @@ export function PaginaEstilos() {
             <Button>Normal</Button>
             <Button size="sm">Chico (48 px)</Button>
           </div>
-          <div className="sobre-oscuro mt-6 flex flex-wrap gap-3 rounded-xl bg-barrio p-6">
+          <div className="sobre-tapa mt-6 flex flex-wrap gap-3 rounded-xl bg-barrio p-6">
             <Button variant="oscuro">Sobre fondo oscuro</Button>
             <Button variant="oscuro-secundario">Secundario sobre oscuro</Button>
           </div>
@@ -333,7 +331,7 @@ export function PaginaEstilos() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <Skeleton className="h-14 w-32" />
-              <Skeleton className="h-13 w-full rounded-full" />
+              <Skeleton className="h-13 w-full" />
             </CardContent>
           </Card>
         </Bloque>

@@ -4,31 +4,39 @@ import { cn } from "cn"
 import { Slot } from "radix-ui"
 
 /**
- * Botón de Red Vecina: píldora de color plano. Al pasar el cursor o tocar solo cambia el
- * color de fondo (200 ms); sin sombras ni saltos de tamaño.
+ * Botón de Red Vecina (libreta del almacén): rectángulo de esquinas rectas con borde de tapa.
+ * El naranja marca la acción principal; al pasar el cursor solo cambia el color (200 ms).
  *
- * Variantes: default (principal sobre fondo claro), secondary, oscuro (principal sobre
- * fondo oscuro), oscuro-secundario, destructive (peligro), outline, ghost y link.
+ * Variantes: default y libreta (principal, naranja), secondary, outline y libreta-secundario
+ * (papel con borde de tapa), oscuro (principal sobre la tapa), oscuro-secundario y
+ * libreta-tapa (secundario sobre la tapa), destructive, ghost y link.
  */
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent text-base font-bold whitespace-nowrap transition-colors duration-200 ease-out outline-none select-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-none border-2 border-transparent text-base font-extrabold whitespace-nowrap transition-colors duration-200 ease-out outline-none select-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
   {
     variants: {
       variant: {
-        default: "bg-vecina text-white hover:bg-vecina-oscuro active:bg-barrio",
+        default: "border-tapa bg-mango text-tapa hover:bg-mango-oscuro active:bg-mango-activo",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secundario-hover active:bg-secundario-activo aria-expanded:bg-secundario-hover",
+          "border-tapa bg-papel text-tapa hover:bg-papel-hover active:bg-cuadricula aria-expanded:bg-papel-hover",
         oscuro:
-          "bg-mango text-barrio hover:bg-mango-oscuro active:bg-mango-activo focus-visible:outline-mango",
+          "border-mango bg-mango text-tapa hover:bg-mango-oscuro active:bg-mango-activo focus-visible:outline-mango",
         "oscuro-secundario":
-          "border-crema/70 bg-transparent text-crema hover:border-crema hover:bg-barrio-claro active:bg-barrio-activo focus-visible:outline-mango",
+          "border-tapa-texto bg-transparent text-papel hover:border-papel hover:bg-tapa-hover active:bg-barrio-activo focus-visible:outline-mango",
         destructive:
           "bg-peligro-oscuro text-white hover:bg-peligro-hover active:bg-peligro-activo focus-visible:outline-peligro",
         outline:
-          "border-input bg-card text-foreground hover:border-tinta/40 hover:bg-muted aria-expanded:bg-muted",
+          "border-tapa bg-papel text-tapa hover:bg-papel-hover aria-expanded:bg-papel-hover",
         ghost:
-          "text-foreground hover:bg-muted aria-expanded:bg-muted",
-        link: "h-auto! min-h-12 rounded-sm px-0! text-vecina underline underline-offset-4 hover:text-vecina-oscuro",
+          "text-tapa hover:bg-papel-hover aria-expanded:bg-papel-hover",
+        /* Libreta: rectángulos con borde de tapa. El naranja solo marca lo que se toca. */
+        libreta:
+          "rounded-none border-tapa bg-mango font-extrabold text-tapa hover:bg-mango-oscuro active:bg-mango-activo",
+        "libreta-secundario":
+          "rounded-none border-tapa bg-papel font-extrabold text-tapa hover:bg-papel-hover active:bg-cuadricula",
+        "libreta-tapa":
+          "rounded-none border-tapa-texto bg-transparent font-extrabold text-papel hover:border-papel hover:bg-tapa-hover focus-visible:outline-mango",
+        link: "h-auto! min-h-12 px-0! font-bold text-tinta-azul underline decoration-2 underline-offset-[6px] hover:text-tapa",
       },
       size: {
         default:

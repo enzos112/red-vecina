@@ -11,13 +11,13 @@ import { useYo } from '@/lib/sesion'
 // Colores de la marca (index.css). El lienzo no lee variables CSS, así que se repiten aquí.
 const C = {
   barrio: '#053073',
-  barrioClaro: '#0B3F8F',
-  vecina: '#074EBC',
+  barrioClaro: '#0A3D8A',
+  vecina: '#0B47A8',
   mango: '#F79D18',
-  crema: '#FFF9F2',
+  crema: '#FAFCFF',
   tinta: '#0B1B33',
 }
-const FUENTE = '"Plus Jakarta Sans Variable", system-ui, sans-serif'
+const FUENTE = '"Archivo Variable", system-ui, sans-serif'
 
 type Lienzo = { canvas: HTMLCanvasElement; ancho: number; alto: number }
 
@@ -54,7 +54,8 @@ function parrafo(ctx: CanvasRenderingContext2D, texto: string, x: number, y: num
 
 function rectRedondo(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath()
-  ctx.roundRect(x, y, w, h, r)
+  // Libreta: esquinas casi rectas; el radio no pasa de 1/16 del lado menor.
+  ctx.roundRect(x, y, w, h, Math.min(r, Math.min(w, h) / 16))
   ctx.fill()
 }
 
@@ -103,10 +104,9 @@ async function dibujarAfiche(comercio: string, enlace: string): Promise<Lienzo> 
   // Cabecera azul noche.
   ctx.fillStyle = C.barrio
   ctx.fillRect(0, 0, ancho, 620)
+  // Renglón de la tapa: una línea clara al pie de la cabecera, como el borde de la libreta.
   ctx.fillStyle = C.barrioClaro
-  ctx.beginPath()
-  ctx.arc(ancho - 40, 80, 260, 0, Math.PI * 2)
-  ctx.fill()
+  ctx.fillRect(0, 604, ancho, 16)
   marca(ctx, m, 80, 72, C.crema)
 
   ctx.fillStyle = C.crema
@@ -177,10 +177,11 @@ async function dibujarTarjeta(contacto: string | null | undefined): Promise<Lien
   ]
   let y = 450
   pasos.forEach(([titulo, detalle], i) => {
-    ctx.fillStyle = C.mango
-    ctx.beginPath()
-    ctx.arc(m + 56, y + 20, 56, 0, Math.PI * 2)
-    ctx.fill()
+    // Número del paso en un cuadro de la cuadrícula, con borde de tapa.
+    ctx.fillStyle = C.barrio
+    ctx.fillRect(m, y - 36, 112, 112)
+    ctx.fillStyle = C.crema
+    ctx.fillRect(m + 6, y - 30, 100, 100)
     ctx.fillStyle = C.barrio
     ctx.textAlign = 'center'
     fuente(ctx, 800, 64)
@@ -271,7 +272,7 @@ function Pieza({
         {error ? (
           <p>{error}</p>
         ) : vista ? (
-          <img src={vista} alt={`Vista previa: ${titulo}`} className="mx-auto max-h-[28rem] rounded-md border-2 border-border shadow-sm" />
+          <img src={vista} alt={`Vista previa: ${titulo}`} className="mx-auto max-h-[28rem] border-2 border-tapa" />
         ) : (
           <Skeleton className="mx-auto aspect-[1/1.41] w-2/3" />
         )}

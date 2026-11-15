@@ -46,7 +46,7 @@ function Indicador({ i }: { i: IndicadorSalida }) {
 
 function Fraude({ a }: { a: AlertaFraudeSalida }) {
   return (
-    <li className="flex gap-3 rounded-lg border-2 border-l-4 border-border border-l-peligro bg-card px-4 py-3">
+    <li className="flex gap-3 border-2 border-peligro bg-card px-4 py-3">
       <div className="flex flex-col gap-1">
         <p className="font-bold">{a.titulo}</p>
         <p>{a.detalle}</p>
@@ -180,7 +180,7 @@ function Revision() {
             {d.alertas.map((a) => (
               <li
                 key={`${a.comercio_id}-${a.indicador.clave}`}
-                className="flex gap-3 rounded-lg border-2 border-l-4 border-border border-l-alerta bg-alerta-fondo px-4 py-3"
+                className="flex gap-3 border-2 border-alerta bg-alerta-fondo px-4 py-3"
               >
                 <span>
                   <strong>{a.comercio ?? 'Red'}</strong> · {a.indicador.nombre} ({valor(a.indicador)}): {a.indicador.senal}.{' '}

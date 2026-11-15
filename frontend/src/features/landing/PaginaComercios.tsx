@@ -1,12 +1,10 @@
 import { Link } from 'react-router'
-import { FormasFondo } from '@/components/marca/FormasFondo'
-import { Badge } from '@/components/ui/badge'
+import { Hoja } from '@/components/marca/libreta'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useComerciosRed, useCondiciones } from '@/lib/consultas'
 import { pesos } from '@/lib/formato'
 import { FormularioPiloto } from './FormularioPiloto'
-import { Contenedor, EncabezadoSeccion, Pasos } from './partes'
+import { EncabezadoSeccion, Pasos } from './partes'
 
 export function PaginaComercios() {
   return (
@@ -21,35 +19,34 @@ export function PaginaComercios() {
 
 function Hero() {
   return (
-    <section aria-labelledby="titulo-comercios" className="sobre-oscuro relative isolate overflow-hidden bg-barrio">
-      <FormasFondo className="-z-10" />
-      <Contenedor className="grid min-h-[calc(100svh-4.5rem)] items-center gap-12 py-16 lg:grid-cols-[1.2fr_0.8fr] lg:py-24">
-        <div className="aparecer">
-          <p className="text-sm font-bold tracking-wide text-mango uppercase">Para dueños de negocios</p>
+    <Hoja etiqueta="titulo-comercios" className="border-b-2 border-tapa">
+      <div className="grid items-center gap-12 py-12 sm:py-16 lg:min-h-[min(calc(100svh-5rem),52rem)] lg:grid-cols-[minmax(0,1fr)_minmax(22rem,28rem)] lg:gap-16">
+        <div>
           <h1
             id="titulo-comercios"
-            className="mt-4 text-[2.75rem] leading-[1.02] font-extrabold tracking-tight text-crema sm:text-6xl lg:text-7xl"
+            className="rotulo text-[3.25rem] leading-[1.0667] tracking-[-0.035em] text-tapa sm:text-7xl lg:text-[clamp(4.5rem,7vw,6.5rem)]"
           >
             Clientes nuevos, del mismo barrio.
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-crema/85 sm:text-xl">
-            Red Vecina une a los almacenes, panaderías y negocios de la cuadra en un solo programa
-            de puntos. Lo que tus vecinos compran en otros locales los trae al tuyo.
+          <p className="mt-8 max-w-[34rem] text-xl leading-8 sm:text-[1.375rem]">
+            Red Vecina une a los almacenes, panaderías y negocios de la cuadra en un solo programa de puntos. Lo que
+            tus vecinos compran en otros locales los trae al tuyo.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Button asChild variant="oscuro" size="lg">
+            <Button asChild variant="libreta" size="lg">
               <Link to="/comercios#unirme">Quiero unirme al piloto</Link>
             </Button>
-            <Button asChild variant="oscuro-secundario" size="lg">
+            <Button asChild variant="libreta-secundario" size="lg">
               <Link to="/comercios#como-funciona-comercio">Cómo funciona</Link>
             </Button>
           </div>
         </div>
-        <div className="aparecer flex justify-center lg:justify-end [animation-delay:150ms]">
+        <div>
           <ValidadorEjemplo />
+          <p className="mt-3 text-[0.9375rem] text-lapiz">Ilustración con datos de ejemplo.</p>
         </div>
-      </Contenedor>
-    </section>
+      </div>
+    </Hoja>
   )
 }
 
@@ -63,28 +60,29 @@ function ValidadorEjemplo() {
   const cargando = comercios.isPending || condiciones.isPending
 
   return (
-    <figure aria-label="Ejemplo del validador de códigos" className="w-full max-w-sm rounded-2xl bg-card p-6 text-tinta sm:p-7">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-lg font-bold">Validar código</p>
-        <Badge variant="mango">Ejemplo</Badge>
-      </div>
-      <p
-        className="mt-6 rounded-lg border-2 border-input bg-background py-4 text-center font-mono text-4xl font-bold tracking-[0.2em]"
-        aria-label="Código de ejemplo"
-      >
-        482 913
+    <figure aria-label="Ejemplo del validador de códigos" className="border-2 border-tapa bg-papel">
+      <figcaption className="flex h-16 items-center justify-between gap-3 bg-tapa px-4 text-papel">
+        <span className="rotulo text-2xl">Validar código</span>
+        <span className="text-[0.9375rem] font-semibold text-tapa-texto">Ejemplo</span>
+      </figcaption>
+      <p className="flex gap-1.5 p-4" aria-label="Código de ejemplo: 4 8 2 9 1 3">
+        {'482913'.split('').map((d, i) => (
+          <span
+            key={i}
+            aria-hidden="true"
+            className="rotulo grid aspect-[4/5] flex-1 place-items-center border-2 border-tapa text-4xl text-tapa"
+          >
+            {d}
+          </span>
+        ))}
       </p>
-      <div className="mt-5 rounded-lg border-l-8 border-exito bg-exito-fondo p-5">
-        <p className="text-sm font-extrabold tracking-[0.2em] text-exito-texto uppercase">Válido</p>
-        {cargando ? (
-          <Skeleton className="mt-2 h-6 w-3/4 bg-white/60" />
-        ) : (
-          <p className="mt-1 text-lg font-bold text-tinta">
-            {destacado?.texto ?? (valor ? `Descuento de ${pesos(valor)}` : 'Beneficio de la red')}
-          </p>
-        )}
+      <div className="mx-4 border-2 border-exito bg-exito-fondo px-4 py-3">
+        <p className="text-lg font-extrabold text-exito-texto">Válido</p>
+        <p className="mt-1 min-h-7 text-lg font-bold text-tinta">
+          {cargando ? '' : (destacado?.texto ?? (valor ? `Descuento de ${pesos(valor)}` : 'Beneficio de la red'))}
+        </p>
       </div>
-      <p className="mt-5 text-muted-foreground">Lo validas desde tu celular, sin máquinas nuevas.</p>
+      <p className="border-t border-cuadricula px-4 py-4 text-lg">Lo validas desde tu celular, sin máquinas nuevas.</p>
     </figure>
   )
 }
@@ -114,74 +112,66 @@ const RAZONES = [
 
 function QueGanas() {
   return (
-    <section aria-labelledby="que-ganas" className="py-20 sm:py-28">
-      <Contenedor>
+    <section aria-labelledby="que-ganas" className="sobre-tapa bg-tapa py-16 text-papel sm:py-24">
+      <div className="mx-auto max-w-[90rem] pr-4 pl-12 sm:pr-8 lg:pl-44">
         <EncabezadoSeccion
           id="que-ganas"
-          antetitulo="Qué ganas"
+          oscuro
           titulo="Más movimiento en tu caja."
           bajada="Los vecinos ya compran cerca. Con la red, también te eligen a ti."
         />
-        <ul className="mt-14 grid gap-x-12 gap-y-12 sm:grid-cols-2">
+        <ul className="mt-12 grid border-t-2 border-tapa-texto/50 sm:grid-cols-2">
           {RAZONES.map(({ clave, titulo, texto }) => (
-            <li key={titulo} className="border-t-4 border-barrio pt-6">
-              <p className="text-5xl leading-none font-extrabold tracking-tighter text-vecina sm:text-6xl">{clave}</p>
-              <h3 className="mt-6 text-xl font-extrabold sm:text-2xl">{titulo}</h3>
-              <p className="mt-2 max-w-md text-muted-foreground">{texto}</p>
+            <li key={titulo} className="border-b-2 border-tapa-texto/30 py-8 sm:odd:pr-10 sm:even:border-l-2 sm:even:pl-10">
+              <p className="rotulo text-5xl leading-none tracking-[-0.035em] sm:text-6xl">{clave}</p>
+              <h3 className="rotulo mt-5 text-[1.75rem] leading-tight">{titulo}</h3>
+              <p className="mt-2 max-w-md text-lg leading-8 text-tapa-texto">{texto}</p>
             </li>
           ))}
         </ul>
-      </Contenedor>
+      </div>
     </section>
   )
 }
 
 function ComoFunciona() {
   return (
-    <section aria-labelledby="como-funciona-comercio" className="scroll-mt-4 border-y border-border bg-card py-20 sm:py-28">
-      <Contenedor>
-        <EncabezadoSeccion
-          id="como-funciona-comercio"
-          antetitulo="Cómo funciona"
-          titulo="Partir es simple."
-          bajada="Nosotros armamos todo. Tú sigues atendiendo como siempre."
-        />
-        <Pasos
-          pasos={[
-            {
-              numero: 1,
-              titulo: 'Conversamos',
-              texto: 'Te visitamos, vemos tu negocio y acordamos tus beneficios.',
-            },
-            {
-              numero: 2,
-              titulo: 'Pones el afiche',
-              texto: 'Te damos un afiche con código QR para tu caja. Tus clientes se inscriben en un minuto.',
-            },
-            {
-              numero: 3,
-              titulo: 'Validas códigos',
-              texto: 'El vecino te muestra su código, lo ingresas en tu celular y aplicas el beneficio.',
-            },
-          ]}
-        />
-      </Contenedor>
-    </section>
+    <Hoja id="como-funciona-comercio" etiqueta="como-funciona-comercio-titulo" className="py-16 sm:py-24">
+      <EncabezadoSeccion
+        id="como-funciona-comercio-titulo"
+        titulo="Partir es simple."
+        bajada="Nosotros armamos todo. Tú sigues atendiendo como siempre."
+      />
+      <Pasos
+        pasos={[
+          { numero: 1, titulo: 'Conversamos', texto: 'Te visitamos, vemos tu negocio y acordamos tus beneficios.' },
+          {
+            numero: 2,
+            titulo: 'Pones el afiche',
+            texto: 'Te damos un afiche con código QR para tu caja. Tus clientes se inscriben en un minuto.',
+          },
+          {
+            numero: 3,
+            titulo: 'Validas códigos',
+            texto: 'El vecino te muestra su código, lo ingresas en tu celular y aplicas el beneficio.',
+          },
+        ]}
+      />
+    </Hoja>
   )
 }
 
 function Unirme() {
   return (
-    <section aria-labelledby="unirme" className="scroll-mt-4 py-20 sm:py-28">
-      <Contenedor className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
+    <Hoja id="unirme" etiqueta="unirme-titulo" className="border-t-2 border-tapa py-16 sm:py-24">
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <EncabezadoSeccion
-          id="unirme"
-          antetitulo="Piloto"
+          id="unirme-titulo"
           titulo="Quiero unirme al piloto."
           bajada="Déjanos tus datos y te escribimos por WhatsApp para conversar. Sin compromiso."
         />
         <FormularioPiloto />
-      </Contenedor>
-    </section>
+      </div>
+    </Hoja>
   )
 }

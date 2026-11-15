@@ -168,8 +168,7 @@ export function PaginaCondiciones() {
   return (
     <Contenedor className="py-14 sm:py-20">
       <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-bold tracking-wide text-vecina uppercase">Condiciones</p>
-        <h1 className="mt-3 text-4xl font-extrabold tracking-tight sm:text-6xl">
+        <h1 className="rotulo text-[2.75rem] leading-[1.05] tracking-[-0.035em] text-tapa sm:text-6xl">
           Condiciones del programa y uso de datos
         </h1>
 
@@ -188,8 +187,8 @@ export function PaginaCondiciones() {
           </Alert>
         )}
 
-        <nav aria-label="Contenido" className="mt-10 rounded-xl border border-border bg-card p-6">
-          <h2 className="text-lg font-extrabold">En esta página</h2>
+        <nav aria-label="Contenido" className="mt-10 border-2 border-tapa bg-papel p-6">
+          <h2 className="rotulo text-2xl text-tapa">En esta página</h2>
           <ol className="mt-3 grid list-decimal gap-x-8 pl-6 sm:grid-cols-2">
             {secciones(c).map((s) => (
               <li key={s.id} className="marker:font-bold marker:text-vecina">

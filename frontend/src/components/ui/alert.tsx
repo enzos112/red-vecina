@@ -4,7 +4,7 @@ import { cn } from "cn"
 
 /** Aviso: bloque de color plano con borde a la izquierda del color de estado. */
 const alertVariants = cva(
-  "group/alert relative grid w-full gap-1 rounded-lg border border-l-[6px] px-5 py-4 text-left text-base has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-3 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-6",
+  "group/alert relative grid w-full gap-1 border-2 px-5 py-4 text-left text-base has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-3 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-6",
   {
     variants: {
       variant: {

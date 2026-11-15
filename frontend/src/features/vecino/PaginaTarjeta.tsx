@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Circulo } from '@/components/marca/libreta'
 import type { Tarjeta } from '@/lib/api'
 import { useCondiciones } from '@/lib/consultas'
 import { dia, numero, pesos, puntos } from '@/lib/formato'
@@ -23,29 +24,29 @@ function Cargando() {
   return (
     <div className="flex flex-col gap-5" aria-busy="true" aria-label="Cargando tu tarjeta">
       <Skeleton className="h-9 w-40" />
-      <Skeleton className="h-56 w-full rounded-3xl" />
-      <Skeleton className="h-13 w-full rounded-full" />
-      <Skeleton className="h-13 w-full rounded-full" />
+      <Skeleton className="h-64 w-full rounded-none" />
+      <Skeleton className="h-14 w-full rounded-none" />
+      <Skeleton className="h-14 w-full rounded-none" />
     </div>
   )
 }
 
 function GuardarEnWhatsapp({ t, token, onCerrar }: { t: Tarjeta; token: string; onCerrar: () => void }) {
   return (
-    <section aria-labelledby="titulo-bienvenida" className="sobre-oscuro aparecer rounded-3xl bg-barrio p-6 text-crema">
-      <h2 id="titulo-bienvenida" className="mt-3 text-3xl font-extrabold">
+    <section aria-labelledby="titulo-bienvenida" className="sobre-tapa aparecer border-2 border-tapa bg-tapa p-5 text-papel">
+      <h2 id="titulo-bienvenida" className="rotulo text-3xl leading-tight">
         ¡Listo, ya eres parte de Red Vecina!
       </h2>
       <p className="mt-2 text-lg">
         Esta es tu tarjeta. Guárdala en tu WhatsApp para abrirla cuando quieras: te mandas el enlace a tu propio chat.
       </p>
       <div className="mt-5 flex flex-col gap-3">
-        <Button asChild variant="oscuro" size="lg" className="h-auto min-h-14 w-full py-3 text-center whitespace-normal">
+        <Button asChild variant="libreta" size="lg" className="h-auto min-h-14 w-full py-3 text-center whitespace-normal">
           <a href={enlaceWhatsapp(t.whatsapp.numero, t.whatsapp.mensaje, token)} target="_blank" rel="noreferrer">
             Guardar mi tarjeta en WhatsApp
           </a>
         </Button>
-        <Button variant="oscuro-secundario" className="w-full" onClick={onCerrar}>
+        <Button variant="libreta-tapa" className="w-full" onClick={onCerrar}>
           Ahora no
         </Button>
       </div>
@@ -57,53 +58,56 @@ function Saldo({ t, destacado }: { t: Tarjeta; destacado: boolean }) {
   const proximo = t.proximo_nivel
   const avance = proximo ? Math.min(100, (Math.max(t.saldo.disponible, 0) / proximo.puntos) * 100) : 100
   const pendientes = t.pendientes
+  const unidad = t.saldo.disponible === 1 ? 'punto' : 'puntos'
   return (
-    <section aria-labelledby="titulo-saldo" className="rounded-3xl border border-border bg-card p-6">
-      <h2 id="titulo-saldo" className="text-base font-semibold text-muted-foreground">
+    <section aria-labelledby="titulo-saldo" className="border-2 border-tapa bg-papel">
+      <h2 id="titulo-saldo" className="flex h-12 items-center bg-tapa px-4 text-base font-semibold text-papel">
         Tu saldo disponible
       </h2>
-      <p
-        className={
-          destacado
-            ? 'mt-1 text-7xl font-extrabold tracking-tight tabular-nums'
-            : 'mt-1 text-5xl font-extrabold tracking-tight tabular-nums'
-        }
-      >
-        {numero(t.saldo.disponible)}{' '}
-        <span className="text-2xl font-bold text-muted-foreground">{t.saldo.disponible === 1 ? 'punto' : 'puntos'}</span>
-      </p>
+      <div className="px-4 pt-6 pb-5">
+        <p className="flex items-baseline gap-3">
+          <span className={destacado ? 'rotulo text-7xl leading-none text-tapa' : 'rotulo text-5xl leading-none text-tapa'}>
+            {destacado ? <Circulo retraso={200}>{numero(t.saldo.disponible)}</Circulo> : numero(t.saldo.disponible)}
+          </span>
+          <span className="text-xl font-bold">{unidad}</span>
+        </p>
+      </div>
 
       {(t.saldo.retenido > 0 || pendientes.boletas > 0) && (
-        <ul className="mt-3 flex flex-col gap-1 text-base">
+        <ul className="border-t border-cuadricula text-base">
           {t.saldo.retenido > 0 && (
-            <li>
-              <strong>{puntos(t.saldo.retenido)}</strong> reservados en tu código.
+            <li className="flex justify-between gap-3 border-b border-cuadricula px-4 py-3">
+              <span>Reservados en tu código</span>
+              <strong className="tabular-nums">{numero(t.saldo.retenido)}</strong>
             </li>
           )}
           {pendientes.boletas > 0 && (
-            <li>
-              {pendientes.puntos > 0 ? (
-                <>
-                  <strong>{puntos(pendientes.puntos)}</strong> pendientes de{' '}
-                </>
-              ) : (
-                'Pendientes: '
+            <li className="flex justify-between gap-3 border-b border-cuadricula px-4 py-3 text-lapiz">
+              <span>
+                A lápiz: {pendientes.boletas === 1 ? '1 boleta en revisión' : `${pendientes.boletas} boletas en revisión`}
+              </span>
+              {pendientes.puntos > 0 && (
+                <strong className="font-semibold tabular-nums underline decoration-dashed decoration-2 underline-offset-[6px]">
+                  +{numero(pendientes.puntos)}
+                </strong>
               )}
-              {pendientes.boletas === 1 ? '1 boleta en revisión' : `${pendientes.boletas} boletas en revisión`}.
             </li>
           )}
         </ul>
       )}
 
-      <div className="mt-6">
+      <div className="px-4 pt-5 pb-5">
         <Progress
           value={avance}
+          className="h-8 rounded-none border-2 border-tapa bg-papel bg-[linear-gradient(90deg,var(--cuadricula)_2px,transparent_2px)] bg-size-[10%_100%]"
+          indicadorClassName="rounded-none bg-tinta-azul"
           aria-label={proximo ? `Llevas ${numero(Math.max(t.saldo.disponible, 0))} de ${numero(proximo.puntos)} puntos` : 'Meta cumplida'}
         />
         <p className="mt-3 text-lg">
           {proximo ? (
             <>
-              Te faltan <strong>{puntos(proximo.faltan)}</strong> para un descuento de <strong>{pesos(proximo.valor_pesos)}</strong>.
+              Te faltan <strong>{puntos(proximo.faltan)}</strong> para un descuento de{' '}
+              <strong>{pesos(proximo.valor_pesos)}</strong>.
             </>
           ) : (
             <>Ya te alcanza para el beneficio más grande. ¡Revisa tus beneficios!</>
@@ -117,7 +121,7 @@ function Saldo({ t, destacado }: { t: Tarjeta; destacado: boolean }) {
 function PorVencer({ t }: { t: Tarjeta }) {
   if (t.por_vencer.length === 0) return null
   return (
-    <Alert variant="alerta">
+    <Alert variant="alerta" className="rounded-none border-2">
       <AlertTitle>Tienes puntos por vencer</AlertTitle>
       <AlertDescription>
         <ul>
@@ -137,7 +141,7 @@ function Recientes({ t, token }: { t: Tarjeta; token: string }) {
   const items = armarHistorial(t)
   return (
     <section aria-labelledby="titulo-recientes" className="flex flex-col gap-3">
-      <h2 id="titulo-recientes" className="text-2xl font-extrabold">
+      <h2 id="titulo-recientes" className="rotulo text-3xl text-tapa">
         Lo último
       </h2>
       {items.length === 0 ? (
@@ -146,7 +150,7 @@ function Recientes({ t, token }: { t: Tarjeta; token: string }) {
         </Vacio>
       ) : (
         <>
-          <ul className="flex flex-col gap-3">
+          <ul className="border-t-2 border-tapa">
             {items.slice(0, RECIENTES).map((item) => (
               <FilaHistorial key={item.clave} item={item} />
             ))}
@@ -189,8 +193,8 @@ export function PaginaTarjeta() {
   const plazo = condiciones.data?.plazo_validacion_horas
 
   return (
-    <div className="aparecer flex flex-col gap-5">
-      <h1 className="text-3xl font-extrabold">Hola, {primerNombre}</h1>
+    <div className="flex flex-col gap-6">
+      <h1 className="rotulo text-4xl text-tapa">Hola, {primerNombre}</h1>
 
       {aviso.bienvenida && <GuardarEnWhatsapp t={t} token={token} onCerrar={quitarAviso} />}
 
@@ -218,17 +222,13 @@ export function PaginaTarjeta() {
       <PorVencer t={t} />
 
       <div className="flex flex-col gap-3">
-        <Button asChild size="lg" variant={codigo ? 'secondary' : 'default'} className="w-full">
+        <Button asChild size="lg" variant={codigo ? 'libreta-secundario' : 'libreta'} className="w-full">
           <Link to={`/t/${token}/boleta`}>
             Subir boleta
           </Link>
         </Button>
-        <Button asChild variant="outline" className="w-full justify-between">
-          <Link to={`/t/${token}/beneficios`}>
-            <span className="inline-flex items-center gap-2">
-              Mis beneficios
-            </span>
-          </Link>
+        <Button asChild variant="libreta-secundario" size="lg" className="w-full">
+          <Link to={`/t/${token}/beneficios`}>Mis beneficios</Link>
         </Button>
       </div>
 

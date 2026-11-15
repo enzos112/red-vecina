@@ -1,31 +1,47 @@
-import { Badge } from '@/components/ui/badge'
 import { fechaHora } from '@/lib/formato'
-import type { ItemHistorial, TipoItem } from './historial'
+import { cn } from '@/lib/utils'
+import type { ItemHistorial } from './historial'
 
-/** Tipo de movimiento: color de la barra lateral y nombre corto. */
-const TIPOS: Record<TipoItem, { barra: string; texto: string }> = {
-  compra: { barra: 'bg-vecina', texto: 'Compra' },
-  canje: { barra: 'bg-mango', texto: 'Canje' },
-  vencimiento: { barra: 'bg-musgo', texto: 'Vencimiento' },
-  ajuste: { barra: 'bg-barrio', texto: 'Ajuste' },
+/**
+ * Cómo se escribe cada movimiento en la libreta: lo que espera revisión va a lápiz, lo firme en
+ * tinta, el canje usado queda tachado (saldado) y lo que no sumó se dice en rojo, con palabras.
+ */
+type Trazo = 'tinta' | 'lapiz' | 'saldado' | 'peligro'
+
+function trazo(item: ItemHistorial): Trazo {
+  if (item.etiqueta.variante === 'peligro') return 'peligro'
+  if (item.tipo === 'canje' && item.etiqueta.variante === 'secondary') return 'saldado'
+  if (item.etiqueta.variante === 'alerta') return 'lapiz'
+  return 'tinta'
 }
 
-/** Una fila del historial: qué tipo de movimiento, qué pasó, cuánto y cuándo. */
+const CIFRA: Record<Trazo, string> = {
+  tinta: 'font-extrabold text-tinta-azul',
+  lapiz: 'font-medium text-lapiz underline decoration-dashed decoration-2 underline-offset-[6px]',
+  saldado: 'font-bold text-tinta',
+  peligro: 'font-bold text-peligro-texto',
+}
+
+/** Una línea de la cuenta: qué pasó y cuándo a la izquierda, cuánto o en qué quedó a la derecha. */
 export function FilaHistorial({ item }: { item: ItemHistorial }) {
-  const tipo = TIPOS[item.tipo]
+  const t = trazo(item)
   return (
-    <li className="relative overflow-hidden rounded-2xl border border-border bg-card py-4 pr-4 pl-6">
-      <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1.5 ${tipo.barra}`} />
+    <li className={cn('grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 border-b border-cuadricula py-4', t === 'lapiz' && 'text-lapiz')}>
       <div className="min-w-0">
-        <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">{tipo.texto}</p>
-        <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
-          <p className="font-bold">{item.titulo}</p>
-          <Badge variant={item.etiqueta.variante}>{item.etiqueta.texto}</Badge>
-        </div>
-        {item.detalle && <p className="text-muted-foreground">{item.detalle}</p>}
-        {item.nota && <p className="mt-1 text-base">{item.nota}</p>}
-        <p className="mt-1 text-sm text-muted-foreground">{fechaHora(item.fecha)}</p>
+        <p className="font-bold">
+          <span
+            className={cn(
+              t === 'saldado' && 'line-through decoration-tinta-azul decoration-[3px]',
+            )}
+          >
+            {item.titulo}
+          </span>
+        </p>
+        {item.detalle && <p className={t === 'lapiz' ? undefined : 'text-lapiz'}>{item.detalle}</p>}
+        {item.nota && <p className="mt-1">{item.nota}</p>}
+        <p className="mt-1 text-[0.9375rem] font-semibold text-tapa">{fechaHora(item.fecha)}</p>
       </div>
+      <p className={cn('text-right text-lg tabular-nums', CIFRA[t])}>{item.etiqueta.texto}</p>
     </li>
   )
 }

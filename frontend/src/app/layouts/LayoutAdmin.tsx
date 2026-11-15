@@ -77,7 +77,14 @@ function ContadorPendientes() {
   const resumen = useResumenCola()
   const n = resumen.data?.pendientes
   if (!n) return null
-  return <SidebarMenuBadge aria-label={`${n} pendientes`}>{numero(n)}</SidebarMenuBadge>
+  return (
+    <SidebarMenuBadge
+      aria-label={`${n} pendientes`}
+      className="top-1/2 right-3 h-7 min-w-8 -translate-y-1/2 rounded-none border-2 border-tapa bg-papel px-1.5 text-[0.9375rem] font-bold text-tapa peer-data-[active=true]/menu-button:text-tapa"
+    >
+      {numero(n)}
+    </SidebarMenuBadge>
+  )
 }
 
 function Grupo({ titulo, secciones }: { titulo: string; secciones: Seccion[] }) {
@@ -92,7 +99,7 @@ function Grupo({ titulo, secciones }: { titulo: string; secciones: Seccion[] }) 
               <SidebarMenuButton
                 asChild
                 isActive={pathname.startsWith(a)}
-                className="relative pl-4 before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-transparent data-[active=true]:before:bg-mango"
+                className="h-12 rounded-none px-4 text-base font-semibold data-[active=true]:bg-tapa data-[active=true]:font-bold data-[active=true]:text-papel"
               >
                 <NavLink to={a}>
                   <span>{texto}</span>
@@ -140,7 +147,7 @@ export function LayoutAdmin() {
     <TooltipProvider>
       <SidebarProvider>
         <Sidebar>
-          <SidebarHeader className="h-18 justify-center px-4">
+          <SidebarHeader className="h-18 justify-center border-b-2 border-tapa px-4">
             <Logo />
           </SidebarHeader>
           <SidebarContent>
@@ -160,10 +167,10 @@ export function LayoutAdmin() {
             </Button>
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset className="bg-background">
-          <header className="flex h-18 items-center gap-3 border-b border-border bg-card px-4 lg:px-8">
+        <SidebarInset className="libreta bg-papel">
+          <header className="flex h-18 items-center gap-3 border-b-2 border-tapa bg-papel px-4 lg:px-8">
             <SidebarTrigger className="md:hidden" />
-            <h1 className="text-2xl font-extrabold">{actual?.texto ?? 'Panel'}</h1>
+            <h1 className="rotulo text-3xl text-tapa">{actual?.texto ?? 'Panel'}</h1>
           </header>
           <div className="w-full max-w-6xl flex-1 px-4 py-8 lg:px-8">
             <Outlet context={actual} />

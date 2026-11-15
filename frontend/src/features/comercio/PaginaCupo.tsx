@@ -25,7 +25,7 @@ function Barra({ c }: { c: CupoSalida }) {
   const pct = (n: number) => (c.total > 0 ? Math.min(100, (n / c.total) * 100) : 0)
   return (
     <div
-      className="flex h-6 w-full overflow-hidden rounded-full bg-secondary"
+      className="flex h-8 w-full overflow-hidden border-2 border-tapa bg-papel"
       role="img"
       aria-label={`Usado ${pesos(c.usado)}, reservado ${pesos(c.reservado)}, libre ${pesos(c.libre)} de ${pesos(c.total)}`}
     >
