@@ -26,6 +26,17 @@ class Inscripcion(BaseModel):
     acepta_condiciones: bool = Field(description="Aceptó las condiciones y el uso de datos (A1).")
 
 
+class InscripcionEquipo(BaseModel):
+    """El operador inscribe a mano a un vecino que no puede hacerlo solo (sección 3)."""
+
+    nombre: str = Field(min_length=1, max_length=120)
+    telefono: str = Field(min_length=8, max_length=20)
+    comercio_id: int | None = Field(default=None, description="Comercio donde se inscribió.")
+    acepta_condiciones: bool = Field(
+        description="El vecino escuchó las condiciones y el uso de datos y aceptó (A1)."
+    )
+
+
 class Inscrito(BaseModel):
     nombre: str
     token: str

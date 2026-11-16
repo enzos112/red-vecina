@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import type { ResultadoCajaSalida } from '@/lib/api'
 import { codigo as formatoCodigo, pesos } from '@/lib/formato'
 import { mensajeError } from '@/lib/sesion'
-import { useConsultarCodigo, useUsarCodigo } from './consultas'
+import { useConsultarCodigo, useCupo, useUsarCodigo } from './consultas'
 
 const LARGO = 6 // B10: el código tiene 6 dígitos (formato, no regla ajustable)
 /** Cuánto queda a la vista la confirmación antes de volver al campo vacío (interfaz). */
@@ -87,9 +87,9 @@ function Valido({
             className="h-14 border-white/40 bg-white text-xl text-tinta"
           />
         </div>
-        {aviso && <p className="rounded-lg bg-white px-4 py-3 text-lg font-bold text-peligro-texto">{aviso}</p>}
+        {aviso && <p className="bg-white px-4 py-3 text-lg font-bold text-peligro-texto">{aviso}</p>}
         {usar.isError && (
-          <p className="rounded-lg bg-white px-4 py-3 text-lg font-bold text-peligro-texto">{mensajeError(usar.error)}</p>
+          <p className="bg-white px-4 py-3 text-lg font-bold text-peligro-texto">{mensajeError(usar.error)}</p>
         )}
         <Button type="submit" variant="oscuro" size="lg" className="h-16 text-2xl" disabled={usar.isPending}>
           {usar.isPending && <Cargando />}
@@ -147,6 +147,67 @@ function Usado({ r, onSeguir }: { r: ResultadoCajaSalida; onSeguir: () => void }
   )
 }
 
+/**
+ * Solo en el computador: al lado del campo, cuánto cupo queda libre esta semana y los pasos.
+ * En el celular de la caja no se muestra, para no correr el campo hacia abajo.
+ */
+function Costado() {
+  const cupo = useCupo()
+  const c = cupo.data
+  return (
+    <aside aria-label="Tu semana" className="hidden flex-col gap-6 lg:flex">
+      <section aria-labelledby="titulo-cupo-libre" className="border-2 border-tapa bg-papel">
+        <h2 id="titulo-cupo-libre" className="flex h-12 items-center bg-tapa px-4 text-base font-semibold text-papel">
+          Cupo libre esta semana
+        </h2>
+        <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-5">
+          {cupo.isPending ? (
+            <span className="h-14 w-40 bg-esqueleto" aria-label="Cargando cupo" />
+          ) : cupo.isError ? (
+            <p className="text-lg text-peligro-texto">{mensajeError(cupo.error)}</p>
+          ) : (
+            c && (
+              <>
+                <p>
+                  <span className="rotulo block text-6xl leading-none tracking-[-0.035em] text-mango-700">
+                    {pesos(c.libre)}
+                  </span>
+                  <span className="mt-2 block text-lg">de {pesos(c.total)} para canjes</span>
+                </p>
+                <Link
+                  to="/comercio/cupo"
+                  className="inline-flex min-h-12 items-center font-bold text-tinta-azul underline decoration-mango decoration-2 underline-offset-[6px] hover:text-tapa"
+                >
+                  Ver mi cupo
+                </Link>
+              </>
+            )
+          )}
+        </div>
+      </section>
+      <section aria-labelledby="titulo-pasos-caja">
+        <h2 id="titulo-pasos-caja" className="rotulo text-3xl text-tapa">
+          En la caja
+        </h2>
+        <ol className="mt-4 border-t-2 border-tapa">
+          {[
+            'Pide el código antes de cobrar.',
+            'Escríbelo: lo revisamos al completar los 6 números.',
+            'Si sale Válido, aplica el descuento y toca Usar.',
+          ].map((texto, i) => (
+            <li key={texto} className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-3 border-b-2 border-cuadricula py-4">
+              <span aria-hidden="true" className="rotulo text-3xl leading-none text-mango-700">
+                {i + 1}
+              </span>
+              <p className="text-lg">{texto}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </aside>
+  )
+}
+
 /** /comercio — el validador de la caja: escribir 6 dígitos, ver el resultado, usar. */
 export function PaginaValidar() {
   const id = useId()
@@ -175,7 +236,8 @@ export function PaginaValidar() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-16">
+      <div className="flex flex-col gap-8">
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -183,7 +245,7 @@ export function PaginaValidar() {
         }}
         className="flex flex-col gap-4"
       >
-        <label htmlFor={id} className="text-3xl font-extrabold">
+        <label htmlFor={id} className="rotulo text-3xl text-tapa lg:text-6xl lg:tracking-[-0.035em]">
           Código del vecino
         </label>
         <Input
@@ -198,9 +260,9 @@ export function PaginaValidar() {
           onChange={(e) => alEscribir(e.target.value)}
           maxLength={LARGO + 1}
           aria-describedby={`${id}-ayuda`}
-          className="h-24 text-center text-6xl font-extrabold tracking-[0.15em] tabular-nums md:h-24"
+          className="h-24 border-2 border-tapa bg-papel text-center text-6xl font-extrabold tracking-[0.15em] text-tapa tabular-nums placeholder:text-tapa/20 focus-visible:border-mango md:h-24 lg:h-32 lg:text-7xl"
         />
-        <p id={`${id}-ayuda`} className="text-lg text-muted-foreground">
+        <p id={`${id}-ayuda`} className="text-lg text-lapiz">
           Pídelo antes de cobrar. Al escribir los 6 números lo revisamos solo.
         </p>
         {consultar.isPending && (
@@ -210,7 +272,7 @@ export function PaginaValidar() {
         )}
         {consultar.isError && <p className="text-lg font-bold text-peligro-texto">{mensajeError(consultar.error)}</p>}
         {codigo.length === LARGO && !consultar.isPending && (
-          <Button type="submit" size="lg">
+          <Button type="submit" variant="libreta" size="lg">
             Revisar de nuevo
           </Button>
         )}
@@ -218,10 +280,13 @@ export function PaginaValidar() {
 
       <Link
         to="/comercio/sin-internet"
-        className="flex min-h-14 items-center gap-3 rounded-lg border-2 border-border bg-card px-4 text-lg font-bold transition-colors duration-200 hover:bg-muted"
+        className="flex min-h-14 items-center gap-3 border-2 border-dashed border-tapa/50 bg-papel px-4 text-lg font-bold text-tapa transition-colors duration-200 hover:border-tapa hover:bg-mango-50"
       >
         ¿Aplicaste un código sin internet? Ingrésalo aquí
       </Link>
+      </div>
+
+      <Costado />
 
       {estado.paso === 'resultado' &&
         (estado.r.se_puede_usar ? (

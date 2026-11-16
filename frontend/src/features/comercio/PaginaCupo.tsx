@@ -1,4 +1,5 @@
 import { Cargando } from '@/components/marca/Cargando'
+import { EncabezadoPagina } from '@/components/marca/EncabezadoPagina'
 import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -29,26 +30,36 @@ function Barra({ c }: { c: CupoSalida }) {
       role="img"
       aria-label={`Usado ${pesos(c.usado)}, reservado ${pesos(c.reservado)}, libre ${pesos(c.libre)} de ${pesos(c.total)}`}
     >
-      <div className="h-full bg-vecina" style={{ width: `${pct(c.usado)}%` }} />
+      <div className="h-full bg-tinta-azul" style={{ width: `${pct(c.usado)}%` }} />
       <div
-        className="h-full bg-vecina/45"
+        className="h-full bg-mango-300"
         style={{
           width: `${pct(c.reservado)}%`,
-          backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(255 255 255 / 0.35) 6px 12px)',
+          backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(255 255 255 / 0.45) 6px 12px)',
         }}
       />
     </div>
   )
 }
 
-function Fila({ etiqueta, valor, muestra }: { etiqueta: string; valor: number; muestra?: string }) {
+function Fila({
+  etiqueta,
+  valor,
+  muestra,
+  cifra = 'text-tinta',
+}: {
+  etiqueta: string
+  valor: number
+  muestra?: string
+  cifra?: string
+}) {
   return (
-    <div className="flex items-center justify-between gap-3 py-2 text-lg">
+    <div className="flex items-center justify-between gap-3 py-3 text-lg">
       <span className="flex items-center gap-3">
-        {muestra && <span className={`size-4 rounded-sm ${muestra}`} aria-hidden="true" />}
+        {muestra && <span className={`size-4 ${muestra}`} aria-hidden="true" />}
         {etiqueta}
       </span>
-      <span className="font-bold tabular-nums">{pesos(valor)}</span>
+      <span className={`font-extrabold tabular-nums ${cifra}`}>{pesos(valor)}</span>
     </div>
   )
 }
@@ -73,9 +84,9 @@ function CupoExtra() {
   }
 
   return (
-    <Card>
+    <Card className="border-2 border-tapa">
       <CardHeader>
-        <CardTitle className="text-xl">Agregar cupo extra</CardTitle>
+        <CardTitle className="rotulo text-2xl text-tapa">Agregar cupo extra</CardTitle>
         <CardDescription>
           Para recibir más canjes esta semana, por ejemplo en una campaña. Solo se puede sumar y no pasa a la semana siguiente.
         </CardDescription>
@@ -103,7 +114,7 @@ function CupoExtra() {
               <AlertDescription>Listo: sumaste {pesos(listo)} a tu cupo de esta semana.</AlertDescription>
             </Alert>
           )}
-          <Button type="submit" disabled={!Number(monto) || agregar.isPending}>
+          <Button type="submit" variant="libreta" disabled={!Number(monto) || agregar.isPending}>
             {agregar.isPending && <Cargando />}
             Agregar cupo
           </Button>
@@ -129,36 +140,45 @@ export function PaginaCupo() {
   const s = SEMAFORO[c.semaforo]
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-lg text-muted-foreground">Cupo de la semana del {dia(c.semana)}</p>
+    <div className="flex flex-col gap-6 lg:gap-10">
+      <EncabezadoPagina
+        titulo="Cupo de la semana"
+        descripcion={`Lo que puedes entregar en canjes desde el ${dia(c.semana)}. Cuando se acaba, tus beneficios descansan hasta el ${dia(c.proxima_liberacion)}.`}
+      />
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-16">
+      <div className="flex flex-col gap-6">
+      <div className="border-2 border-tapa bg-mango-50 px-5 py-5">
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-5xl font-extrabold tabular-nums">{pesos(c.libre)}</p>
+          <p className="rotulo text-6xl leading-none tracking-[-0.035em] text-mango-700 lg:text-7xl">{pesos(c.libre)}</p>
           <Badge variant={s.variante}>{s.texto}</Badge>
         </div>
-        <p className="text-lg">libres de {pesos(c.total)}</p>
+        <p className="mt-2 text-lg">
+          libres de <strong className="text-tapa">{pesos(c.total)}</strong> esta semana
+        </p>
       </div>
 
       <Barra c={c} />
 
-      <div className="divide-y divide-border rounded-lg border-2 border-border bg-card px-4">
-        <Fila etiqueta="Usado" valor={c.usado} muestra="bg-vecina" />
-        <Fila etiqueta="Reservado (códigos sin usar)" valor={c.reservado} muestra="bg-vecina/45" />
-        <Fila etiqueta="Libre" valor={c.libre} muestra="bg-secondary border border-border" />
+      <div className="divide-y divide-cuadricula border-2 border-tapa bg-papel px-4">
+        <Fila etiqueta="Usado" valor={c.usado} muestra="bg-tinta-azul" cifra="text-tinta-azul" />
+        <Fila etiqueta="Reservado (códigos sin usar)" valor={c.reservado} muestra="bg-mango-300" cifra="text-mango-800" />
+        <Fila etiqueta="Libre" valor={c.libre} muestra="border-2 border-tapa bg-papel" cifra="text-tapa" />
       </div>
 
-      <details className="rounded-lg border-2 border-border bg-card px-4 py-3">
-        <summary className="cursor-pointer text-lg font-bold">Cómo se calcula</summary>
+      <details className="border-2 border-tapa/40 bg-papel px-4 py-3 open:border-tapa">
+        <summary className="cursor-pointer text-lg font-bold text-tapa">Cómo se calcula</summary>
         <p className="mt-3 text-lg">{c.explicacion}</p>
         <div className="mt-3 divide-y divide-border">
           <Fila etiqueta="Base" valor={c.base} />
           <Fila etiqueta="Lo que no usaste la semana pasada" valor={c.arrastre} />
           <Fila etiqueta="Extra que agregaste" valor={c.extra} />
         </div>
-        <p className="mt-2 text-muted-foreground">Se vuelve a calcular el {dia(c.proxima_liberacion)}.</p>
+        <p className="mt-2 text-lapiz">Se vuelve a calcular el {dia(c.proxima_liberacion)}.</p>
       </details>
+      </div>
 
       <CupoExtra />
+      </div>
     </div>
   )
 }

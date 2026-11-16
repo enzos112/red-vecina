@@ -26,6 +26,15 @@
     --color-lapiz: var(--lapiz);
     --color-tapa-texto: var(--tapa-texto);
 
+    /* Escala del naranja: claros para fondos y resaltador, tostados para cifras sobre papel. */
+    --color-mango-50: var(--mango-50);
+    --color-mango-100: var(--mango-100);
+    --color-mango-200: var(--mango-200);
+    --color-mango-300: var(--mango-300);
+    --color-mango-700: var(--mango-700);
+    --color-mango-800: var(--mango-800);
+    --color-mango-900: var(--mango-900);
+
     /* Escala de texto: nada bajo 15 px; el texto base es de 17 px. */
     --text-xs: 0.9375rem;
     --text-xs--line-height: 1.4;
@@ -195,6 +204,20 @@
     --tapa-texto: #C9D6EC;      /* texto secundario sobre la tapa (9,6:1) */
     --renglon: 2rem;
 
+    /*
+     * Escala del naranja. Cada tono tiene un rol (DESIGN.md, Colors):
+     * 50 fondo de lo importante · 100 fila o pestaña activa · 200 resaltador ·
+     * 300 borde o barra de énfasis · mango acción y cifras sobre la tapa (5,8:1) ·
+     * 700 cifras sobre papel (4,8:1) · 800 texto naranja chico (6,6:1) · 900 texto sobre 100.
+     */
+    --mango-50: #FFF4E2;
+    --mango-100: #FFE6BF;
+    --mango-200: #FDD08A;
+    --mango-300: #FBB54A;
+    --mango-700: #A85D03;
+    --mango-800: #8A4B05;
+    --mango-900: #5C3205;
+
     --sidebar: var(--papel);
     --sidebar-foreground: var(--tinta);
     --sidebar-primary: var(--tapa);
@@ -316,6 +339,36 @@
   background-size: 100% 3px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
+}
+
+/*
+ * Resaltador: una franja plana de naranja detrás de la mitad baja del texto, como el plumón
+ * que se pasa sobre lo importante de la libreta. `resaltar` lo traza al entrar en pantalla.
+ */
+@utility resaltado {
+  background-image: linear-gradient(var(--mango-200), var(--mango-200));
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 100% 46%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 0.06em;
+}
+@utility resaltado-tapa {
+  background-image: linear-gradient(var(--mango), var(--mango));
+  background-repeat: no-repeat;
+  background-position: 0 92%;
+  background-size: 100% 0.14em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+@keyframes resaltar {
+  from { background-size: 0% 46%; }
+  to { background-size: 100% 46%; }
+}
+@keyframes resaltar-tapa {
+  from { background-size: 0% 0.14em; }
+  to { background-size: 100% 0.14em; }
 }
 
 /* Aparición suave al cargar; se apaga con movimiento reducido. */

@@ -23,7 +23,7 @@ export function PaginaHistorial() {
   if (tarjeta.isError && esTarjetaInexistente(tarjeta.error)) return <TarjetaNoEncontrada />
 
   return (
-    <div className="aparecer">
+    <div className="aparecer lg:max-w-2xl">
       <Encabezado token={token} titulo="Mi historial" />
       {tarjeta.isPending ? (
         <CargandoLista etiqueta="Cargando tu historial" filas={4} />

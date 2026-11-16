@@ -131,3 +131,15 @@ def test_proveedor_real_sin_conexion_responde_con_error(monkeypatch):
 def test_si_tarda_mas_del_limite_queda_para_digitar():
     r = lector.leer(Simulado(demora=0.5), b"x", "image/jpeg", timeout=0.05)
     assert r.lectura is None and "tardó" in r.error
+
+
+def test_url_publica_sale_de_render_o_de_la_variable():
+    """El QR del afiche apunta a la web publicada aunque se genere desde otro equipo."""
+    assert config().url_publica is None
+    assert config(RENDER_EXTERNAL_URL="https://red-vecina.onrender.com/").url_publica == (
+        "https://red-vecina.onrender.com"
+    )
+    propia = config(
+        URL_PUBLICA="https://redvecina.cl", RENDER_EXTERNAL_URL="https://x.onrender.com"
+    )
+    assert propia.url_publica == "https://redvecina.cl"

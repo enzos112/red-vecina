@@ -1,5 +1,6 @@
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -16,20 +17,28 @@ const ESTADOS: { valor: EstadoBoleta | 'todas'; texto: string }[] = [
   { valor: 'todas', texto: 'Todas' },
 ]
 
-function Contador() {
+/** Lo que hay que hacer hoy: cuántas esperan, cuántas se atrasaron y el atajo a la más antigua. */
+function Contador({ primera }: { primera?: number }) {
   const r = useResumenCola()
-  if (!r.data) return <Skeleton className="h-24 w-64" />
+  if (!r.data) return <Skeleton className="h-32 w-full max-w-xl rounded-none" />
   const { pendientes, atrasadas } = r.data
   return (
-    <div className="flex flex-wrap items-end gap-6">
+    <div className="flex flex-wrap items-center gap-x-8 gap-y-4 border-2 border-tapa bg-mango-50 px-5 py-4">
       <div>
-        <p className="text-6xl font-extrabold tabular-nums">{numero(pendientes)}</p>
-        <p className="text-lg text-muted-foreground">{pendientes === 1 ? 'boleta pendiente' : 'boletas pendientes'}</p>
+        <p className="rotulo text-6xl leading-none tracking-[-0.035em] text-mango-700">{numero(pendientes)}</p>
+        <p className="mt-1 text-lg font-semibold text-tapa">
+          {pendientes === 1 ? 'boleta por revisar' : 'boletas por revisar'}
+        </p>
       </div>
       {atrasadas > 0 && (
-        <Badge variant="peligro" className="mb-2 text-base">
+        <Badge variant="peligro" className="text-base">
           {numero(atrasadas)} fuera del plazo de revisión
         </Badge>
+      )}
+      {pendientes > 0 && primera !== undefined && (
+        <Button asChild variant="libreta">
+          <Link to={`/admin/boletas/${primera}`}>Revisar la más antigua</Link>
+        </Button>
       )}
     </div>
   )
@@ -58,7 +67,7 @@ export function PaginaCola() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <Contador />
+        <Contador primera={estado === 'pendiente' ? lista[0]?.id : undefined} />
         <SubirBoleta />
       </div>
 
@@ -111,7 +120,7 @@ export function PaginaCola() {
                       {fechaHora(b.recibida_en)}
                     </Link>
                     {atrasada && (
-                      <span className="ml-2 inline-flex items-center gap-1 text-sm font-bold text-peligro-texto">
+                      <span className="ml-2 inline-flex items-center gap-1 text-[0.9375rem] font-bold text-peligro-texto">
                         atrasada
                       </span>
                     )}
@@ -119,18 +128,20 @@ export function PaginaCola() {
                   <TableCell>
                     {b.vecino.nombre}
                     {b.origen === 'operador' && (
-                      <span className="ml-2 text-sm text-muted-foreground">(por WhatsApp)</span>
+                      <span className="ml-2 text-[0.9375rem] text-lapiz">(por WhatsApp)</span>
                     )}
                   </TableCell>
                   <TableCell>
                     {b.comercio ?? (
-                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 text-lapiz">
                         por leer
                       </span>
                     )}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{b.monto_total !== null ? pesos(b.monto_total) : '—'}</TableCell>
-                  <TableCell className="text-right tabular-nums">{b.puntos !== null ? numero(b.puntos) : '—'}</TableCell>
+                  <TableCell className="text-right font-extrabold text-mango-800 tabular-nums">
+                    {b.puntos !== null ? `+${numero(b.puntos)}` : '—'}
+                  </TableCell>
                   <TableCell>
                     <EstadoBoletaBadge estado={b.estado} />
                   </TableCell>

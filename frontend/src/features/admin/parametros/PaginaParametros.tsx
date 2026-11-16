@@ -1,3 +1,4 @@
+import { Info } from '@/components/marca/Info'
 import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -232,17 +233,14 @@ function Editor({ p, onCerrar }: { p: ParametroSalida; onCerrar: () => void }) {
       <Field>
         <FieldLabel htmlFor={`${id}-motivo`}>Motivo del cambio</FieldLabel>
         <Textarea id={`${id}-motivo`} value={motivo} onChange={(e) => setMotivo(e.target.value)} required maxLength={500} />
-        <FieldDescription>
-          Rige desde ahora hacia adelante. Los puntos ya otorgados, los códigos emitidos y el cupo de esta semana no se
-          recalculan.
-        </FieldDescription>
+        <FieldDescription>Rige desde ahora: lo ya otorgado no se recalcula.</FieldDescription>
       </Field>
       {cambiar.isError && (
         <Alert variant="destructive">
           <AlertDescription>{mensajeError(cambiar.error)}</AlertDescription>
         </Alert>
       )}
-      <Button type="submit" className="self-start" disabled={hayErrores || !motivo.trim() || cambiar.isPending}>
+      <Button type="submit" variant="libreta" className="self-start" disabled={hayErrores || !motivo.trim() || cambiar.isPending}>
         {cambiar.isPending && <Cargando />}
         Guardar cambio
       </Button>
@@ -326,19 +324,23 @@ export function PaginaParametros() {
           <TableBody>
             {lista.map((p) => (
               <TableRow key={p.codigo}>
-                <TableCell className="font-bold">{p.codigo}</TableCell>
+                <TableCell className="rotulo text-xl text-mango-700">{p.codigo}</TableCell>
                 <TableCell className="max-w-sm">
-                  <span className="font-bold">{p.nombre}</span>
-                  <span className="block text-sm whitespace-normal text-muted-foreground">{p.descripcion}</span>
+                  <span className="flex items-center gap-2 whitespace-normal">
+                    <span className="font-bold">{p.nombre}</span>
+                    {p.descripcion && <Info etiqueta={`Qué es ${p.codigo}`}>{p.descripcion}</Info>}
+                  </span>
                 </TableCell>
                 <TableCell className="max-w-xs text-sm whitespace-normal">{resumen(p.valor)}</TableCell>
-                <TableCell className="text-sm whitespace-nowrap">
+                <TableCell
+                  className="text-sm whitespace-nowrap text-lapiz"
+                  title={p.actualizado_por_nombre ?? 'Carga inicial'}
+                >
                   {fechaHora(p.actualizado_en)}
-                  <span className="block text-muted-foreground">{p.actualizado_por_nombre ?? 'Carga inicial'}</span>
                 </TableCell>
                 {esAdmin && (
                   <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => setEditando(p)}>
+                    <Button variant="libreta-secundario" size="sm" onClick={() => setEditando(p)}>
                       Editar
                     </Button>
                   </TableCell>

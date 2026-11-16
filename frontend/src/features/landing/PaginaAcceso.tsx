@@ -17,7 +17,7 @@ const OPCIONES = [
 /** /acceso — elige por dónde entrar. Los vecinos no entran aquí: usan su enlace personal. */
 export function PaginaAcceso() {
   return (
-    <Hoja etiqueta="titulo-acceso" className="py-16 sm:py-24">
+    <Hoja viva etiqueta="titulo-acceso" className="py-16 sm:py-24">
       <h1 id="titulo-acceso" className="rotulo max-w-2xl text-[3rem] leading-[1.05] tracking-[-0.035em] text-tapa sm:text-7xl">
         ¿Cómo entras?
       </h1>

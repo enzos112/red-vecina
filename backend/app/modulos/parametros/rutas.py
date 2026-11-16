@@ -37,6 +37,7 @@ def _cambio(c, nombres: dict[int, str]) -> CambioParametroSalida:
 def condiciones(p: Params, config: Config) -> CondicionesRed:
     return CondicionesRed(
         contacto_whatsapp=config.CONTACTO_WHATSAPP,
+        url_publica=config.url_publica,
         pesos_por_punto=p.P1.pesos_por_punto,
         compra_minima_sumar=p.P3.pesos,
         maximo_puntos_boleta=p.P4.puntos,

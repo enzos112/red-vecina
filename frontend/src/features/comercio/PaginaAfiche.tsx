@@ -1,10 +1,11 @@
 import { Cargando } from '@/components/marca/Cargando'
+import { MARCO, TRAZO_PUNTA, TRAZO_R } from '@/components/marca/forma'
 import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useCondiciones } from '@/lib/consultas'
+import { esLocal, useCondiciones, useUrlPublica } from '@/lib/consultas'
 import { A4, cm, descargar, pdfConImagen } from '@/lib/pdf'
 import { useYo } from '@/lib/sesion'
 
@@ -59,21 +60,18 @@ function rectRedondo(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
   ctx.fill()
 }
 
-/** Marca de Red Vecina sobre fondo oscuro: cuadro crema, R azul noche y punto naranja. */
+/** Marca de Red Vecina sobre fondo oscuro: cuadro de papel, R azul noche y punta naranja. */
 function marca(ctx: CanvasRenderingContext2D, x: number, y: number, lado: number, color: string) {
-  ctx.fillStyle = C.crema
-  rectRedondo(ctx, x, y, lado, lado, lado * 0.22)
   ctx.save()
   ctx.translate(x, y)
-  ctx.scale(lado / 64, lado / 64)
-  ctx.strokeStyle = C.barrio
-  ctx.lineWidth = 6
-  ctx.lineJoin = 'round'
-  ctx.stroke(new Path2D('M18 46V18h13.5a9 9 0 0 1 0 18H18'))
+  ctx.scale(lado / MARCO.lado, lado / MARCO.lado)
+  ctx.translate(-MARCO.x, -MARCO.y)
+  ctx.fillStyle = C.crema
+  ctx.fillRect(MARCO.x, MARCO.y, MARCO.lado, MARCO.lado)
+  ctx.fillStyle = C.barrio
+  ctx.fill(new Path2D(TRAZO_R))
   ctx.fillStyle = C.mango
-  ctx.beginPath()
-  ctx.arc(44, 44, 7, 0, Math.PI * 2)
-  ctx.fill()
+  ctx.fill(new Path2D(TRAZO_PUNTA))
   ctx.restore()
   ctx.fillStyle = color
   fuente(ctx, 800, lado * 0.6)
@@ -298,15 +296,16 @@ function Pieza({
 export function PaginaAfiche() {
   const yo = useYo()
   const condiciones = useCondiciones()
+  const base = useUrlPublica()
   const comercio = yo.data?.comercio
   const contacto = condiciones.data?.contacto_whatsapp
   const [dibujos, setDibujos] = useState<{ afiche: () => Promise<Lienzo>; tarjeta: () => Promise<Lienzo> } | null>(null)
-  const clave = comercio && !condiciones.isPending ? `${comercio.slug}|${contacto ?? ''}` : null
+  const clave = comercio && !condiciones.isPending ? `${comercio.slug}|${contacto ?? ''}|${base}` : null
   const [claveDibujos, setClaveDibujos] = useState<string | null>(null)
 
   // Las funciones de dibujo cambian solo si cambia el comercio o el contacto.
   if (clave && clave !== claveDibujos && comercio) {
-    const enlace = `${window.location.origin}/unirme/${comercio.slug}`
+    const enlace = `${base}/unirme/${comercio.slug}`
     setClaveDibujos(clave)
     setDibujos({ afiche: () => dibujarAfiche(comercio.nombre, enlace), tarjeta: () => dibujarTarjeta(contacto) })
   }
@@ -323,11 +322,21 @@ export function PaginaAfiche() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-extrabold">Afiche y tarjeta</h1>
-        <p className="mt-2 text-lg text-muted-foreground">
+        <h1 className="rotulo text-4xl text-tapa">Afiche y tarjeta</h1>
+        <p className="mt-2 text-lg text-lapiz">
           Imprime el afiche y ponlo a la vista: los vecinos que se inscriben con tu QR quedan asociados a tu local.
         </p>
       </div>
+      {esLocal(base) ? (
+        <p className="border-2 border-alerta bg-alerta-fondo px-4 py-3 text-lg">
+          <strong>Este QR apunta a este computador ({base}).</strong> Sirve para probar, pero un celular no lo puede
+          abrir. Para imprimir, descarga el afiche desde la web publicada.
+        </p>
+      ) : (
+        <p className="border-l-[6px] border-mango bg-mango-50 px-4 py-3 text-lg">
+          El QR abre <strong className="break-all text-tapa">{`${base}/unirme/${comercio.slug}`}</strong>
+        </p>
+      )}
       <Pieza
         titulo="Afiche con tu QR"
         descripcion="Tamaño A4. Llévalo a la vitrina o al mesón."

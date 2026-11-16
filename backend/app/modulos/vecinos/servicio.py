@@ -23,7 +23,9 @@ def inscribir(
     comercio_origen_id: int | None,
     ahora: datetime,
     es_demo: bool = False,
+    usuario_id: int | None = None,
 ) -> Vecino:
+    """Inscribe a un vecino. Con `usuario_id`, lo inscribió el equipo a mano y queda auditado."""
     if not nombre.strip():
         raise ValueError("Escribe tu nombre.")
     telefono = reglas.normalizar_telefono(telefono)
@@ -40,6 +42,8 @@ def inscribir(
     )
     sesion.add(vecino)
     sesion.flush()
+    if usuario_id is not None:
+        auditar(sesion, "inscribir_a_mano", "vecino", vecino.id, usuario_id, {}, ahora)
     return vecino
 
 

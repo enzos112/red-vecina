@@ -55,6 +55,7 @@ class CondicionesRed(BaseModel):
     """Valores vigentes que el público necesita para entender el programa."""
 
     contacto_whatsapp: str | None = None  # del equipo de Red Vecina (configuración)
+    url_publica: str | None = None  # dirección pública del sitio, para QR y enlaces
 
     pesos_por_punto: int  # P1
     compra_minima_sumar: int  # P3

@@ -226,13 +226,21 @@ def control_lectura(
         if error:
             mensaje = f"El lector falló ({error}). Digita los campos mirando la foto."
         elif proveedor == "manual":
-            mensaje = "Sin lector automático: digita los campos mirando la foto."
+            mensaje = "No se leyó automáticamente: usa «Leer ahora» o digita los campos."
         else:
             mensaje = "Aún no hay lectura automática: digita los campos o vuelve a leer."
         return Control(
             clave="lectura",
             color=Color.AMBAR,
             mensaje=mensaje,
+            campos=tuple(CAMPOS_CLAVE.values()),
+        )
+    if all(datos.get(c) is None for c in ("rut_emisor", "folio", "fecha", "total")):
+        return Control(
+            clave="lectura",
+            color=Color.AMBAR,
+            mensaje="La imagen no parece una boleta: no se ve RUT, folio, fecha ni total. "
+            "Pide una foto nueva o recházala.",
             campos=tuple(CAMPOS_CLAVE.values()),
         )
     confianza = datos.get("confianza") or {}

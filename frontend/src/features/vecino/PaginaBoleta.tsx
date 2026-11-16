@@ -85,7 +85,7 @@ export function PaginaBoleta() {
   }
 
   return (
-    <div className="aparecer">
+    <div className="aparecer lg:max-w-2xl">
       <Encabezado token={token} titulo="Sube tu boleta">
         Sumas puntos cuando la aprobamos.
       </Encabezado>

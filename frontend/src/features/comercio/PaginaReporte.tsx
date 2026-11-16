@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@/components/ui/card'
+import { EncabezadoPagina } from '@/components/marca/EncabezadoPagina'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { IndicadorSalida } from '@/lib/api'
 import { numero, pesos } from '@/lib/formato'
@@ -15,11 +15,11 @@ function valorTexto(v: number | null, f: Formato): string {
 
 /** Flecha y texto contra el mismo tramo del mes anterior. */
 function Comparacion({ actual, anterior, formato }: { actual: number | null; anterior: number | null; formato: Formato }) {
-  if (actual === null || anterior === null) return <span className="text-muted-foreground">Sin comparación</span>
+  if (actual === null || anterior === null) return <span className="text-lapiz">Sin comparación</span>
   const diferencia = actual - anterior
   const tendencia = diferencia > 0 ? 'Sube' : diferencia < 0 ? 'Baja' : 'Igual'
   return (
-    <span className="text-muted-foreground">
+    <span className="text-lapiz">
       <strong className={diferencia > 0 ? 'text-exito-texto' : diferencia < 0 ? 'text-peligro-texto' : ''}>
         {tendencia}
       </strong>{' '}
@@ -34,7 +34,9 @@ function Cifra({
   anterior,
   formato = 'numero',
   nota,
+  destacada,
 }: {
+  destacada?: boolean
   titulo: string
   actual: number | null
   anterior: number | null
@@ -42,14 +44,16 @@ function Cifra({
   nota?: string
 }) {
   return (
-    <Card className="gap-1 py-5">
-      <CardContent className="flex flex-col gap-1 px-5">
-        <p className="font-bold text-muted-foreground">{titulo}</p>
-        <p className="text-4xl font-extrabold tabular-nums">{valorTexto(actual, formato)}</p>
-        <Comparacion actual={actual} anterior={anterior} formato={formato} />
-        {nota && <p className="text-sm text-muted-foreground">{nota}</p>}
-      </CardContent>
-    </Card>
+    <div className={`flex flex-col gap-1 border-2 border-tapa px-5 py-5 ${destacada ? 'bg-mango-50' : 'bg-papel'}`}>
+      <p className="font-bold text-tapa">{titulo}</p>
+      <p
+        className={`rotulo text-5xl leading-tight tracking-[-0.03em] tabular-nums ${destacada ? 'text-mango-700' : 'text-tapa'}`}
+      >
+        {valorTexto(actual, formato)}
+      </p>
+      <Comparacion actual={actual} anterior={anterior} formato={formato} />
+      {nota && <p className="text-[0.9375rem] text-lapiz">{nota}</p>}
+    </div>
   )
 }
 
@@ -82,30 +86,30 @@ export function PaginaReporte() {
   const alertas = r.indicadores.filter((i) => i.alerta)
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-extrabold first-letter:uppercase">{r.nombre_mes}</h1>
-        <p className="mt-3 text-xl leading-snug">{r.resumen}</p>
-      </div>
+    <div className="flex flex-col gap-6 lg:gap-10">
+      <EncabezadoPagina
+        titulo={`Reporte de ${r.nombre_mes}`}
+        descripcion={r.resumen}
+      />
 
-      <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
-        <Cifra titulo="Ventas registradas" actual={mes.ventas} anterior={ant.ventas} formato="pesos" />
+      <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+        <Cifra titulo="Ventas registradas" actual={mes.ventas} anterior={ant.ventas} formato="pesos" destacada />
         <Cifra titulo="Canjes recibidos" actual={mes.canjes} anterior={ant.canjes} nota={`Costo ${pesos(mes.canjes_pesos)}`} />
         <Cifra titulo="Costo de canjes" actual={mes.costo_pct} anterior={ant.costo_pct} formato="pct" nota="Sobre tus ventas registradas" />
-        <Cifra titulo="Clientes derivados" actual={mes.derivados} anterior={ant.derivados} nota="Vienen de otros locales de la red" />
+        <Cifra destacada titulo="Clientes derivados" actual={mes.derivados} anterior={ant.derivados} nota="Vienen de otros locales de la red" />
         <Cifra titulo="Recompra sin canje" actual={mes.recompras} anterior={ant.recompras} nota="Derivados que volvieron sin código" />
         <Cifra titulo="Vecinos inscritos aquí" actual={mes.inscritos} anterior={ant.inscritos} nota={`${numero(r.vecinos_inscritos)} en total con tu QR`} />
       </div>
 
       {recompra && recompra.valor !== null && (
         <p className="text-lg">
-          De tus clientes derivados, el <strong>{numero(Math.round(recompra.valor))}%</strong> volvió a comprar sin usar un código.
+          De tus clientes derivados, el <strong className="text-mango-800">{numero(Math.round(recompra.valor))}%</strong> volvió a comprar sin usar un código.
         </p>
       )}
 
       {alertas.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-extrabold">Para conversar con el equipo</h2>
+          <h2 className="rotulo text-3xl text-tapa">Para conversar con el equipo</h2>
           <ul className="flex flex-col gap-2">
             {alertas.map((i) => (
               <Alerta key={i.clave} i={i} />

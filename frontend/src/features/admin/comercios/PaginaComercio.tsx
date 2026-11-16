@@ -1,10 +1,12 @@
+import { Info } from '@/components/marca/Info'
+import { Confirmar } from '@/components/marca/Confirmar'
 import { Cargando } from '@/components/marca/Cargando'
-import { useId, useState, type FormEvent } from 'react'
+import { useId, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -43,7 +45,7 @@ function Usuario({ u, esAdmin }: { u: UsuarioDeComercio; esAdmin: boolean }) {
   const [clave, setClave] = useState('')
   const [listo, setListo] = useState(false)
   return (
-    <li className="flex flex-col gap-3 rounded-lg border-2 border-border bg-card p-4">
+    <li className="flex flex-col gap-3 border-2 border-tapa bg-papel p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p>
           <strong>{u.nombre}</strong> · {u.email}
@@ -66,7 +68,7 @@ function Usuario({ u, esAdmin }: { u: UsuarioDeComercio; esAdmin: boolean }) {
             />
           </Field>
           <Button
-            variant="secondary"
+            variant="libreta-secundario"
             disabled={clave.length < LARGO_CLAVE || editar.isPending}
             onClick={() =>
               editar.mutate({ id: u.id, datos: { contrasena: clave } }, { onSuccess: () => (setClave(''), setListo(true)) })
@@ -74,9 +76,21 @@ function Usuario({ u, esAdmin }: { u: UsuarioDeComercio; esAdmin: boolean }) {
           >
             Cambiar contraseña
           </Button>
-          <Button variant="outline" onClick={() => editar.mutate({ id: u.id, datos: { activo: !u.activo } })}>
-            {u.activo ? 'Desactivar' : 'Activar'}
-          </Button>
+          {u.activo ? (
+            <Confirmar
+              titulo={`¿Desactivar a ${u.nombre}?`}
+              descripcion="No podrá entrar al portal del comercio y sus sesiones abiertas se cierran. Puedes activarlo de nuevo cuando quieras."
+              confirmar="Sí, desactivar"
+              peligro
+              onConfirmar={() => editar.mutate({ id: u.id, datos: { activo: false } })}
+            >
+              <Button variant="libreta-secundario">Desactivar</Button>
+            </Confirmar>
+          ) : (
+            <Button variant="libreta-secundario" onClick={() => editar.mutate({ id: u.id, datos: { activo: true } })}>
+              Activar
+            </Button>
+          )}
         </div>
       )}
       {listo && <p className="text-exito-texto">Contraseña cambiada. Sus sesiones abiertas se cerraron.</p>}
@@ -85,7 +99,20 @@ function Usuario({ u, esAdmin }: { u: UsuarioDeComercio; esAdmin: boolean }) {
   )
 }
 
-function NuevoUsuario({ comercioId, slug }: { comercioId: number; slug: string }) {
+/** Un formulario que no se usa a diario: queda detrás de un botón hasta que se pide. */
+function APedido({ texto, children }: { texto: string; children: (cerrar: () => void) => ReactNode }) {
+  const [abierto, setAbierto] = useState(false)
+  if (!abierto) {
+    return (
+      <Button variant="libreta-secundario" size="sm" className="self-start" onClick={() => setAbierto(true)}>
+        {texto}
+      </Button>
+    )
+  }
+  return <div className="flex flex-col gap-2">{children(() => setAbierto(false))}</div>
+}
+
+function NuevoUsuario({ comercioId, slug, onCerrar }: { comercioId: number; slug: string; onCerrar: () => void }) {
   const id = useId()
   const crear = useCrearUsuario()
   const [datos, setDatos] = useState({ nombre: '', email: `${slug}@`, contrasena: '' })
@@ -94,13 +121,18 @@ function NuevoUsuario({ comercioId, slug }: { comercioId: number; slug: string }
     e.preventDefault()
     crear.mutate(
       { ...datos, rol: 'comercio', comercio_id: comercioId },
-      { onSuccess: () => setDatos({ nombre: '', email: '', contrasena: '' }) },
+      {
+        onSuccess: () => {
+          setDatos({ nombre: '', email: '', contrasena: '' })
+          onCerrar()
+        },
+      },
     )
   }
 
   return (
-    <form onSubmit={enviar} className="flex flex-col gap-3 rounded-lg border-2 border-dashed border-border p-4">
-      <h4 className="font-bold">Nuevo usuario del comercio</h4>
+    <form onSubmit={enviar} className="flex flex-col gap-3 border-2 border-tapa bg-mango-50/60 p-4">
+      <h4 className="rotulo text-xl text-tapa">Nuevo usuario del comercio</h4>
       <FieldGroup className="grid gap-3 sm:grid-cols-3">
         <Field>
           <FieldLabel htmlFor={`${id}-nombre`}>Nombre</FieldLabel>
@@ -131,9 +163,14 @@ function NuevoUsuario({ comercioId, slug }: { comercioId: number; slug: string }
         </Field>
       </FieldGroup>
       {crear.isError && <p className="text-peligro-texto">{mensajeError(crear.error)}</p>}
-      <Button type="submit" variant="secondary" className="self-start" disabled={crear.isPending}>
-        Crear usuario
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" variant="libreta" disabled={crear.isPending}>
+          Crear usuario
+        </Button>
+        <Button type="button" variant="libreta-secundario" onClick={onCerrar}>
+          Cancelar
+        </Button>
+      </div>
     </form>
   )
 }
@@ -148,25 +185,36 @@ function CambiarEstado({ d }: { d: ComercioDetalle }) {
   ].filter((o) => o.a !== estado)
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-2">
-        {opciones.map((o) => (
-          <Button
-            key={o.a}
-            variant={o.variante}
-            disabled={editar.isPending}
-            onClick={() => {
-              if (o.a === 'retirado' && !window.confirm('¿Retirar el comercio de la red? Sus códigos emitidos se respetan.')) return
-              editar.mutate({ estado: o.a })
-            }}
-          >
-            {o.texto}
-          </Button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2">
+        {opciones.map((o) =>
+          o.a === 'activo' ? (
+            <Button key={o.a} variant="libreta" disabled={editar.isPending} onClick={() => editar.mutate({ estado: o.a })}>
+              {o.texto}
+            </Button>
+          ) : (
+            <Confirmar
+              key={o.a}
+              titulo={o.a === 'retirado' ? `¿Retirar ${d.comercio.nombre} de la red?` : `¿Suspender ${d.comercio.nombre}?`}
+              descripcion={
+                o.a === 'retirado'
+                  ? 'Sus beneficios dejan de mostrarse y sus usuarios solo podrán validar los códigos ya emitidos, que se respetan hasta que venzan.'
+                  : 'Sus beneficios dejan de mostrarse hasta que lo reactives. Sus boletas siguen sumando y los códigos emitidos se respetan.'
+              }
+              confirmar={o.a === 'retirado' ? 'Sí, retirar' : 'Sí, suspender'}
+              peligro={o.a === 'retirado'}
+              onConfirmar={() => editar.mutate({ estado: o.a })}
+            >
+              <Button variant={o.a === 'retirado' ? 'destructive' : 'libreta-secundario'} disabled={editar.isPending}>
+                {o.texto}
+              </Button>
+            </Confirmar>
+          ),
+        )}
+        <Info etiqueta="Qué significa suspender">
+          Suspendido: sus boletas siguen sumando, pero sus beneficios no se muestran. Para suspender por una sanción,
+          regístrala en «Sanciones»: así queda con fecha, evidencia y plazo.
+        </Info>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Suspendido: sus boletas siguen sumando, pero sus beneficios no se muestran. Para suspender por una sanción,
-        regístrala abajo: así queda con fecha, evidencia y plazo.
-      </p>
       {editar.isError && <p className="text-peligro-texto">{mensajeError(editar.error)}</p>}
     </div>
   )
@@ -198,18 +246,19 @@ function Sanciones({ d }: { d: ComercioDetalle }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">Sanciones</CardTitle>
-        <CardDescription>Las decide el equipo y quedan anotadas con fecha y evidencia (sección 9).</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5">
+        <p className="flex items-center gap-2 text-lapiz">
+          Las decide el equipo y quedan anotadas con fecha y evidencia.
+          <Info etiqueta="Cómo se eligen las sanciones">
+            Las reglas (sección 9) sugieren una sanción según la causa y las anteriores. Puedes elegir otra.
+          </Info>
+        </p>
         {d.sanciones.length === 0 ? (
-          <p className="text-muted-foreground">Sin sanciones.</p>
+          <p className="text-lapiz">Sin sanciones.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {d.sanciones.map((s) => (
-              <li key={s.id} className="rounded-lg border-2 border-border px-4 py-3">
+              <li key={s.id} className="border-2 border-tapa/40 px-4 py-3">
                 <p className="font-bold">
                   {TIPOS[s.tipo]} · {fechaHora(s.decidida_en)}
                   {s.hasta && <span className="font-normal"> · hasta el {dia(s.hasta)}</span>}
@@ -224,8 +273,10 @@ function Sanciones({ d }: { d: ComercioDetalle }) {
         )}
 
         {!retirado && (
-          <form onSubmit={enviar} className="flex flex-col gap-4 rounded-lg border-2 border-dashed border-border p-4">
-            <h4 className="font-bold">Registrar una sanción</h4>
+          <APedido texto="Registrar una sanción">
+            {(cerrar) => (
+          <form onSubmit={enviar} className="flex flex-col gap-4 border-2 border-tapa p-4">
+            <h4 className="rotulo text-xl text-tapa">Registrar una sanción</h4>
             <Field>
               <FieldLabel>Causa</FieldLabel>
               <RadioGroup
@@ -288,10 +339,14 @@ function Sanciones({ d }: { d: ComercioDetalle }) {
               {sancionar.isPending && <Cargando />}
               Registrar {TIPOS[elegido].toLowerCase()}
             </Button>
+            <Button type="button" variant="libreta-secundario" className="self-start" onClick={cerrar}>
+              Cancelar
+            </Button>
           </form>
+            )}
+          </APedido>
         )}
-      </CardContent>
-    </Card>
+    </div>
   )
 }
 
@@ -310,27 +365,85 @@ export function PaginaComercio() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Button variant="ghost" size="sm" className="self-start" asChild>
-        <Link to="/admin/comercios">
-          Comercios
-        </Link>
-      </Button>
-      <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-3xl font-extrabold">{c.nombre}</h2>
-        <EstadoComercioBadge estado={c.estado} />
-        {c.suspendido_hasta && <span className="text-muted-foreground">hasta el {dia(c.suspendido_hasta)}</span>}
+      <Link
+        to="/admin/comercios"
+        className="inline-flex min-h-10 items-center self-start font-semibold text-tinta-azul underline decoration-2 underline-offset-[6px] hover:text-tapa"
+      >
+        Volver a comercios
+      </Link>
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="rotulo text-4xl text-tapa">{c.nombre}</h2>
+          <EstadoComercioBadge estado={c.estado} />
+          {c.suspendido_hasta && <span className="text-lapiz">hasta el {dia(c.suspendido_hasta)}</span>}
+          <Info etiqueta="Datos del comercio">
+            RUT {c.rut} · alta el {dia(c.alta_en)}.
+            <br />
+            Su QR abre /unirme/{c.slug}. Esa dirección no cambia aunque cambie el nombre: el afiche ya está impreso.
+          </Info>
+        </div>
+        <p className="text-lg text-lapiz">
+          {c.rubro} · {c.direccion}
+        </p>
       </div>
-      <p className="text-muted-foreground">
-        {c.rubro} · {c.direccion} · RUT {c.rut} · alta el {dia(c.alta_en)} · QR: /unirme/{c.slug}
-      </p>
 
-      {esAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Datos y estado</CardTitle>
-            <CardDescription>La dirección del QR no cambia aunque cambie el nombre: el afiche ya está impreso.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-6">
+      {d.pendientes.length > 0 && (
+        <p className="border-l-[6px] border-mango bg-mango-50 px-4 py-3">
+          Tiene una propuesta de beneficios pendiente.{' '}
+          <Link to="/admin/comercios?vista=beneficios" className="font-bold text-tinta-azul underline">
+            Revisarla
+          </Link>
+        </p>
+      )}
+
+      <Tabs defaultValue="beneficios">
+        <TabsList>
+          <TabsTrigger value="beneficios">Beneficios</TabsTrigger>
+          <TabsTrigger value="usuarios">Usuarios ({d.usuarios.length})</TabsTrigger>
+          <TabsTrigger value="sanciones">Sanciones ({d.sanciones.length})</TabsTrigger>
+          {esAdmin && <TabsTrigger value="datos">Datos y estado</TabsTrigger>}
+        </TabsList>
+
+        <TabsContent value="beneficios" className="pt-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <section className="flex flex-col gap-2">
+              <h4 className="font-bold text-tapa">Vigentes</h4>
+              <ListaBeneficios beneficios={d.vigentes} vacio="Sin beneficios vigentes." />
+            </section>
+            <section className="flex flex-col gap-2">
+              <h4 className="font-bold text-tapa">{d.pendientes.length > 0 ? 'Pendientes de aprobación' : 'Próximos'}</h4>
+              <ListaBeneficios
+                beneficios={d.pendientes.length > 0 ? d.pendientes : d.proximos}
+                vacio="Ningún cambio en camino."
+              />
+            </section>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="usuarios" className="flex flex-col gap-4 pt-6">
+          <p className="text-lapiz">Quienes entran al portal del comercio para validar códigos.</p>
+          {d.usuarios.length === 0 ? (
+            <p className="text-lapiz">Todavía no tiene usuarios.</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {d.usuarios.map((u) => (
+                <Usuario key={u.id} u={u} esAdmin={esAdmin} />
+              ))}
+            </ul>
+          )}
+          {esAdmin && (
+            <APedido texto="Nuevo usuario">
+              {(cerrar) => <NuevoUsuario comercioId={c.id} slug={c.slug} onCerrar={cerrar} />}
+            </APedido>
+          )}
+        </TabsContent>
+
+        <TabsContent value="sanciones" className="pt-6">
+          <Sanciones d={d} />
+        </TabsContent>
+
+        {esAdmin && (
+          <TabsContent value="datos" className="flex flex-col gap-8 pt-6">
             <FormularioComercio
               key={`${c.id}-${c.nombre}-${c.rut}`}
               inicial={{ nombre: c.nombre, rubro: c.rubro, rut: c.rut, direccion: c.direccion }}
@@ -339,59 +452,13 @@ export function PaginaComercio() {
               error={editar.error}
               onGuardar={(datos) => editar.mutate(datos)}
             />
-            <CambiarEstado d={d} />
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Usuarios</CardTitle>
-          <CardDescription>Quienes entran al portal del comercio para validar códigos.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {d.usuarios.length === 0 ? (
-            <p className="text-muted-foreground">Todavía no tiene usuarios.</p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {d.usuarios.map((u) => (
-                <Usuario key={u.id} u={u} esAdmin={esAdmin} />
-              ))}
-            </ul>
-          )}
-          {esAdmin && <NuevoUsuario comercioId={c.id} slug={c.slug} />}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Beneficios</CardTitle>
-          {d.pendientes.length > 0 && (
-            <CardDescription>
-              Tiene una propuesta pendiente.{' '}
-              <Link to="/admin/comercios?vista=beneficios" className="text-vecina underline">
-                Revisarla
-              </Link>
-            </CardDescription>
-          )}
-        </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-2">
-          <section className="flex flex-col gap-2">
-            <h4 className="font-bold">Vigentes</h4>
-            <ListaBeneficios beneficios={d.vigentes} vacio="Sin beneficios vigentes." />
-          </section>
-          <section className="flex flex-col gap-2">
-            <h4 className="font-bold">{d.pendientes.length > 0 ? 'Pendientes de aprobación' : 'Próximos'}</h4>
-            <ListaBeneficios
-              beneficios={d.pendientes.length > 0 ? d.pendientes : d.proximos}
-              vacio="Ningún cambio en camino."
-            />
-          </section>
-        </CardContent>
-      </Card>
-
-      <Sanciones d={d} />
-
+            <section className="flex flex-col gap-3 border-t-2 border-cuadricula pt-6">
+              <h4 className="font-bold text-tapa">Estado en la red</h4>
+              <CambiarEstado d={d} />
+            </section>
+          </TabsContent>
+        )}
+      </Tabs>
     </div>
   )
 }

@@ -3,6 +3,8 @@
 python -m app.cli base               parámetros, plantillas y primer administrador
 python -m app.cli demo [--reiniciar] datos de demostración (en producción pide --en-produccion)
 python -m app.cli tareas [--forzar]  corre las tareas pendientes del día
+python -m app.cli usuario --email X --rol admin|operador
+                                     crea una cuenta del equipo o le pone una clave nueva
 python -m app.cli openapi <archivo>  exporta el esquema OpenAPI
 python -m app.cli cliente-ts         regenera el cliente tipado del frontend
 """
@@ -59,6 +61,45 @@ def base(_: argparse.Namespace) -> None:
                 Rol.ADMIN,
             )
             print(f"Administrador creado: {config.ADMIN_EMAIL}")
+
+
+def usuario(args: argparse.Namespace) -> None:
+    """Crea una cuenta del equipo o le pone una clave nueva. La clave se pide por consola
+    (o se lee de NUEVA_CONTRASENA), así no queda en el historial ni en un archivo."""
+    import getpass
+    import os
+
+    from app.modulos.cuentas import servicio as cuentas
+    from app.modulos.cuentas.esquemas import Rol
+
+    clave = os.environ.get("NUEVA_CONTRASENA") or getpass.getpass("Clave nueva: ")
+    if not os.environ.get("NUEVA_CONTRASENA") and getpass.getpass("Repítela: ") != clave:
+        sys.exit("Las claves no coinciden.")
+    ahora = ahora_utc()
+    try:
+        with SesionLocal.begin() as sesion:
+            existente = cuentas.por_email(sesion, args.email)
+            if existente is None:
+                nombre = args.nombre or ("Administración" if args.rol == "admin" else "Operación")
+                cuentas.crear_usuario(sesion, args.email, nombre, clave, Rol(args.rol))
+                print(f"Cuenta creada: {args.email.strip().lower()} ({args.rol}).")
+                return
+            if existente.rol == Rol.COMERCIO:
+                sys.exit(
+                    "Esa cuenta es de un comercio: cámbiale la clave desde su ficha en el panel."
+                )
+            cuentas.editar(
+                sesion,
+                existente.id,
+                nombre=args.nombre,
+                contrasena=clave,
+                ahora=ahora,
+                admin_id=existente.id,
+            )
+            existente.activo = True
+            print(f"Clave nueva para {existente.email}. Sus sesiones abiertas se cerraron.")
+    except ValueError as e:
+        sys.exit(str(e))
 
 
 def demo(args: argparse.Namespace) -> None:
@@ -157,6 +198,11 @@ def main() -> None:
     p_tareas = sub.add_parser("tareas", help="Tareas pendientes del día")
     p_tareas.add_argument("--forzar", action="store_true")
     p_tareas.set_defaults(f=tareas)
+    p_usuario = sub.add_parser("usuario", help="Crea una cuenta del equipo o le pone clave nueva")
+    p_usuario.add_argument("--email", required=True)
+    p_usuario.add_argument("--rol", choices=["admin", "operador"], default="admin")
+    p_usuario.add_argument("--nombre", default=None)
+    p_usuario.set_defaults(f=usuario)
     p_openapi = sub.add_parser("openapi", help="Exporta el esquema OpenAPI de la API")
     p_openapi.add_argument("salida", help="Ruta del archivo JSON")
     p_openapi.set_defaults(f=openapi)

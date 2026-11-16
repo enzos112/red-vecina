@@ -275,6 +275,7 @@ export type ComercioPublico = {
 /** Valores vigentes que el público necesita para entender el programa. */
 export type CondicionesRed = {
   contacto_whatsapp?: string | null
+  url_publica?: string | null
   pesos_por_punto: number
   compra_minima_sumar: number
   maximo_puntos_boleta: number
@@ -452,6 +453,16 @@ export type Inscripcion = {
   acepta_condiciones: boolean
 }
 
+/** El operador inscribe a mano a un vecino que no puede hacerlo solo (sección 3). */
+export type InscripcionEquipo = {
+  nombre: string
+  telefono: string
+  /** Comercio donde se inscribió. */
+  comercio_id?: number | null
+  /** El vecino escuchó las condiciones y el uso de datos y aceptó (A1). */
+  acepta_condiciones: boolean
+}
+
 export type Inscrito = {
   nombre: string
   token: string
@@ -467,6 +478,11 @@ export type MensajeVecino = {
   texto: string
   telefono: string
   whatsapp: string
+}
+
+export type MiContrasena = {
+  actual: string
+  nueva: string
 }
 
 export type MotivoRechazo = {
@@ -889,6 +905,9 @@ export function crearApi(pedir: Pedir) {
       /** Cerrar sesión */
       logout: () =>
         pedir<void>('POST', `/acceso/logout`),
+      /** Cambiar mi contraseña (pide la actual; las otras sesiones se cierran) */
+      cambiarMiContrasena: (cuerpo: MiContrasena) =>
+        pedir<void>('POST', `/acceso/contrasena`, { json: cuerpo }),
       /** Quién soy */
       yo: () =>
         pedir<Yo>('GET', `/acceso/yo`),
@@ -959,6 +978,9 @@ export function crearApi(pedir: Pedir) {
       /** Buscar vecinos por nombre o teléfono */
       buscar: (consulta?: { q?: string }) =>
         pedir<VecinoResumen[]>('GET', `/admin/vecinos`, { consulta }),
+      /** Inscribir a un vecino a mano (no puede escanear el QR) */
+      inscribirAMano: (cuerpo: InscripcionEquipo) =>
+        pedir<VecinoDetalle>('POST', `/admin/vecinos`, { json: cuerpo }),
       /** Un vecino con sus movimientos */
       detalle: (vecinoId: number) =>
         pedir<VecinoDetalle>('GET', `/admin/vecinos/${encodeURIComponent(String(vecinoId))}`),

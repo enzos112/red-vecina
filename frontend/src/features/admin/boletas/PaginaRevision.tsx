@@ -27,6 +27,8 @@ import {
   mensajeError,
   useAprobar,
   useBoleta,
+  ESPERA_LECTURA_MS,
+  leyendoAun,
   useComercios,
   useEvaluar,
   useLeer,
@@ -106,19 +108,49 @@ const COLOR: Record<ControlSalida['color'], { etiqueta: string; clase: string; t
 
 const ORDEN = { rojo: 0, ambar: 1, verde: 2 }
 
-function Controles({ controles }: { controles: ControlSalida[] }) {
-  const ordenados = [...controles].sort((a, b) => ORDEN[a.color] - ORDEN[b.color])
+function FilaControl({ c }: { c: ControlSalida }) {
   return (
-    <ul className="flex flex-col gap-2" aria-label="Controles">
-      {ordenados.map((c) => (
-        <li key={c.clave} className={cn('flex items-start gap-3 border-2 px-3 py-2', COLOR[c.color].clase)}>
-          <span className={cn('w-20 shrink-0 pt-0.5 text-xs font-extrabold tracking-wide uppercase', COLOR[c.color].etiqueta)}>
-            {COLOR[c.color].texto}
-          </span>
-          <span>{c.mensaje}</span>
-        </li>
-      ))}
-    </ul>
+    <li className={cn('flex items-start gap-3 border-2 px-3 py-2', COLOR[c.color].clase)}>
+      <span className={cn('w-20 shrink-0 text-[0.9375rem] font-extrabold', COLOR[c.color].etiqueta)}>
+        {COLOR[c.color].texto}
+      </span>
+      <span>{c.mensaje}</span>
+    </li>
+  )
+}
+
+/**
+ * A la vista, solo lo que pide atención (rojo y ámbar). Los controles en orden se resumen en
+ * una línea que se despliega si se quieren ver.
+ */
+function Controles({ controles }: { controles: ControlSalida[] }) {
+  const atencion = [...controles].filter((c) => c.color !== 'verde').sort((a, b) => ORDEN[a.color] - ORDEN[b.color])
+  const enOrden = controles.filter((c) => c.color === 'verde')
+  return (
+    <div className="flex flex-col gap-2" aria-label="Controles">
+      {atencion.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {atencion.map((c) => (
+            <FilaControl key={c.clave} c={c} />
+          ))}
+        </ul>
+      )}
+      {enOrden.length > 0 && (
+        <details className="group border-2 border-exito/60 px-3 py-2">
+          <summary className="cursor-pointer list-none font-semibold text-exito-texto [&::-webkit-details-marker]:hidden">
+            {atencion.length === 0 ? 'Todo en orden: ' : ''}
+            {enOrden.length} {enOrden.length === 1 ? 'control' : 'controles'} sin problemas
+            <span className="ml-2 font-normal text-lapiz underline underline-offset-4 group-open:hidden">ver</span>
+            <span className="ml-2 hidden font-normal text-lapiz underline underline-offset-4 group-open:inline">ocultar</span>
+          </summary>
+          <ul className="mt-2 flex flex-col gap-1 text-base text-lapiz">
+            {enOrden.map((c) => (
+              <li key={c.clave}>{c.mensaje}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
   )
 }
 
@@ -147,19 +179,45 @@ function InfoLectura({ b }: { b: BoletaDetalle }) {
   const leer = useLeer(b.id)
   const lectura = b.lectura as Lectura | null
   const pendiente = b.estado === 'pendiente'
+  const esperando = leyendoAun(b)
+  const [, setVencio] = useState(0)
+  // Al cumplirse la espera, se vuelve a dibujar para ofrecer "Leer ahora".
+  useEffect(() => {
+    if (!esperando) return
+    const t = setTimeout(() => setVencio((n) => n + 1), ESPERA_LECTURA_MS + 1000 - (Date.now() - new Date(b.recibida_en).getTime()))
+    return () => clearTimeout(t)
+  }, [esperando, b.recibida_en])
 
-  if (pendiente && b.tiene_imagen && !lectura) {
+  if (esperando) {
     return (
-      <p className="flex items-center gap-2 text-muted-foreground">
-        <Cargando /> Leyendo la boleta…
+      <p className="flex items-center gap-2 text-lapiz" role="status">
+        <Cargando /> Leyendo la boleta. Tarda unos segundos; mientras, puedes digitar los campos.
       </p>
+    )
+  }
+  if (pendiente && b.tiene_imagen && (!lectura || lectura.proveedor === 'manual' || !lectura.datos)) {
+    return (
+      <div className="flex flex-col items-start gap-3 border-2 border-dashed border-tapa/50 bg-papel px-4 py-3">
+        <p>
+          <strong className="text-tapa">
+            {lectura?.error ? 'El lector no pudo leer esta boleta.' : 'Esta boleta aún no se lee automáticamente.'}
+          </strong>{' '}
+          Pide que el lector la lea ahora, o digita los campos mirando la foto.
+        </p>
+        {lectura?.error && <p className="text-peligro-texto">{lectura.error}</p>}
+        <Button variant="libreta-secundario" size="sm" onClick={() => leer.mutate()} disabled={leer.isPending}>
+          {leer.isPending && <Cargando />}
+          {leer.isPending ? 'Leyendo…' : 'Leer ahora'}
+        </Button>
+        {leer.isError && <p className="font-semibold text-peligro-texto">{mensajeError(leer.error)}</p>}
+      </div>
     )
   }
   const datos = lectura?.datos
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-2 text-muted-foreground">
+        <p className="flex items-center gap-2 text-lapiz">
           {!lectura
             ? 'Sin lectura automática.'
             : lectura.proveedor === 'manual'
@@ -170,10 +228,11 @@ function InfoLectura({ b }: { b: BoletaDetalle }) {
         </p>
         {pendiente && b.tiene_imagen && (
           <Button variant="ghost" size="xs" onClick={() => leer.mutate()} disabled={leer.isPending}>
-            Volver a leer
+            {leer.isPending ? 'Leyendo…' : 'Volver a leer'}
           </Button>
         )}
       </div>
+      {lectura?.error && !datos && <p className="text-peligro-texto">{lectura.error}</p>}
       {leer.isError && <p className="text-peligro-texto">{mensajeError(leer.error)}</p>}
       {datos && (datos.nombre_emisor || datos.rut_emisor) && (
         <p>
@@ -305,16 +364,17 @@ function ResultadoDecision({ d, siguiente }: { d: Decision; siguiente: number | 
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <div className="flex flex-col gap-2">
-          <p className="font-bold">Mensaje para {d.boleta.vecino.nombre}</p>
+          <p className="font-bold text-tapa">Avísale a {d.boleta.vecino.nombre} por WhatsApp</p>
+          <p className="text-lapiz">El mensaje ya está listo según tu decisión. Ábrelo en WhatsApp o cópialo.</p>
           <MensajeParaVecino texto={d.mensaje.texto} whatsapp={d.mensaje.whatsapp} />
         </div>
         <div className="flex flex-wrap gap-2">
           {siguiente ? (
-            <Button onClick={() => navigate(`/admin/boletas/${siguiente}`)}>
+            <Button variant="libreta" onClick={() => navigate(`/admin/boletas/${siguiente}`)}>
               Siguiente boleta
             </Button>
           ) : (
-            <Button variant="secondary" onClick={() => navigate('/admin/boletas')}>
+            <Button variant="libreta-secundario" onClick={() => navigate('/admin/boletas')}>
               No quedan pendientes: volver a la cola
             </Button>
           )}
@@ -338,10 +398,13 @@ function FormularioRevision({ b, onDecision }: { b: BoletaDetalle; onDecision: (
   const datos = useMemo(() => aDatos(f), [f])
   const evaluacion = useEvaluar(b.id, useDemorado(datos))
   const ev = datos ? evaluacion.data : undefined
-  const controles = ev?.controles ?? b.controles ?? []
+  const ajustado = JSON.stringify(f) !== JSON.stringify(original)
+  // Si el operador ya digitó los campos, el aviso de "no hay lectura" quedó resuelto.
+  const controles = (ev?.controles ?? b.controles ?? []).filter(
+    (c) => !(c.clave === 'lectura' && c.color === 'ambar' && ajustado && datos !== null && !(b.lectura as Lectura | null)?.datos),
+  )
   const hayRojo = controles.some((c) => c.color === 'rojo')
   const todoVerde = controles.length > 0 && controles.every((c) => c.color === 'verde')
-  const ajustado = JSON.stringify(f) !== JSON.stringify(original)
   const sugerido = controles.filter((c) => c.color === 'rojo').map((c) => MOTIVO_DE_CONTROL[c.clave]).find(Boolean) ?? null
   const puedeAprobar = !!datos && !hayRojo && !aprobar.isPending
 
@@ -430,22 +493,22 @@ function FormularioRevision({ b, onDecision }: { b: BoletaDetalle; onDecision: (
         </Field>
       </div>
 
-      <div className="flex items-end justify-between gap-4 rounded-lg bg-secondary px-5 py-4">
+      <div className="flex items-end justify-between gap-4 border-2 border-tapa bg-mango-50 px-5 py-4">
         <div>
-          <p className="text-sm font-bold text-secondary-foreground">Puntos a acreditar</p>
-          <p className="text-5xl font-extrabold tabular-nums" aria-live="polite">
+          <p className="text-[0.9375rem] font-bold text-tapa">Puntos a acreditar</p>
+          <p className="rotulo text-6xl leading-none tracking-[-0.035em] text-mango-700 tabular-nums" aria-live="polite">
             {ev ? numero(ev.puntos) : '—'}
           </p>
         </div>
         {ev && (
-          <p className="text-right text-muted-foreground">
+          <p className="text-right text-lapiz">
             Monto válido {pesos(ev.monto_valido)}
             {ev.puntos_calculados !== ev.puntos && <><br />Calculados: {numero(ev.puntos_calculados)}</>}
           </p>
         )}
         {evaluacion.isFetching && <Cargando />}
       </div>
-      {!datos && <p className="text-muted-foreground">Completa comercio, folio, fecha y total para calcular los puntos.</p>}
+      {!datos && <p className="text-lapiz">Completa comercio, folio, fecha y total para calcular los puntos.</p>}
       {datos && evaluacion.isError && <p className="text-peligro-texto">{mensajeError(evaluacion.error)}</p>}
 
       {controles.length > 0 && <Controles controles={controles} />}
@@ -471,7 +534,7 @@ function FormularioRevision({ b, onDecision }: { b: BoletaDetalle; onDecision: (
           Rechazar
         </Button>
       </div>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-[0.9375rem] text-lapiz">
         Atajos: A o Ctrl+Enter aprueba · R rechaza · S pasa a la siguiente.
         {hayRojo && ' Con un control en rojo no se puede aprobar: corrige el dato o rechaza.'}
       </p>
@@ -498,7 +561,7 @@ function Revisada({ b }: { b: BoletaDetalle }) {
       <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-lg">
         {filas.map(([k, v]) => (
           <div key={k} className="contents">
-            <dt className="text-muted-foreground">{k}</dt>
+            <dt className="text-lapiz">{k}</dt>
             <dd className="font-bold">{v}</dd>
           </div>
         ))}
@@ -550,7 +613,7 @@ export function PaginaRevision() {
     return (
       <div className="flex flex-col items-start gap-4">
         <p className="text-lg">{boleta.error.message}</p>
-        <Button variant="secondary" asChild>
+        <Button variant="libreta-secundario" asChild>
           <Link to="/admin/boletas">Volver a la cola</Link>
         </Button>
       </div>
@@ -561,16 +624,17 @@ export function PaginaRevision() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/admin/boletas">
-            Cola
-          </Link>
-        </Button>
+        <Link
+          to="/admin/boletas"
+          className="inline-flex min-h-12 items-center font-semibold text-tinta-azul underline decoration-2 underline-offset-[6px] hover:text-tapa"
+        >
+          Volver a la cola
+        </Link>
         <div className="flex flex-wrap items-center gap-3 text-lg">
           <span>
-            <strong>{b.vecino.nombre}</strong> <span className="text-muted-foreground tabular-nums">{b.vecino.telefono}</span>
+            <strong>{b.vecino.nombre}</strong> <span className="text-lapiz tabular-nums">{b.vecino.telefono}</span>
           </span>
-          <span className="text-muted-foreground">· recibida el {fechaHora(b.recibida_en)}</span>
+          <span className="text-lapiz">· recibida el {fechaHora(b.recibida_en)}</span>
           <EstadoBoletaBadge estado={decision?.boleta.estado ?? b.estado} />
         </div>
       </div>
@@ -580,7 +644,7 @@ export function PaginaRevision() {
           {b.tiene_imagen ? (
             <VisorFoto src={api.boletas.imagen(b.id)} alt={`Boleta de ${b.vecino.nombre}`} />
           ) : (
-            <p className="rounded-lg border-2 border-dashed border-border p-10 text-center text-muted-foreground">Esta boleta no tiene foto.</p>
+            <p className="border-2 border-dashed border-tapa/50 p-10 text-center text-lapiz">Esta boleta no tiene foto.</p>
           )}
         </div>
         <div>

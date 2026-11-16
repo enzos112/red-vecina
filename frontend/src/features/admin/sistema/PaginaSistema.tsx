@@ -1,9 +1,21 @@
+import { Info } from '@/components/marca/Info'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Cargando } from '@/components/marca/Cargando'
+import { Confirmar } from '@/components/marca/Confirmar'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { useId, useState, type FormEvent } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -11,7 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { api } from '@/lib/api'
 import { fechaHora, numero } from '@/lib/formato'
-import type { Rol } from '@/lib/api'
+import type { Rol, UsuarioSalida } from '@/lib/api'
 import {
   mensajeError,
   useCrearUsuario,
@@ -44,14 +56,16 @@ function Tareas() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Tareas programadas</CardTitle>
-        <CardDescription>
-          Corren solas con la primera visita del día. Si algo quedó atrasado, puedes correrlas ahora: no repiten lo ya
-          hecho.
-        </CardDescription>
+        <CardTitle className="flex items-center gap-3 rotulo text-3xl text-tapa">
+          Tareas programadas
+          <Info etiqueta="Cómo corren las tareas">
+            Corren solas con la primera visita del día. Si algo quedó atrasado, puedes correrlas ahora: no repiten lo ya
+            hecho.
+          </Info>
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <Button className="self-start" onClick={() => ejecutar.mutate()} disabled={ejecutar.isPending}>
+        <Button variant="libreta" className="self-start" onClick={() => ejecutar.mutate()} disabled={ejecutar.isPending}>
           {ejecutar.isPending && <Cargando />}
           Ejecutar tareas ahora
         </Button>
@@ -109,10 +123,13 @@ function Exportar() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Exportar a CSV</CardTitle>
-        <CardDescription>
-          Se abre en Excel. Los vecinos van por número, sin nombre ni teléfono. Las fechas son en hora de Santiago.
-        </CardDescription>
+        <CardTitle className="flex items-center gap-3 rotulo text-3xl text-tapa">
+          Exportar a CSV
+          <Info etiqueta="Qué trae cada archivo">
+            Se abre en Excel, con fechas en hora de Santiago. Boletas van por fecha de recepción y canjes por fecha de
+            emisión. El reporte por comercio usa la ventana del cupo y no depende de las fechas.
+          </Info>
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <div className="flex flex-wrap gap-4">
@@ -126,26 +143,22 @@ function Exportar() {
           </Field>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" asChild>
+          <Button variant="libreta-secundario" asChild>
             <a href={api.reportes.exportarBoletas(rango)} download>
               Boletas
             </a>
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="libreta-secundario" asChild>
             <a href={api.reportes.exportarCanjes(rango)} download>
               Canjes
             </a>
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="libreta-secundario" asChild>
             <a href={api.reportes.exportarComercios()} download>
               Reporte por comercio
             </a>
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Boletas por fecha de recepción y canjes por fecha de emisión. El reporte por comercio usa la ventana del cupo y
-          no depende de las fechas.
-        </p>
       </CardContent>
     </Card>
   )
@@ -158,6 +171,79 @@ const ROLES: Record<Exclude<Rol, 'comercio'>, string> = {
   admin: 'Administrador: además edita comercios, parámetros y usuarios',
 }
 
+/** Una clave nueva para quien la olvidó: se escribe aquí y se entrega en persona. */
+function NuevaClave({ u }: { u: UsuarioSalida }) {
+  const id = useId()
+  const editar = useEditarUsuario()
+  const [abierto, setAbierto] = useState(false)
+  const [clave, setClave] = useState('')
+
+  function guardar(e: FormEvent) {
+    e.preventDefault()
+    editar.mutate(
+      { id: u.id, datos: { contrasena: clave } },
+      {
+        onSuccess: () => {
+          setClave('')
+          setAbierto(false)
+        },
+      },
+    )
+  }
+
+  return (
+    <Dialog
+      open={abierto}
+      onOpenChange={(v) => {
+        setAbierto(v)
+        if (!v) {
+          setClave('')
+          editar.reset()
+        }
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button size="sm" variant="libreta-secundario">
+          Nueva clave
+        </Button>
+      </DialogTrigger>
+      <DialogContent showCloseButton={false}>
+        <form onSubmit={guardar} className="flex flex-col gap-5">
+          <DialogHeader>
+            <DialogTitle>Nueva clave para {u.nombre}</DialogTitle>
+            <DialogDescription>
+              Sus sesiones abiertas se cierran y entra con esta clave. Entrégasela en persona o por un canal privado.
+            </DialogDescription>
+          </DialogHeader>
+          <Field>
+            <FieldLabel htmlFor={`${id}-clave`}>Clave nueva</FieldLabel>
+            <Input
+              id={`${id}-clave`}
+              type="text"
+              autoComplete="off"
+              autoFocus
+              value={clave}
+              onChange={(e) => setClave(e.target.value)}
+              minLength={LARGO_CLAVE}
+            />
+            <FieldDescription>Al menos {LARGO_CLAVE} caracteres.</FieldDescription>
+          </Field>
+          {editar.isError && <p className="font-semibold text-peligro-texto">{mensajeError(editar.error)}</p>}
+          <DialogFooter>
+            <Button type="button" variant="libreta-secundario" onClick={() => setAbierto(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" variant="libreta" disabled={clave.length < LARGO_CLAVE || editar.isPending}>
+              {editar.isPending && <Cargando />}
+              Guardar clave
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function Equipo() {
   const id = useId()
   const usuarios = useUsuarios()
@@ -166,20 +252,29 @@ function Equipo() {
   const editar = useEditarUsuario()
   const vacio = { nombre: '', email: '', contrasena: '', rol: 'operador' as Exclude<Rol, 'comercio'> }
   const [datos, setDatos] = useState(vacio)
+  const [creando, setCreando] = useState(false)
   const equipo = usuarios.data?.filter((u) => u.rol !== 'comercio') ?? []
 
   function enviar(e: FormEvent) {
     e.preventDefault()
-    crear.mutate(datos, { onSuccess: () => setDatos(vacio) })
+    crear.mutate(datos, {
+      onSuccess: () => {
+        setDatos(vacio)
+        setCreando(false)
+      },
+    })
   }
 
   return (
-    <Card>
+    <Card id="equipo" className="scroll-mt-6 border-2 border-tapa">
       <CardHeader>
-        <CardTitle className="text-xl">Equipo</CardTitle>
-        <CardDescription>
-          Cuentas del equipo. Los usuarios de cada comercio se crean en su ficha, en Comercios.
-        </CardDescription>
+        <CardTitle className="flex items-center gap-3 rotulo text-3xl text-tapa">
+          Equipo
+          <Info etiqueta="Quiénes son el equipo">
+            Las personas que revisan boletas y administran la red. Los usuarios de cada comercio se crean en su ficha,
+            en Comercios.
+          </Info>
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         {usuarios.isPending ? (
@@ -203,18 +298,38 @@ function Equipo() {
                   <TableCell>{u.email}</TableCell>
                   <TableCell>{u.rol === 'admin' ? 'Administrador' : 'Operador'}</TableCell>
                   <TableCell className="text-right">
-                    {u.id === yo.data?.id ? (
-                      <Badge variant="secondary">Tú</Badge>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant={u.activo ? 'outline' : 'default'}
-                        disabled={editar.isPending}
-                        onClick={() => editar.mutate({ id: u.id, datos: { activo: !u.activo } })}
-                      >
-                        {u.activo ? 'Desactivar' : 'Reactivar'}
-                      </Button>
-                    )}
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {!u.activo && <Badge variant="secondary">Desactivada</Badge>}
+                      {u.id === yo.data?.id ? (
+                        <Badge variant="secondary">Tú</Badge>
+                      ) : (
+                        <>
+                          <NuevaClave u={u} />
+                          {u.activo ? (
+                            <Confirmar
+                              titulo={`¿Desactivar a ${u.nombre}?`}
+                              descripcion="No podrá entrar al panel y sus sesiones abiertas se cierran. Puedes reactivar la cuenta cuando quieras."
+                              confirmar="Sí, desactivar"
+                              peligro
+                              onConfirmar={() => editar.mutate({ id: u.id, datos: { activo: false } })}
+                            >
+                              <Button size="sm" variant="libreta-secundario" disabled={editar.isPending}>
+                                Desactivar
+                              </Button>
+                            </Confirmar>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="libreta"
+                              disabled={editar.isPending}
+                              onClick={() => editar.mutate({ id: u.id, datos: { activo: true } })}
+                            >
+                              Reactivar
+                            </Button>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -222,8 +337,18 @@ function Equipo() {
           </Table>
         )}
         {editar.isError && <p className="text-peligro-texto">{mensajeError(editar.error)}</p>}
-        <form onSubmit={enviar} className="flex flex-col gap-3 rounded-lg border-2 border-dashed border-border p-4">
-          <h4 className="font-bold">Nueva cuenta del equipo</h4>
+        {crear.isSuccess && !creando && (
+          <p role="status" className="font-semibold text-exito-texto">
+            Cuenta creada para {crear.data.email}. Ya puede entrar en /admin/entrar.
+          </p>
+        )}
+        {!creando ? (
+          <Button variant="libreta" className="self-start" onClick={() => setCreando(true)}>
+            Nueva cuenta del equipo
+          </Button>
+        ) : (
+        <form onSubmit={enviar} className="flex flex-col gap-4 border-2 border-tapa bg-mango-50 p-5">
+          <h3 className="rotulo text-2xl text-tapa">Nueva cuenta del equipo</h3>
           <FieldGroup className="grid gap-3 sm:grid-cols-3">
             <Field>
               <FieldLabel htmlFor={`${id}-nombre`}>Nombre</FieldLabel>
@@ -271,11 +396,17 @@ function Equipo() {
             ))}
           </RadioGroup>
           {crear.isError && <p className="text-peligro-texto">{mensajeError(crear.error)}</p>}
-          {crear.isSuccess && <p className="text-sm text-muted-foreground">Cuenta creada.</p>}
-          <Button type="submit" variant="secondary" className="self-start" disabled={crear.isPending}>
-            Crear cuenta
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" variant="libreta" disabled={crear.isPending}>
+              {crear.isPending && <Cargando />}
+              Crear cuenta
+            </Button>
+            <Button type="button" variant="libreta-secundario" onClick={() => setCreando(false)}>
+              Cancelar
+            </Button>
+          </div>
         </form>
+        )}
       </CardContent>
     </Card>
   )
@@ -284,10 +415,21 @@ function Equipo() {
 /** /admin/sistema — tareas programadas, exportación de datos y cuentas del equipo. */
 export function PaginaSistema() {
   return (
-    <div className="flex flex-col gap-6">
-      <Tareas />
-      <Exportar />
-      <Equipo />
-    </div>
+    <Tabs defaultValue="equipo">
+      <TabsList>
+        <TabsTrigger value="equipo">Equipo</TabsTrigger>
+        <TabsTrigger value="tareas">Tareas</TabsTrigger>
+        <TabsTrigger value="exportar">Exportar</TabsTrigger>
+      </TabsList>
+      <TabsContent value="equipo" className="pt-6">
+        <Equipo />
+      </TabsContent>
+      <TabsContent value="tareas" className="pt-6">
+        <Tareas />
+      </TabsContent>
+      <TabsContent value="exportar" className="pt-6">
+        <Exportar />
+      </TabsContent>
+    </Tabs>
   )
 }

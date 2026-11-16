@@ -4,7 +4,7 @@ import { Hoja } from '@/components/marca/libreta'
 
 export function PaginaNoEncontrada() {
   return (
-    <Hoja etiqueta="titulo-404" className="py-20 sm:py-32">
+    <Hoja viva etiqueta="titulo-404" className="py-20 sm:py-32">
       <h1 id="titulo-404" className="rotulo max-w-2xl text-[3rem] leading-[1.05] tracking-[-0.035em] text-tapa sm:text-7xl">
         No encontramos esta página.
       </h1>

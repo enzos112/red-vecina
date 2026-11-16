@@ -85,7 +85,7 @@ export function tarjetaRecordada(): string | null {
 }
 
 /** Enlace wa.me al chat del propio vecino, con su enlace personal ya escrito. */
-export function enlaceWhatsapp(numero: string, mensaje: string, token: string): string {
-  const tarjeta = `${window.location.origin}/t/${token}`
+export function enlaceWhatsapp(numero: string, mensaje: string, token: string, base = window.location.origin): string {
+  const tarjeta = `${base}/t/${token}`
   return `https://wa.me/${numero}?text=${encodeURIComponent(mensaje.replaceAll('{enlace}', tarjeta))}`
 }

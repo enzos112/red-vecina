@@ -1,3 +1,4 @@
+import { Info } from '@/components/marca/Info'
 import { Link, useSearchParams } from 'react-router'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { Badge } from '@/components/ui/badge'
@@ -32,14 +33,17 @@ function valor(i: IndicadorSalida): string {
 
 function Indicador({ i }: { i: IndicadorSalida }) {
   return (
-    <div className={`rounded-lg border-2 px-4 py-3 ${i.alerta ? 'border-alerta bg-alerta-fondo' : 'border-border bg-card'}`}>
-      <p className="text-sm font-bold text-muted-foreground">{i.nombre}</p>
-      <p className="text-2xl font-extrabold tabular-nums">{valor(i)}</p>
-      {i.alerta && (
-        <p className="mt-1 text-sm">
-          <strong>{i.senal}.</strong> {i.accion}
-        </p>
-      )}
+    <div className={`border-2 px-4 py-3 ${i.alerta ? 'border-alerta bg-alerta-fondo' : 'border-tapa bg-papel'}`}>
+      <p className="flex items-center justify-between gap-2 text-[0.9375rem] font-bold text-lapiz">
+        {i.nombre}
+        {i.alerta && (
+          <Info etiqueta={`Qué hacer con ${i.nombre}`}>
+            <strong>{i.senal}.</strong> {i.accion}
+          </Info>
+        )}
+      </p>
+      <p className={`rotulo text-4xl leading-tight tabular-nums ${i.alerta ? 'text-alerta-texto' : 'text-mango-700'}`}>{valor(i)}</p>
+      {i.alerta && <p className="mt-1 text-[0.9375rem] font-semibold text-alerta-texto">{i.senal}</p>}
     </div>
   )
 }
@@ -80,8 +84,8 @@ function ListaFraude({ alertas }: { alertas: AlertaFraudeSalida[] }) {
 }
 
 const CONFIG_CUPOS = {
-  anterior: { label: 'Semana anterior', color: 'var(--chart-2)' },
-  actual: { label: 'Esta semana', color: 'var(--chart-1)' },
+  anterior: { label: 'Semana anterior', color: 'var(--tapa)' },
+  actual: { label: 'Esta semana', color: 'var(--mango)' },
 } satisfies ChartConfig
 
 function variacion(actual: number, anterior: number | null): string {
@@ -100,9 +104,38 @@ function Revision() {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-lg text-muted-foreground">
+      <p className="text-lg text-lapiz">
         Semana del {dia(d.semana)}, comparada con la del {dia(d.semana_anterior)}.
       </p>
+
+      <section aria-label="Lo que pide atención" className="flex flex-col gap-2">
+        {d.alertas.length === 0 && d.fraude.length === 0 ? (
+          <p className="border-2 border-exito/60 px-4 py-3 font-semibold text-exito-texto">
+            Ningún indicador en alerta y sin alertas de fraude. Buena semana.
+          </p>
+        ) : (
+          <>
+            <h2 className="rotulo text-2xl text-tapa">Pide atención ({d.alertas.length + d.fraude.length})</h2>
+            <ul className="flex flex-col gap-2">
+              {d.alertas.map((a) => (
+                <li
+                  key={`${a.comercio_id}-${a.indicador.clave}`}
+                  className="flex items-start justify-between gap-3 border-2 border-alerta bg-alerta-fondo px-4 py-3"
+                >
+                  <span>
+                    <strong>{a.comercio ?? 'Red'}</strong> · {a.indicador.nombre} ({valor(a.indicador)}): {a.indicador.senal}.
+                  </span>
+                  <Info etiqueta="Qué hacer" lado="left">
+                    {a.indicador.accion}
+                  </Info>
+                </li>
+              ))}
+            </ul>
+            {d.fraude.length > 0 && <ListaFraude alertas={d.fraude} />}
+          </>
+        )}
+      </section>
+
       <div className="grid gap-3 sm:grid-cols-2">
         {d.red.map((i) => (
           <Indicador key={i.clave} i={i} />
@@ -112,7 +145,13 @@ function Revision() {
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Cupos nuevos por comercio</CardTitle>
-          <CardDescription>Base, arrastre de lo no usado y extra voluntario.</CardDescription>
+          <CardDescription className="flex items-center gap-2">
+            Esta semana contra la anterior.
+            <Info etiqueta="Cómo se arma el cupo">
+              El cupo de cada comercio suma la base (según sus ventas), el arrastre de lo que no usó y el cupo extra
+              voluntario. «En el piso» significa que recibe el mínimo.
+            </Info>
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <ChartContainer config={CONFIG_CUPOS} className="aspect-auto h-72 w-full">
@@ -122,80 +161,63 @@ function Revision() {
               <YAxis tickLine={false} axisLine={false} width={72} tickFormatter={(v: number) => pesos(v)} />
               <ChartTooltip content={<ChartTooltipContent formatter={(v, n) => `${CONFIG_CUPOS[n as 'actual'].label}: ${pesos(Number(v))}`} />} />
               <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="anterior" fill="var(--color-anterior)" radius={4} />
-              <Bar dataKey="actual" fill="var(--color-actual)" radius={4} />
+              <Bar dataKey="anterior" fill="var(--color-anterior)" radius={0} />
+              <Bar dataKey="actual" fill="var(--color-actual)" radius={0} />
             </BarChart>
           </ChartContainer>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Comercio</TableHead>
-                <TableHead className="text-right">Base</TableHead>
-                <TableHead className="text-right">Arrastre</TableHead>
-                <TableHead className="text-right">Extra</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Semana anterior</TableHead>
-                <TableHead className="text-right">Cambio</TableHead>
-                <TableHead className="text-right">Usó la anterior</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {d.cupos.map((c) => (
-                <TableRow key={c.comercio_id}>
-                  <TableCell>
-                    <Link to={`/admin/comercios/${c.comercio_id}`} className="font-bold hover:underline">
-                      {c.comercio}
-                    </Link>
-                    <span className="ml-2 inline-flex gap-1">
-                      {c.en_piso && <Badge variant="secondary">En el piso</Badge>}
-                      {c.estado === 'suspendido' && <Badge variant="alerta">Suspendido</Badge>}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">{pesos(c.base)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{pesos(c.arrastre)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{pesos(c.extra)}</TableCell>
-                  <TableCell className="text-right font-bold tabular-nums">{pesos(c.total)}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {c.total_anterior === null ? '—' : pesos(c.total_anterior)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">{variacion(c.total, c.total_anterior)}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {c.usado_anterior === null || !c.total_anterior
-                      ? '—'
-                      : `${numero(Math.round((c.usado_anterior / c.total_anterior) * 100))}%`}
-                  </TableCell>
+          <details className="group">
+            <summary className="inline-flex min-h-12 cursor-pointer list-none items-center font-bold text-tinta-azul underline decoration-mango decoration-2 underline-offset-[6px] [&::-webkit-details-marker]:hidden">
+              <span className="group-open:hidden">Ver el detalle por comercio</span>
+              <span className="hidden group-open:inline">Ocultar el detalle</span>
+            </summary>
+            <div className="mt-3">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Comercio</TableHead>
+                  <TableHead className="text-right">Base</TableHead>
+                  <TableHead className="text-right">Arrastre</TableHead>
+                  <TableHead className="text-right">Extra</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Semana anterior</TableHead>
+                  <TableHead className="text-right">Cambio</TableHead>
+                  <TableHead className="text-right">Usó la anterior</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {d.cupos.map((c) => (
+                  <TableRow key={c.comercio_id}>
+                    <TableCell>
+                      <Link to={`/admin/comercios/${c.comercio_id}`} className="font-bold hover:underline">
+                        {c.comercio}
+                      </Link>
+                      <span className="ml-2 inline-flex gap-1">
+                        {c.en_piso && <Badge variant="secondary">En el piso</Badge>}
+                        {c.estado === 'suspendido' && <Badge variant="alerta">Suspendido</Badge>}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{pesos(c.base)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{pesos(c.arrastre)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{pesos(c.extra)}</TableCell>
+                    <TableCell className="text-right font-bold tabular-nums">{pesos(c.total)}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {c.total_anterior === null ? '—' : pesos(c.total_anterior)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{variacion(c.total, c.total_anterior)}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {c.usado_anterior === null || !c.total_anterior
+                        ? '—'
+                        : `${numero(Math.round((c.usado_anterior / c.total_anterior) * 100))}%`}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            </div>
+          </details>
         </CardContent>
       </Card>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-extrabold">Alertas activas ({d.alertas.length})</h2>
-        {d.alertas.length === 0 ? (
-          <EstadoLista texto="Ningún indicador en alerta. Buena semana." />
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {d.alertas.map((a) => (
-              <li
-                key={`${a.comercio_id}-${a.indicador.clave}`}
-                className="flex gap-3 border-2 border-alerta bg-alerta-fondo px-4 py-3"
-              >
-                <span>
-                  <strong>{a.comercio ?? 'Red'}</strong> · {a.indicador.nombre} ({valor(a.indicador)}): {a.indicador.senal}.{' '}
-                  {a.indicador.accion}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-extrabold">Alertas de fraude ({d.fraude.length})</h2>
-        <ListaFraude alertas={d.fraude} />
-      </section>
     </div>
   )
 }
@@ -240,7 +262,7 @@ function Indicadores() {
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-extrabold">Red</h2>
+        <h2 className="rotulo text-3xl text-tapa">Red</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {ind.data.red.map((i) => (
             <Indicador key={i.clave} i={i} />
@@ -259,13 +281,13 @@ function Indicadores() {
               <XAxis dataKey="comercio" tickLine={false} axisLine={false} interval={0} tickFormatter={(v: string) => v.split(' ')[0]} />
               <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={(v: number) => `${numero(v)}%`} />
               <ChartTooltip content={<ChartTooltipContent formatter={(v) => `${numero(Math.round(Number(v) * 10) / 10)}%`} />} />
-              <Bar dataKey="costo" fill="var(--color-costo)" radius={4} />
+              <Bar dataKey="costo" fill="var(--color-costo)" radius={0} />
             </BarChart>
           </ChartContainer>
         </CardContent>
       </Card>
       <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-extrabold">Por comercio</h2>
+        <h2 className="rotulo text-3xl text-tapa">Por comercio</h2>
         {ind.data.comercios.map((r) => (
           <Comercio key={r.comercio_id} r={r} />
         ))}

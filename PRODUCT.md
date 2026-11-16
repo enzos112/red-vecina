@@ -53,7 +53,7 @@ The balancing mechanism is what sets it apart. Every redemption comes with a pur
 
 ## Evidence on Hand
 
-- A real neighborhood/comuna has been chosen for the pilot. Its name is not yet recorded here, so confirm it before using it in copy.
+- The pilot runs in four comunas of Santiago: Santiago Centro, Ñuñoa, Macul and San Miguel (confirmed by the team, Nov 2026). They live in `COMUNAS` in `frontend/src/features/landing/comunas.ts`. It is a controlled prototype pilot, not open nationwide.
 - No real shops, testimonials, pilot metrics or press exist yet. The 6 shops and 212 neighbors are fictional demo data (`es_demo`, phones +56 9 0000/0001 xxxx, `redvecina.test` emails). Never present them as real or invent social proof.
 
 ## Product Principles

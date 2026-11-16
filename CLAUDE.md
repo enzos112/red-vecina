@@ -89,6 +89,7 @@ Al crear modelos nuevos, impórtalos en `backend/migrations/env.py` para que Ale
 | Datos de demostración (base vacía / desde cero) | `.\demo.cmd` / `.\demo.cmd --reiniciar` |
 | Parámetros, plantillas y primer admin | `cd backend; .\.venv\Scripts\python -m app.cli base` |
 | Comandos contra Neon desde el PC (lee `.env.produccion`) | `.\produccion.cmd base` / `demo --en-produccion` / `tareas` / `local` |
+| Crear una cuenta del equipo o ponerle clave nueva (pide la clave por consola) | `cd backend; .\.venv\Scripts\python -m app.cli usuario --email X --rol admin` (en Neon: `.\produccion.cmd usuario --email X --rol admin`) |
 | Tareas del día (o forzarlas) | `cd backend; .\.venv\Scripts\python -m app.cli tareas [--forzar]` |
 | Pruebas del backend | `cd backend; .\.venv\Scripts\python -m pytest` |
 | Lint y formato del backend | `cd backend; .\.venv\Scripts\python -m ruff check . ; .\.venv\Scripts\python -m ruff format .` |

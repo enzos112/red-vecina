@@ -1,6 +1,7 @@
+import { Info } from '@/components/marca/Info'
 import { Cargando } from '@/components/marca/Cargando'
 import { useId, useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import type { TipoMovimiento, VecinoDetalle } from '@/lib/api'
 import { codigo, dia, fechaHora, numero, pesos } from '@/lib/formato'
 import { enlaceWhatsapp } from '@/features/vecino/consultas'
+import { useUrlPublica } from '@/lib/consultas'
 import { mensajeError, useAjustar, useNuevoEnlace, useSalidaVecino, useVecino } from '../consultas'
 import { EstadoBoletaBadge, EstadoCanjeBadge, EstadoLista, MensajeParaVecino } from '../partes'
 
@@ -23,6 +25,28 @@ const TIPO: Record<TipoMovimiento, string> = {
   canjea: 'Canjea',
   vence: 'Vence',
   ajusta: 'Ajuste',
+}
+
+/** Efecto de cada movimiento en lo disponible: los puntos se guardan siempre en positivo. */
+const SIGNO: Record<TipoMovimiento, 1 | -1 | 0> = {
+  gana: 1,
+  retiene: -1,
+  libera: 1,
+  canjea: 0, // usa lo que ya se había reservado al pedir el código
+  vence: -1,
+  ajusta: 1, // el ajuste ya trae su signo
+}
+
+function Puntos({ tipo, puntos }: { tipo: TipoMovimiento; puntos: number }) {
+  const s = SIGNO[tipo]
+  if (s === 0) return <span className="font-semibold text-lapiz">{numero(puntos)} reservados</span>
+  const v = s * puntos
+  return (
+    <span className={v < 0 ? 'text-peligro-texto' : 'text-exito-texto'}>
+      {v > 0 ? '+' : '−'}
+      {numero(Math.abs(v))}
+    </span>
+  )
 }
 
 function tokenDe(enlace: string): string {
@@ -60,7 +84,7 @@ function Ajuste({ v }: { v: VecinoDetalle }) {
         <CardTitle className="flex items-center gap-2 text-xl">
           Ajustar saldo
         </CardTitle>
-        <CardDescription>Para corregir errores o resolver reclamos. El motivo es obligatorio y queda registrado.</CardDescription>
+        <CardDescription>Para corregir errores o resolver reclamos. El motivo queda registrado.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={enviar} className="flex flex-col gap-4">
@@ -103,7 +127,8 @@ function Ajuste({ v }: { v: VecinoDetalle }) {
 function Enlace({ v }: { v: VecinoDetalle }) {
   const nuevo = useNuevoEnlace(v.id)
   const [confirmar, setConfirmar] = useState(false)
-  const texto = v.whatsapp.mensaje.replaceAll('{enlace}', `${window.location.origin}${v.enlace}`)
+  const base = useUrlPublica()
+  const texto = v.whatsapp.mensaje.replaceAll('{enlace}', `${base}${v.enlace}`)
   return (
     <Card>
       <CardHeader>
@@ -113,7 +138,7 @@ function Enlace({ v }: { v: VecinoDetalle }) {
         <CardDescription>Reenvíaselo si lo perdió. Si alguien más lo tiene, genera uno nuevo.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <MensajeParaVecino texto={texto} whatsapp={enlaceWhatsapp(v.whatsapp.numero, v.whatsapp.mensaje, tokenDe(v.enlace))} />
+        <MensajeParaVecino texto={texto} whatsapp={enlaceWhatsapp(v.whatsapp.numero, v.whatsapp.mensaje, tokenDe(v.enlace), base)} />
         {confirmar ? (
           <div className="flex flex-wrap items-center gap-2">
             <p>El enlace actual dejará de funcionar.</p>
@@ -148,10 +173,13 @@ function Salida({ v }: { v: VecinoDetalle }) {
         <CardTitle className="flex items-center gap-2 text-xl">
           Salida del programa
         </CardTitle>
-        <CardDescription>
-          Si el vecino lo pide: se borran su nombre, teléfono y fotos de boletas, y se anulan sus{' '}
-          {numero(v.saldo.disponible + v.saldo.retenido)} puntos. Las compras y canjes quedan sin datos personales para
-          los totales de la red. No se puede deshacer.
+        <CardDescription className="flex items-center gap-2">
+          Solo si el vecino lo pide. No se puede deshacer.
+          <Info etiqueta="Qué pasa al dar de baja">
+            Se borran su nombre, teléfono y fotos de boletas, y se anulan sus{' '}
+            {numero(v.saldo.disponible + v.saldo.retenido)} puntos. Las compras y canjes quedan sin datos personales
+            para los totales de la red.
+          </Info>
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -190,10 +218,48 @@ function Salida({ v }: { v: VecinoDetalle }) {
   )
 }
 
+type Herramienta = 'enlace' | 'ajuste' | 'salida'
+
+const HERRAMIENTAS: { clave: Herramienta; texto: string }[] = [
+  { clave: 'enlace', texto: 'Mandar su enlace' },
+  { clave: 'ajuste', texto: 'Ajustar saldo' },
+  { clave: 'salida', texto: 'Dar de baja' },
+]
+
+/** Las acciones sobre el vecino, una a la vez y solo cuando se piden: así el historial queda a la vista. */
+function Herramientas({ v, inicial }: { v: VecinoDetalle; inicial: Herramienta | null }) {
+  const [abierta, setAbierta] = useState<Herramienta | null>(inicial)
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Acciones">
+        {HERRAMIENTAS.map((h) => (
+          <Button
+            key={h.clave}
+            variant={abierta === h.clave ? 'libreta' : 'libreta-secundario'}
+            size="sm"
+            aria-expanded={abierta === h.clave}
+            onClick={() => setAbierta((a) => (a === h.clave ? null : h.clave))}
+          >
+            {h.texto}
+          </Button>
+        ))}
+      </div>
+      {abierta && (
+        <div className="max-w-2xl">
+          {abierta === 'enlace' && <Enlace v={v} />}
+          {abierta === 'ajuste' && <Ajuste v={v} />}
+          {abierta === 'salida' && <Salida v={v} />}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** /admin/vecinos/:id — saldo, movimientos, boletas y canjes; ajuste, enlace y salida. */
 export function PaginaVecino() {
   const { id } = useParams()
   const vecino = useVecino(Number(id))
+  const recienInscrito = (useLocation().state as { recienInscrito?: boolean } | null)?.recienInscrito
 
   if (vecino.isPending) return <Skeleton className="h-96" />
   if (vecino.isError) {
@@ -210,24 +276,32 @@ export function PaginaVecino() {
 
   return (
     <div className="flex flex-col gap-8">
-      <Button variant="ghost" size="sm" className="self-start" asChild>
-        <Link to="/admin/vecinos">
-          Vecinos
-        </Link>
-      </Button>
+      <Link
+        to="/admin/vecinos"
+        className="inline-flex min-h-10 items-center self-start font-semibold text-tinta-azul underline decoration-2 underline-offset-[6px] hover:text-tapa"
+      >
+        Volver a vecinos
+      </Link>
+
+      {recienInscrito && (
+        <p className="border-l-[6px] border-mango bg-mango-50 px-5 py-4 text-lg">
+          <strong className="text-tapa">{v.nombre} ya está en la red.</strong> Mándale su enlace por WhatsApp, aquí
+          abajo. Sin ese enlace no puede ver sus puntos.
+        </p>
+      )}
 
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-extrabold">{v.nombre}</h2>
-          <p className="text-lg text-muted-foreground">
+          <h2 className="rotulo text-4xl text-tapa">{v.nombre}</h2>
+          <p className="text-lg text-lapiz">
             <span className="tabular-nums">{v.telefono}</span> · inscrito el {dia(v.creado_en)}
             {v.comercio_origen && ` en ${v.comercio_origen}`} · {v.estado}
           </p>
         </div>
         <div className="flex gap-8">
           <div>
-            <p className="text-5xl font-extrabold tabular-nums">{numero(v.saldo.disponible)}</p>
-            <p className="text-muted-foreground">disponibles</p>
+            <p className="rotulo text-5xl text-mango-700 tabular-nums">{numero(v.saldo.disponible)}</p>
+            <p className="text-lapiz">disponibles</p>
           </div>
           {v.saldo.retenido > 0 && (
             <div>
@@ -251,11 +325,7 @@ export function PaginaVecino() {
           <AlertDescription>Esta cuenta está cerrada: sus datos personales se borraron y su enlace no funciona.</AlertDescription>
         </Alert>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Ajuste v={v} />
-          <Enlace v={v} />
-          <Salida v={v} />
-        </div>
+        <Herramientas v={v} inicial={recienInscrito ? 'enlace' : null} />
       )}
 
       <Tabs defaultValue="movimientos">
@@ -282,9 +352,8 @@ export function PaginaVecino() {
                   <TableRow key={m.id}>
                     <TableCell className="whitespace-nowrap">{fechaHora(m.creado_en)}</TableCell>
                     <TableCell>{TIPO[m.tipo]}</TableCell>
-                    <TableCell className="text-right font-bold tabular-nums">
-                      {m.puntos > 0 ? '+' : ''}
-                      {numero(m.puntos)}
+                    <TableCell className="text-right font-bold whitespace-nowrap tabular-nums">
+                      <Puntos tipo={m.tipo} puntos={m.puntos} />
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {m.motivo ?? (m.boleta_id ? <Link className="underline" to={`/admin/boletas/${m.boleta_id}`}>Boleta {m.boleta_id}</Link> : m.vence_en ? `Vence el ${dia(m.vence_en)}` : '')}

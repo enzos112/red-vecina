@@ -60,3 +60,8 @@ class UsuarioCambio(BaseModel):
     activo: bool | None = None
     nombre: str | None = Field(default=None, min_length=1, max_length=120)
     contrasena: str | None = Field(default=None, min_length=1, max_length=200)  # nueva
+
+
+class MiContrasena(BaseModel):
+    actual: str = Field(min_length=1, max_length=200)
+    nueva: str = Field(min_length=1, max_length=200)

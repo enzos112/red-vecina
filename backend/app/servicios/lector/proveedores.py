@@ -2,8 +2,8 @@
 
 Las claves llegan desde la configuración (variables de entorno), nunca escritas aquí.
 Formato de cada API revisado en su documentación oficial (noviembre de 2026):
-- Gemini: `client.interactions.create` con `input` como lista de partes (texto e imagen en
-  base64) y `response_format` con un esquema JSON; el texto llega en `output_text`.
+- Gemini: `client.models.generate_content` con la imagen como `Part.from_bytes`,
+  `response_json_schema` y razonamiento bajo; el texto llega en `respuesta.text`.
 - Claude: Messages API con un bloque `image` en base64 y `output_config.format` de tipo
   `json_schema`; respaldo del servidor ante un rechazo (`fallbacks: "default"`).
 """
@@ -23,6 +23,9 @@ class LectorManual:
 
 
 class LectorGemini:
+    """Gemini con `generate_content`: la imagen como parte en bytes y la salida forzada al
+    esquema JSON. Razonamiento bajo: es una extracción simple y así responde en segundos."""
+
     nombre = "gemini"
 
     def __init__(self, clave: str, modelo: str, timeout_segundos: float):
@@ -30,32 +33,24 @@ class LectorGemini:
         from google.genai import types
 
         self.modelo = modelo
-        self.timeout = timeout_segundos
         # HttpOptions.timeout va en milisegundos.
         self.cliente = genai.Client(
             api_key=clave, http_options=types.HttpOptions(timeout=int(timeout_segundos * 1000))
         )
+        self.ajustes = types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_json_schema=esquema_json(),
+            thinking_config=types.ThinkingConfig(thinking_level="low"),
+        )
 
     def leer(self, imagen: bytes, tipo: str) -> Lectura | None:
-        from google.genai import errors
+        from google.genai import errors, types
 
         try:
-            respuesta = self.cliente.interactions.create(
+            respuesta = self.cliente.models.generate_content(
                 model=self.modelo,
-                input=[
-                    {"type": "text", "text": INSTRUCCIONES},
-                    {
-                        "type": "image",
-                        "data": base64.b64encode(imagen).decode("ascii"),
-                        "mime_type": tipo,
-                    },
-                ],
-                response_format={
-                    "type": "text",
-                    "mime_type": "application/json",
-                    "schema": esquema_json(),
-                },
-                timeout=self.timeout,
+                contents=[types.Part.from_bytes(data=imagen, mime_type=tipo), INSTRUCCIONES],
+                config=self.ajustes,
             )
         except errors.ClientError as error:  # 4xx: clave, modelo o pedido inválido
             raise ErrorLector(f"Gemini rechazó la lectura ({error.code}).") from error
@@ -65,7 +60,7 @@ class LectorGemini:
             raise ErrorLector(f"Error de Gemini: {error}") from error
         except Exception as error:  # red, tiempo de espera
             raise ErrorLector(f"No se pudo conectar con Gemini: {error}") from error
-        texto = getattr(respuesta, "output_text", None)
+        texto = respuesta.text
         if not texto:
             raise ErrorLector("Gemini no devolvió texto.")
         return interpretar(texto)

@@ -155,10 +155,16 @@ def test_campo_no_leido_cuenta_como_dudoso():
     assert c.color == Color.AMBAR and c.campos == ("folio",)
 
 
+def test_imagen_que_no_es_boleta():
+    vacia = lectura(rut_emisor=None, folio=None, fecha=None, total=None)
+    c = control_lectura("gemini", None, vacia, UMBRAL)
+    assert c.color == Color.AMBAR and "no parece una boleta" in c.mensaje
+
+
 @pytest.mark.parametrize(
     ("proveedor", "error", "texto"),
     [
-        ("manual", None, "Sin lector automático"),
+        ("manual", None, "Leer ahora"),
         ("gemini", "Gemini tardó demasiado.", "Gemini tardó demasiado."),
         (None, None, "Aún no hay lectura"),
     ],

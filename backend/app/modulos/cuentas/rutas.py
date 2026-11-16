@@ -17,6 +17,7 @@ from app.modulos.cuentas import servicio
 from app.modulos.cuentas.esquemas import (
     ComercioDeUsuario,
     Login,
+    MiContrasena,
     UsuarioCambio,
     UsuarioNuevo,
     UsuarioSalida,
@@ -38,6 +39,20 @@ def _yo(sesion, usuario: Usuario) -> Yo:
     )
 
 
+def _poner_sesion(response: Response, usuario: Usuario, ahora, config) -> None:
+    response.set_cookie(
+        NOMBRE_COOKIE,
+        firmar_sesion(
+            config.SECRET_KEY, usuario.id, usuario.contrasena_cifrada, ahora, config.SESION_HORAS
+        ),
+        max_age=config.SESION_HORAS * 3600,
+        httponly=True,
+        samesite="lax",
+        secure=config.es_produccion,
+        path="/api",
+    )
+
+
 @router.post("/acceso/login", summary="Iniciar sesión (admin, operador o comercio)")
 def login(
     datos: Login,
@@ -55,23 +70,40 @@ def login(
         limite.fallo(*claves)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Correo o contraseña incorrectos.")
     limite.limpiar(claves[1])
-    response.set_cookie(
-        NOMBRE_COOKIE,
-        firmar_sesion(
-            config.SECRET_KEY, usuario.id, usuario.contrasena_cifrada, ahora, config.SESION_HORAS
-        ),
-        max_age=config.SESION_HORAS * 3600,
-        httponly=True,
-        samesite="lax",
-        secure=config.es_produccion,
-        path="/api",
-    )
+    _poner_sesion(response, usuario, ahora, config)
     return _yo(sesion, usuario)
 
 
 @router.post("/acceso/logout", status_code=status.HTTP_204_NO_CONTENT, summary="Cerrar sesión")
 def logout(response: Response) -> None:
     response.delete_cookie(NOMBRE_COOKIE, path="/api")
+
+
+@router.post(
+    "/acceso/contrasena",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Cambiar mi contraseña (pide la actual; las otras sesiones se cierran)",
+)
+def cambiar_mi_contrasena(
+    datos: MiContrasena,
+    usuario: UsuarioActual,
+    request: Request,
+    response: Response,
+    sesion: SesionDB,
+    ahora: Ahora,
+    config: Config,
+) -> None:
+    limite = limitador(request, "login")
+    clave = f"contrasena:{usuario.id}"
+    limite.exigir(clave)
+    try:
+        servicio.cambiar_mi_contrasena(sesion, usuario, datos.actual, datos.nueva, ahora)
+    except ValueError:
+        limite.fallo(clave)
+        raise
+    limite.limpiar(clave)
+    # La sesión actual sigue abierta con una firma nueva; las demás quedan cerradas.
+    _poner_sesion(response, usuario, ahora, config)
 
 
 @router.get("/acceso/yo", summary="Quién soy")

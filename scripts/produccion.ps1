@@ -5,6 +5,7 @@
 # Uso desde la raíz del repo:
 #   .\produccion.cmd base                      parámetros, plantillas y primer administrador
 #   .\produccion.cmd demo --en-produccion      datos de demostración (base sin comercios)
+#   .\produccion.cmd usuario --email X --rol admin   cuenta del equipo nueva o clave nueva
 #   .\produccion.cmd tareas [--forzar]         tareas del día
 #   .\produccion.cmd local                     construye la imagen Docker y la levanta en
 #                                              http://localhost:8000 en modo producción
@@ -15,7 +16,7 @@ $archivo = Join-Path $raiz '.env.produccion'
 if (-not (Test-Path $archivo)) {
     throw 'Falta .env.produccion. Copia .env.produccion.example con ese nombre y complétalo.'
 }
-if ($args.Count -eq 0) { throw 'Indica un comando: base, demo, tareas o local.' }
+if ($args.Count -eq 0) { throw 'Indica un comando: base, demo, tareas, usuario o local.' }
 
 $variables = @{}
 foreach ($linea in Get-Content -Encoding UTF8 $archivo) {

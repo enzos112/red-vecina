@@ -152,3 +152,24 @@ def test_comercios_y_usuarios_para_el_admin(api):
     assert all("contrasena" not in str(u) for u in usuarios)
     r = admin.patch(f"/api/admin/usuarios/{api.ids['admin']}", json={"activo": False})
     assert r.json()["detail"] == "No puedes desactivar tu propia cuenta."
+
+
+def test_inscribir_vecino_a_mano(api):
+    c = api.cliente(OPERADOR)
+    base = {"nombre": " Elena ", "telefono": "9 0001 7777", "acepta_condiciones": True}
+    sin_aceptar = c.post("/api/admin/vecinos", json={**base, "acepta_condiciones": False})
+    assert sin_aceptar.status_code == 400
+    otro = c.post("/api/admin/vecinos", json={**base, "comercio_id": 9999})
+    assert otro.json()["detail"] == "Ese comercio no está en la red."
+    r = c.post("/api/admin/vecinos", json={**base, "comercio_id": api.ids["espiga"]})
+    assert r.status_code == 201
+    v = r.json()
+    assert v["nombre"] == "Elena" and v["telefono"] == "+56900017777"
+    assert v["comercio_origen"] == "Panadería La Espiga"
+    assert v["enlace"].startswith("/t/") and v["saldo"]["disponible"] == 0
+    repetido = c.post("/api/admin/vecinos", json=base)
+    assert repetido.json()["detail"] == "Ese número ya está inscrito en Red Vecina."
+    # El vecino abre su tarjeta con el enlace que le manda el operador.
+    assert api.cliente().get(f"/api/t/{v['enlace'].removeprefix('/t/')}").status_code == 200
+    # Sin sesión no se inscribe a nadie.
+    assert api.cliente().post("/api/admin/vecinos", json=base).status_code == 401

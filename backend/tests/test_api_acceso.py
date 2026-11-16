@@ -223,3 +223,35 @@ def test_solo_el_admin_fuerza_las_tareas(api):
     r = api.cliente(ADMIN).post("/api/admin/tareas", json={"forzar": True})
     assert r.status_code == 200
     assert set(r.json()["resultados"]) == set(TAREAS)
+
+
+def test_cambio_mi_contrasena_y_sigo_conectado(api):
+    c = api.cliente(OPERADOR)
+    nueva = "una-clave-nueva-larga"
+    r = c.post("/api/acceso/contrasena", json={"actual": CLAVE, "nueva": nueva})
+    assert r.status_code == 204
+    # La sesión de este equipo sigue abierta con la firma nueva.
+    assert c.get("/api/acceso/yo").json()["email"] == OPERADOR
+    otro = api.cliente()
+    viejo = otro.post("/api/acceso/login", json={"email": OPERADOR, "contrasena": CLAVE})
+    assert viejo.status_code == 401
+    assert (
+        otro.post("/api/acceso/login", json={"email": OPERADOR, "contrasena": nueva}).status_code
+        == 200
+    )
+
+
+def test_cambio_mi_contrasena_pide_la_actual(api):
+    c = api.cliente(OPERADOR)
+    r = c.post(
+        "/api/acceso/contrasena", json={"actual": "no-es-la-mia", "nueva": "otra-clave-larga"}
+    )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Tu contraseña actual no es correcta."
+    corta = c.post("/api/acceso/contrasena", json={"actual": CLAVE, "nueva": "corta"})
+    assert corta.status_code == 400
+
+
+def test_cambio_mi_contrasena_sin_sesion(api):
+    r = api.cliente().post("/api/acceso/contrasena", json={"actual": "x", "nueva": "y"})
+    assert r.status_code == 401

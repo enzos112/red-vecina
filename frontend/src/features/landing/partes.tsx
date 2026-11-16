@@ -48,7 +48,7 @@ export function Pasos({ pasos }: { pasos: Paso[] }) {
           key={paso.numero}
           className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-4 border-b-2 border-tapa py-7 sm:grid-cols-[4rem_minmax(0,1fr)] sm:gap-x-6"
         >
-          <span aria-hidden="true" className="rotulo text-4xl leading-none text-tapa sm:text-5xl">
+          <span aria-hidden="true" className="rotulo text-4xl leading-none text-mango-700 sm:text-5xl">
             {paso.numero}
           </span>
           <div>

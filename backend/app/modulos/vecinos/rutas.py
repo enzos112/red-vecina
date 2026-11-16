@@ -18,6 +18,7 @@ from app.modulos.vecinos.esquemas import (
     EnlaceNuevo,
     GuardarEnWhatsapp,
     Inscripcion,
+    InscripcionEquipo,
     Inscrito,
     PendientesSalida,
     ProximoNivel,
@@ -185,6 +186,29 @@ def buscar(_: Equipo, sesion: SesionDB, q: str = "") -> list[VecinoResumen]:
         sesion, {v.comercio_origen_id for v in lista if v.comercio_origen_id}
     )
     return [_resumen(v, nombres) for v in lista]
+
+
+@router.post(
+    "/admin/vecinos",
+    status_code=status.HTTP_201_CREATED,
+    summary="Inscribir a un vecino a mano (no puede escanear el QR)",
+)
+def inscribir_a_mano(
+    datos: InscripcionEquipo, usuario: Equipo, sesion: SesionDB, ahora: Ahora, p: Params
+) -> VecinoDetalle:
+    if not datos.acepta_condiciones:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Antes de inscribirlo, cuéntale las condiciones y confirma que las acepta.",
+        )
+    if datos.comercio_id is not None:
+        comercio = comercios.obtener(sesion, datos.comercio_id)
+        if comercio is None or not comercios.en_red(comercio):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ese comercio no está en la red.")
+    vecino = servicio.inscribir(
+        sesion, datos.nombre, datos.telefono, datos.comercio_id, ahora, usuario_id=usuario.id
+    )
+    return _detalle(sesion, vecino, ahora, p)
 
 
 @router.get("/admin/vecinos/{vecino_id}", summary="Un vecino con sus movimientos")

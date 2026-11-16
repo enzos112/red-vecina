@@ -17,7 +17,7 @@ export function Encabezado({ token, titulo, children }: { token: string; titulo:
       >
         Volver a mi tarjeta
       </Link>
-      <h1 className="rotulo mt-2 text-4xl leading-tight text-tapa">{titulo}</h1>
+      <h1 className="rotulo mt-2 text-4xl leading-tight text-tapa lg:text-6xl lg:tracking-[-0.035em]">{titulo}</h1>
       {children && <div className="mt-2 text-lg text-muted-foreground">{children}</div>}
     </header>
   )
@@ -57,7 +57,7 @@ export function ErrorBloque({
       <AlertDescription>
         <p>{error.message}</p>
         {reintentar && (
-          <Button variant="secondary" size="sm" className="mt-1" onClick={reintentar}>
+          <Button variant="libreta-secundario" size="sm" className="mt-1" onClick={reintentar}>
             Intentar de nuevo
           </Button>
         )}
@@ -74,7 +74,7 @@ export function TarjetaNoEncontrada() {
         <p className="text-lg text-muted-foreground">
           Revisa que el enlace esté completo. Si lo perdiste, pídele uno nuevo al equipo de Red Vecina por WhatsApp.
         </p>
-        <Button asChild variant="secondary">
+        <Button asChild variant="libreta-secundario">
           <Link to="/">Ir al inicio</Link>
         </Button>
       </CardContent>
@@ -87,7 +87,7 @@ export function CargandoLista({ filas = 3, etiqueta }: { filas?: number; etiquet
   return (
     <div className="flex flex-col gap-3" aria-busy="true" aria-label={etiqueta}>
       {Array.from({ length: filas }, (_, i) => (
-        <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+        <Skeleton key={i} className="h-24 w-full rounded-none" />
       ))}
     </div>
   )

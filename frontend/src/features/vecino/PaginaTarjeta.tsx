@@ -14,8 +14,9 @@ import { FilaHistorial } from './FilaHistorial'
 import { armarHistorial } from './historial'
 import { ErrorBloque, TarjetaNoEncontrada, Vacio } from './partes'
 
-/** Cuántos movimientos recientes se ven en la tarjeta antes de "Ver todo". */
+/** Cuántos movimientos recientes se ven en la tarjeta antes de "Ver todo" (celular y computador). */
 const RECIENTES = 3
+const RECIENTES_ANCHO = 7
 
 /** Estado que dejan otras pantallas al volver a la tarjeta. */
 export type AvisoTarjeta = { bienvenida?: boolean; boletaEnviada?: boolean }
@@ -106,8 +107,8 @@ function Saldo({ t, destacado }: { t: Tarjeta; destacado: boolean }) {
         <p className="mt-3 text-lg">
           {proximo ? (
             <>
-              Te faltan <strong>{puntos(proximo.faltan)}</strong> para un descuento de{' '}
-              <strong>{pesos(proximo.valor_pesos)}</strong>.
+              Te faltan <strong className="text-mango-800">{puntos(proximo.faltan)}</strong> para un descuento de{' '}
+              <strong className="resaltado">{pesos(proximo.valor_pesos)}</strong>.
             </>
           ) : (
             <>Ya te alcanza para el beneficio más grande. ¡Revisa tus beneficios!</>
@@ -151,8 +152,8 @@ function Recientes({ t, token }: { t: Tarjeta; token: string }) {
       ) : (
         <>
           <ul className="border-t-2 border-tapa">
-            {items.slice(0, RECIENTES).map((item) => (
-              <FilaHistorial key={item.clave} item={item} />
+            {items.slice(0, RECIENTES_ANCHO).map((item, i) => (
+              <FilaHistorial key={item.clave} item={item} className={i >= RECIENTES ? 'max-lg:hidden' : undefined} />
             ))}
           </ul>
           <Button asChild variant="link" className="self-start">
@@ -193,8 +194,15 @@ export function PaginaTarjeta() {
   const plazo = condiciones.data?.plazo_validacion_horas
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="rotulo text-4xl text-tapa">Hola, {primerNombre}</h1>
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-start lg:gap-x-16 lg:gap-y-8">
+      <div className="lg:col-span-2">
+        <h1 className="rotulo text-4xl text-tapa lg:text-6xl lg:tracking-[-0.035em]">Hola, {primerNombre}</h1>
+        <p className="mt-2 hidden max-w-[40rem] text-xl leading-8 lg:block">
+          Esta es tu libreta en la red: lo que juntas en un local lo canjeas en otro.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-6">
 
       {aviso.bienvenida && <GuardarEnWhatsapp t={t} token={token} onCerrar={quitarAviso} />}
 
@@ -217,6 +225,7 @@ export function PaginaTarjeta() {
 
       {codigo && <CodigoActivo codigo={codigo} token={token} />}
 
+
       <Saldo t={t} destacado={!codigo} />
 
       <PorVencer t={t} />
@@ -231,7 +240,9 @@ export function PaginaTarjeta() {
           <Link to={`/t/${token}/beneficios`}>Mis beneficios</Link>
         </Button>
       </div>
+      </div>
 
+      <div className="flex flex-col gap-6">
       <Recientes t={t} token={token} />
 
       {!aviso.bienvenida && (
@@ -241,6 +252,7 @@ export function PaginaTarjeta() {
           </a>
         </Button>
       )}
+      </div>
     </div>
   )
 }

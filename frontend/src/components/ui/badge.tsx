@@ -12,7 +12,7 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-vecina text-white",
+        default: "bg-tapa text-papel",
         secondary: "bg-secondary text-secondary-foreground",
         mango: "bg-mango text-barrio",
         exito:

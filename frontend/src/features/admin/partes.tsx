@@ -74,12 +74,12 @@ export function MensajeParaVecino({ texto, whatsapp }: { texto: string; whatsapp
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="rounded-lg border-2 border-border bg-muted px-4 py-3 text-lg whitespace-pre-wrap select-all">{texto}</p>
+      <p className="border-2 border-tapa border-l-[6px] border-l-mango bg-papel px-4 py-3 text-lg whitespace-pre-wrap [overflow-wrap:anywhere] select-all">{texto}</p>
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" onClick={copiar}>
+        <Button variant="libreta-secundario" onClick={copiar}>
           {copiado ? 'Copiado' : 'Copiar'}
         </Button>
-        <Button asChild>
+        <Button asChild variant="libreta">
           <a href={whatsapp} target="_blank" rel="noreferrer">
             Abrir WhatsApp
           </a>

@@ -113,3 +113,20 @@ def editar(
         )
     sesion.flush()
     return usuario
+
+
+def cambiar_mi_contrasena(
+    sesion: Session, usuario: Usuario, actual: str, nueva: str, ahora: datetime
+) -> Usuario:
+    """Cambia la contraseña de quien está conectado, pidiendo la actual. Cierra sus otras
+    sesiones (la firma de la sesión depende de la contraseña)."""
+    if not verificar_contrasena(actual, usuario.contrasena_cifrada):
+        raise ValueError("Tu contraseña actual no es correcta.")
+    if len(nueva) < LARGO_MINIMO_CONTRASENA:
+        raise ValueError(f"La contraseña debe tener al menos {LARGO_MINIMO_CONTRASENA} caracteres.")
+    if nueva == actual:
+        raise ValueError("La contraseña nueva debe ser distinta de la actual.")
+    usuario.contrasena_cifrada = cifrar_contrasena(nueva)
+    auditar(sesion, "cambiar_mi_contrasena", "usuario", usuario.id, usuario.id, {}, ahora)
+    sesion.flush()
+    return usuario

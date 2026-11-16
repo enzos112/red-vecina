@@ -28,7 +28,7 @@ const tabsListVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-secondary",
+        default: "gap-0 border-2 border-tapa bg-papel p-0",
         line: "gap-1 bg-transparent",
       },
     },
@@ -64,7 +64,7 @@ function TabsTrigger({
       className={cn(
         "relative inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-none border border-transparent px-5 text-base font-bold whitespace-nowrap text-tinta/75 transition-colors duration-200 group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:outline-3 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-none group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
         "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent",
-        "data-active:bg-vecina data-active:text-white group-data-[variant=line]/tabs-list:data-active:text-vecina dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
+        "data-active:bg-tapa data-active:text-papel data-active:shadow-[inset_0_-4px_0_var(--mango)] group-data-[variant=line]/tabs-list:data-active:text-vecina dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
         "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
         className
       )}

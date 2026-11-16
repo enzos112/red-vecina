@@ -24,18 +24,20 @@ function Opcion({ opcion, onElegir }: { opcion: OpcionSalida; onElegir: () => vo
       <button
         type="button"
         onClick={onElegir}
-        className="flex w-full cursor-pointer flex-col gap-2 rounded-2xl border-2 border-border bg-card p-5 text-left transition-colors duration-200 hover:border-vecina/60 hover:bg-secondary/40 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
+        className="group flex h-full w-full cursor-pointer flex-col gap-2 border-2 border-tapa bg-papel p-5 text-left transition-colors duration-200 hover:bg-mango-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
       >
         <span className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xl font-extrabold">{opcion.comercio}</span>
+          <span className="rotulo text-2xl text-tapa">{opcion.comercio}</span>
           {opcion.nunca_compro && <Badge variant="mango">Nuevo para ti</Badge>}
         </span>
-        <span className="text-3xl font-extrabold text-vecina">{pesos(opcion.valor_pesos)} de descuento</span>
+        <span className="text-xl font-semibold">
+          <span className="rotulo text-4xl text-mango-700">{pesos(opcion.valor_pesos)}</span> de descuento
+        </span>
         {opcion.texto && <span className="text-base">{opcion.texto}</span>}
-        <span className="text-base text-muted-foreground">
+        <span className="text-base text-lapiz">
           Compra mínima {pesos(opcion.compra_minima)} · <strong className="text-foreground">{puntos(opcion.puntos)}</strong>
         </span>
-        <span className="mt-1 inline-flex items-center gap-2 font-bold text-vecina">
+        <span className="mt-auto inline-flex items-center gap-2 pt-1 font-bold text-tinta-azul underline decoration-mango decoration-2 underline-offset-[6px] group-hover:text-tapa">
           Pedir código
         </span>
       </button>
@@ -48,12 +50,12 @@ function Agotados({ nombres, proxima }: { nombres: string[]; proxima: string | n
   const vuelve = proxima ? `Vuelve el ${diaSemana(proxima)}` : 'Vuelve pronto'
   return (
     <section aria-labelledby="titulo-agotados" className="flex flex-col gap-3">
-      <h2 id="titulo-agotados" className="text-xl font-extrabold">
+      <h2 id="titulo-agotados" className="rotulo text-2xl text-tapa">
         Sin cupo esta semana
       </h2>
       <ul className="flex flex-col gap-3">
         {nombres.map((nombre) => (
-          <li key={nombre} className="flex items-center gap-4 rounded-2xl border border-border bg-muted/50 p-4">
+          <li key={nombre} className="flex items-center gap-4 border-2 border-dashed border-tapa/40 bg-papel p-4">
             <div className="min-w-0 flex-1">
               <p className="font-bold">{nombre}</p>
               <p className="text-muted-foreground">Ya entregó sus beneficios de la semana.</p>
@@ -124,10 +126,10 @@ function Confirmar({
             </Alert>
           )}
           <DialogFooter>
-            <Button variant="secondary" onClick={cerrar} disabled={pedir.isPending}>
+            <Button variant="libreta-secundario" onClick={cerrar} disabled={pedir.isPending}>
               Ahora no
             </Button>
-            <Button onClick={confirmar} disabled={pedir.isPending}>
+            <Button variant="libreta" onClick={confirmar} disabled={pedir.isPending}>
               {pedir.isPending && <Cargando />}
               {pedir.isPending ? 'Pidiendo…' : 'Pedir mi código'}
             </Button>
@@ -230,13 +232,13 @@ export function PaginaBeneficios() {
             <p className="text-lg">
               {verTodas ? 'Todos los beneficios que puedes pedir hoy.' : 'Los mejores para ti hoy. Toca uno para pedir tu código.'}
             </p>
-            <ul className="flex flex-col gap-3">
+            <ul className="grid gap-3 lg:grid-cols-2">
               {lista.map((o) => (
                 <Opcion key={o.beneficio_id} opcion={o} onElegir={() => setElegida(o)} />
               ))}
             </ul>
             {hayMas && (
-              <Button variant="secondary" className="w-full" onClick={() => setVerTodas((v) => !v)} aria-expanded={verTodas}>
+              <Button variant="libreta-secundario" className="w-full lg:w-auto lg:self-start" onClick={() => setVerTodas((v) => !v)} aria-expanded={verTodas}>
                 {verTodas ? 'Ver solo los destacados' : `Ver todos (${datos.todas.length})`}
               </Button>
             )}

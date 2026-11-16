@@ -215,7 +215,7 @@ Los nombres entre paréntesis son las variables de `frontend/src/index.css`.
 **Reglas visuales**
 
 - **Tipografía:** Archivo (variable, alojada en el proyecto). Titulares como rótulos de columna: peso 850, algo angostos. Cifras tabulares. Texto base de 17 a 19 px. Nada bajo 15 px.
-- **Botones y tarjetas:** rectángulos de esquinas rectas con borde de 2 px azul noche, sin sombras. El naranja marca la acción principal; al pasar el cursor solo cambia el color (200 ms).
+- **Botones y tarjetas:** rectángulos de esquinas rectas con borde de 2 px azul noche, sin sombras. El naranja es el plumón de la libreta, en una escala de tonos: marca la acción principal, resalta la palabra clave de la landing, la cifra que importa en cada pantalla de trabajo y el lugar activo de la navegación. Al pasar el cursor los botones solo cambian de color (200 ms).
 - **Estados por trazo:** lo pendiente va a lápiz (gris con subrayado discontinuo), lo confirmado en tinta azul, el canje usado tachado. Siempre con su palabra.
 - **Movimiento:** una sola secuencia: la cuenta se escribe fila por fila en pasos de renglón, lo pendiente pasa de lápiz a tinta, el canje se tacha y el total se encierra en un círculo. Con movimiento reducido todo aparece terminado.
 - **Portada de la landing:** hoja cuadriculada con fechas en el margen, titular grande en azul noche y a la derecha la cuenta de una vecina de ejemplo que se escribe sola, rotulada como ilustración.

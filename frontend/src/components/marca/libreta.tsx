@@ -3,7 +3,9 @@
  * y el aviso de que un bloque entró en pantalla (para escribir la cuenta en orden).
  */
 import type { ReactNode } from 'react'
+import { useEnVista } from '@/lib/libreta'
 import { cn } from '@/lib/utils'
+import { CuadriculaViva } from './CuadriculaViva'
 
 /**
  * Una hoja cuadriculada a todo el ancho con su margen doble. En pantallas grandes el margen
@@ -15,6 +17,7 @@ export function Hoja({
   margen,
   id,
   etiqueta,
+  viva,
 }: {
   children: ReactNode
   className?: string
@@ -22,9 +25,12 @@ export function Hoja({
   margen?: ReactNode
   id?: string
   etiqueta?: string
+  /** Cuadrícula que responde al puntero (solo en la zona pública). */
+  viva?: boolean
 }) {
   return (
     <section id={id} aria-labelledby={etiqueta} className={cn('hoja relative scroll-mt-4', className)}>
+      {viva && <CuadriculaViva />}
       <div className="relative mx-auto max-w-[90rem]">
         <span
           aria-hidden="true"
@@ -78,6 +84,38 @@ export function Circulo({
           }}
         />
       </svg>
+    </span>
+  )
+}
+
+/**
+ * Pasa el resaltador naranja por debajo de una palabra cuando entra en pantalla.
+ * `sobreTapa` usa un subrayado grueso de naranja pleno, que se lee sobre el azul noche.
+ */
+export function Resaltado({
+  children,
+  sobreTapa,
+  retraso = 250,
+  className,
+}: {
+  children: ReactNode
+  sobreTapa?: boolean
+  retraso?: number
+  className?: string
+}) {
+  const { ref, visto } = useEnVista<HTMLSpanElement>()
+  const animacion = sobreTapa ? 'resaltar-tapa' : 'resaltar'
+  return (
+    <span
+      ref={ref}
+      className={cn(sobreTapa ? 'resaltado-tapa' : 'resaltado', className)}
+      style={
+        visto
+          ? { animation: `${animacion} 650ms cubic-bezier(0.45, 0, 0.2, 1) ${retraso}ms both` }
+          : { backgroundSize: sobreTapa ? '0% 0.14em' : '0% 46%' }
+      }
+    >
+      {children}
     </span>
   )
 }

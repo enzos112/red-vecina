@@ -2,10 +2,12 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   api,
+  type BoletaDetalle,
   type ComercioCambio,
   type DatosBoleta,
   type EstadoBoleta,
   type EstadoCanje,
+  type InscripcionEquipo,
   type Rechazo,
   type SancionNueva,
   type SolicitudCambio,
@@ -43,14 +45,31 @@ export function useResumenCola() {
   })
 }
 
+/**
+ * Cuánto se espera la lectura en segundo plano de una boleta recién subida antes de darla por
+ * perdida (interfaz, no regla: cubre el tiempo máximo del lector con holgura).
+ */
+export const ESPERA_LECTURA_MS = 90_000
+
+/** true mientras tiene sentido esperar la lectura automática de esta boleta. */
+export function leyendoAun(b: BoletaDetalle, ahora = Date.now()): boolean {
+  return (
+    b.estado === 'pendiente' &&
+    b.tiene_imagen &&
+    !b.lectura &&
+    ahora - new Date(b.recibida_en).getTime() < ESPERA_LECTURA_MS
+  )
+}
+
 export function useBoleta(id: number) {
   return useQuery({
     queryKey: ['admin', 'boletas', id],
     queryFn: () => api.boletas.detalle(id),
-    // Recién subida, la lectura corre en segundo plano: se consulta hasta que llegue.
+    // Recién subida, la lectura corre en segundo plano: se consulta hasta que llegue o hasta
+    // que pase la espera. Después la pantalla ofrece leerla de nuevo o digitarla.
     refetchInterval: (q) => {
       const b = q.state.data
-      return b && b.estado === 'pendiente' && b.tiene_imagen && !b.lectura ? 2000 : false
+      return b && leyendoAun(b) ? 2000 : false
     },
   })
 }
@@ -82,14 +101,22 @@ export function useLeer(id: number) {
   })
 }
 
+// Al decidir, la cola se refresca sin esperar: si se esperara, la boleta recargada (ya
+// aprobada o rechazada) desmonta el formulario antes de mostrar el mensaje para el vecino.
 export function useAprobar(id: number) {
   const refrescar = useRefrescarBoletas()
-  return useMutation({ mutationFn: (datos: DatosBoleta) => api.boletas.aprobar(id, datos), onSuccess: refrescar })
+  return useMutation({
+    mutationFn: (datos: DatosBoleta) => api.boletas.aprobar(id, datos),
+    onSuccess: () => void refrescar(),
+  })
 }
 
 export function useRechazar(id: number) {
   const refrescar = useRefrescarBoletas()
-  return useMutation({ mutationFn: (datos: Rechazo) => api.boletas.rechazar(id, datos), onSuccess: refrescar })
+  return useMutation({
+    mutationFn: (datos: Rechazo) => api.boletas.rechazar(id, datos),
+    onSuccess: () => void refrescar(),
+  })
 }
 
 export function useSubirPorVecino() {
@@ -112,6 +139,17 @@ export function useBuscarVecinos(q: string) {
     queryKey: ['admin', 'vecinos', 'buscar', q],
     queryFn: () => api.vecinos.buscar({ q }),
     placeholderData: keepPreviousData,
+  })
+}
+
+export function useInscribirVecino() {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: (datos: InscripcionEquipo) => api.vecinos.inscribirAMano(datos),
+    onSuccess: (v) => {
+      cliente.setQueryData(['admin', 'vecinos', v.id], v)
+      void cliente.invalidateQueries({ queryKey: ['admin', 'vecinos', 'buscar'] })
+    },
   })
 }
 

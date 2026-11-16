@@ -23,10 +23,10 @@ const CIFRA: Record<Trazo, string> = {
 }
 
 /** Una línea de la cuenta: qué pasó y cuándo a la izquierda, cuánto o en qué quedó a la derecha. */
-export function FilaHistorial({ item }: { item: ItemHistorial }) {
+export function FilaHistorial({ item, className }: { item: ItemHistorial; className?: string }) {
   const t = trazo(item)
   return (
-    <li className={cn('grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 border-b border-cuadricula py-4', t === 'lapiz' && 'text-lapiz')}>
+    <li className={cn('grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 border-b border-cuadricula py-4', t === 'lapiz' && 'text-lapiz', className)}>
       <div className="min-w-0">
         <p className="font-bold">
           <span

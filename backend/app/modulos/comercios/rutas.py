@@ -4,6 +4,7 @@ from app.core.dependencias import (
     Admin,
     Ahora,
     ComercioActual,
+    Config,
     Equipo,
     Params,
     SesionDB,
@@ -66,9 +67,13 @@ def beneficio_salida(b: Beneficio, p: Parametros) -> BeneficioSalida:
 
 
 @router.get("/red/comercios", summary="Comercios de la red con su beneficio destacado")
-def red(sesion: SesionDB, ahora: Ahora, p: Params) -> list[ComercioPublico]:
+def red(sesion: SesionDB, ahora: Ahora, p: Params, config: Config) -> list[ComercioPublico]:
+    """En producción la página pública no muestra comercios de demostración: solo los reales.
+    En desarrollo sí, para poder probarla."""
     resultado = []
     for c in servicio.activos(sesion):
+        if c.es_demo and config.es_produccion:
+            continue
         destacado = servicio.beneficio_destacado(sesion, c.id, ahora, p)
         resultado.append(
             ComercioPublico(

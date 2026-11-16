@@ -78,6 +78,16 @@ Hace tres cosas, y se puede repetir sin duplicar nada:
 Debe terminar con `Parámetros nuevos: N. Plantillas nuevas: N.` y
 `Administrador creado: <tu correo>`. Si lo repites, los números salen en 0.
 
+Si no aparece `Administrador creado`, ya había un administrador en la base (por ejemplo
+`admin@redvecina.test` de la demostración) y no se creó el tuyo. También sirve si olvidaste la
+clave. En los dos casos, crea la cuenta o ponle una clave nueva con:
+
+```powershell
+.\produccion.cmd usuario --email tu@correo.cl --rol admin
+```
+
+Te pide la clave dos veces por consola: no queda escrita en ningún archivo.
+
 **Datos de demostración (opcional, aparte).** Sirven para mostrar la app al docente o a un dueño
 antes de tener comercios reales. Solo funcionan con la base sin comercios:
 
@@ -168,7 +178,7 @@ Antes de una demostración importante, abre la web un par de minutos antes.
 ## 7. Primeros pasos en producción
 
 1. Entra a `https://<tu-servicio>.onrender.com/acceso` (o directo `/admin/entrar`) con `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
-2. En **Tareas, datos y equipo → Equipo**, crea la cuenta del operador.
+2. En **Equipo y tareas → Equipo**, crea la cuenta del operador.
 3. En **Comercios**, crea cada comercio y su usuario (en la ficha del comercio).
 4. Imprime la tarjeta de 3 pasos de cada comercio desde su portal.
 

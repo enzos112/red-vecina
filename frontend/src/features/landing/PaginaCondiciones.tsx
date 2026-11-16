@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { CondicionesRed } from '@/lib/api'
 import { useCondiciones } from '@/lib/consultas'
 import { lista, pesos, puntos } from '@/lib/formato'
+import { COMUNAS } from './comunas'
 import { Contenedor } from './partes'
 
 type Seccion = { id: string; titulo: string; cuerpo: ReactNode }
@@ -22,13 +23,31 @@ function secciones(c?: CondicionesRed): Seccion[] {
       ),
     },
     {
+      id: 'piloto',
+      titulo: 'Un prototipo en piloto',
+      cuerpo: (
+        <>
+          <p>
+            Red Vecina es un prototipo. Hoy funciona como piloto en{' '}
+            {lista([...COMUNAS])}, con un grupo de comercios y vecinos que el equipo invita y
+            acompaña.
+          </p>
+          <p>
+            No está abierto a todo el país. Mientras dure el piloto podemos ajustar reglas, montos y
+            plazos para que el programa funcione mejor, y siempre te contamos los cambios antes.
+          </p>
+        </>
+      ),
+    },
+    {
       id: 'inscripcion',
       titulo: 'Cómo te inscribes',
       cuerpo: (
         <>
           <p>
             Te inscribes escaneando el código QR de un comercio de la red. Te pedimos tu nombre y
-            tu número de WhatsApp, y que aceptes estas condiciones.
+            tu número de WhatsApp, y que aceptes estas condiciones. Si no puedes escanearlo, una
+            persona del equipo te puede inscribir a mano, después de contarte estas condiciones.
           </p>
           <p>
             Recibes un enlace personal a tu tarjeta. Ese enlace funciona como una llave: no lo
@@ -129,10 +148,45 @@ function secciones(c?: CondicionesRed): Seccion[] {
             locales. No vendemos tus datos.
           </p>
           <p>
-            Puedes pedir ver, corregir o borrar tus datos, o salir del programa cuando quieras.
-            Tratamos tus datos según la ley chilena de protección de datos personales.
+            Para leer el monto y la fecha de tus boletas usamos un servicio de lectura automática de
+            un proveedor externo. Recibe solo la foto de la boleta, no tu nombre ni tu teléfono, y
+            una persona del equipo revisa el resultado antes de sumar tus puntos.
+          </p>
+          <p>
+            Tratamos tus datos según la Ley N° 19.628 sobre protección de la vida privada y nos
+            preparamos para la Ley N° 21.719, la nueva ley de protección de datos personales. Puedes
+            pedir ver, corregir o borrar tus datos, o salir del programa cuando quieras.
           </p>
         </>
+      ),
+    },
+    {
+      id: 'seguridad',
+      titulo: 'Cómo cuidamos tus datos',
+      cuerpo: (
+        <ul>
+          <li>
+            Las claves de comercios y del equipo se guardan cifradas con Argon2, un método que no se
+            puede revertir. Nadie, ni siquiera el equipo, puede ver una clave.
+          </li>
+          <li>
+            Tu enlace personal es una llave larga y al azar, imposible de adivinar. Si alguien más
+            lo tiene, te damos uno nuevo y el anterior deja de funcionar.
+          </li>
+          <li>Toda la conexión va cifrada (HTTPS), desde tu celular hasta nuestro servidor.</li>
+          <li>
+            Las sesiones de comercios y del equipo vencen solas, no se pueden leer desde el
+            navegador y se cierran al cambiar la clave. Limitamos los intentos para entrar.
+          </li>
+          <li>
+            Cada persona ve solo lo que necesita: un comercio no ve tus compras en otros locales.
+            Las acciones del equipo sobre tu cuenta quedan registradas.
+          </li>
+          <li>
+            Si sales del programa, borramos tu nombre, tu teléfono y las fotos de tus boletas. Solo
+            quedan montos y fechas sin datos tuyos, para los totales de la red.
+          </li>
+        </ul>
       ),
     },
     {
@@ -173,10 +227,11 @@ export function PaginaCondiciones() {
         </h1>
 
         <Alert variant="alerta" className="mt-8">
-          <AlertTitle>Borrador pendiente de revisión legal</AlertTitle>
+          <AlertTitle>Prototipo en piloto controlado</AlertTitle>
           <AlertDescription>
-            Este texto explica cómo funciona el piloto. Todavía no lo revisa un abogado y puede
-            cambiar.
+            Red Vecina funciona solo en {lista([...COMUNAS])}, con un grupo que acompaña el
+            equipo. Este texto explica cómo funciona el piloto; todavía no lo revisa un abogado y
+            puede cambiar.
           </AlertDescription>
         </Alert>
 
