@@ -1,10 +1,10 @@
 # Red Vecina · Reglas de negocio del MVP
 
-Nov 11, 2026 · @Equi
+Nov 11, 2026 · actualizado el Nov 15, 2026 · @Equi
 
 ## 1. El producto en una página
 
-El MVP es una **tarjeta de puntos de barrio por WhatsApp** con tres piezas: el chat donde el vecino manda su boleta y pide canjes, una tarjeta web con su saldo y beneficios, y un validador web donde el comercio confirma el código. Detrás, una planilla lleva puntos, cupos y canjes.
+El MVP es una **tarjeta de puntos de barrio en la web** con tres piezas: la tarjeta del vecino (un enlace personal donde ve su saldo, sube sus boletas y pide canjes), el portal del comercio (donde valida el código en la caja) y el panel del equipo (donde se revisan las boletas). WhatsApp es el canal para hablar con el vecino, sin bot: el panel deja cada mensaje redactado y el equipo lo envía. Detrás, la web lleva puntos, cupos y canjes. El detalle de lo que cambió al construirla está en el Anexo B.
 
 El riesgo que señalas (todos canjean en un mismo local y ese local regala sin vender) se resuelve con cuatro reglas que actúan juntas:
 
@@ -56,7 +56,7 @@ El vecino suma puntos por lo que efectivamente paga en cualquier comercio de la 
 
 **Cómo se suma**
 
-- A4. El vecino envía al chat una foto legible de la boleta o del comprobante de pago con tarjeta. Deben verse comercio, fecha, monto total y número de folio u operación.
+- A4. El vecino sube desde su tarjeta web una foto legible de la boleta o del comprobante de pago con tarjeta. Si la manda por WhatsApp, el equipo la sube por él. Deben verse comercio, fecha, monto total y número de folio u operación.
 - A5. Plazo: 48 horas desde la compra (P7). Pasado ese plazo la boleta no suma.
 - A6. Se calcula 1 punto por cada $100 pagados, redondeando hacia abajo. Una boleta de $7.850 da 78 puntos.
 - A7. Si la compra usó un canje, los puntos se calculan sobre el monto pagado después del descuento.
@@ -106,7 +106,7 @@ Todos los comercios ofrecen los mismos tres niveles de beneficio, siempre atados
 
 **Cómo se usa el cupón**
 
-- B9. El vecino pide el canje en el chat o en su tarjeta web y elige comercio y nivel entre los que el sistema le muestra (sección 6).
+- B9. El vecino pide el canje en su tarjeta web y elige comercio y nivel entre los que el sistema le muestra (sección 6).
 - B10. Recibe un código de 6 dígitos. El código vale solo en ese comercio, por ese beneficio, una sola vez y durante 48 horas.
 - B11. Al pedirlo, los puntos quedan **retenidos** y el cupo del comercio queda **reservado**. Si el código vence, puntos y cupo vuelven solos.
 - B12. El código es al portador: el titular puede pasárselo a un familiar. Los límites se cuentan en la cuenta del titular.
@@ -228,20 +228,20 @@ En la caja el comercio hace una sola cosa nueva: ingresar un código de 6 dígit
 ### 7.1 Rosa acumula en el minimarket
 
 1. Rosa compra $7.850 en el Minimarket Don Luis y recibe su boleta, como siempre. El cajero no hace nada distinto.
-2. Saliendo, o en su casa esa noche, manda la foto de la boleta al chat de Red Vecina.
-3. Respuesta inmediata: *“Recibimos tu boleta de Minimarket Don Luis por $7.850. Tienes 78 puntos pendientes; te confirmamos en menos de 24 horas.”*
-4. El operador revisa comercio, fecha (menos de 48 horas), monto y folio no repetido, y la aprueba en la planilla.
-5. Rosa recibe: *“Listo: +78 puntos. Saldo disponible: 450. Te alcanza para $1.000 de descuento en Panadería La Espiga, a media cuadra.”*
+2. Saliendo, o en su casa esa noche, abre su tarjeta (el enlace que le llegó por WhatsApp) y sube la foto de la boleta.
+3. Su tarjeta muestra al tiro: *“Boleta de Minimarket Don Luis por $7.850. 78 puntos pendientes.”*
+4. El sistema lee la foto y revisa comercio, fecha (menos de 48 horas), monto y folio no repetido. El operador mira el resultado y la aprueba en el panel.
+5. El panel le deja al operador el mensaje listo y él se lo manda por WhatsApp: *“Listo: +78 puntos. Saldo disponible: 450. Te alcanza para $1.000 de descuento en Panadería La Espiga.”*
 
 ### 7.2 Rosa canjea en la panadería
 
-1. Rosa escribe “canjear”. El sistema aplica la sección 6.2 y le muestra tres opciones. La primera es la panadería, porque nunca ha comprado ahí y tiene cupo libre.
+1. Rosa abre su tarjeta y entra a sus beneficios. El sistema aplica la sección 6.2 y le muestra tres opciones. La primera es la panadería, porque nunca ha comprado ahí y tiene cupo libre.
 2. Rosa elige *“$1.000 de descuento en compras sobre $5.000, Panadería La Espiga, 250 puntos”*.
-3. Recibe: *“Tu código es 482 913. Muéstralo en la caja antes de pagar. Vale hasta el viernes a las 18:30.”* Quedan 250 puntos retenidos y $1.000 de cupo reservado en la panadería.
+3. Su tarjeta muestra: *“Tu código es 482 913. Muéstralo en la caja antes de pagar. Vale hasta el viernes a las 18:30.”* Quedan 250 puntos retenidos y $1.000 de cupo reservado en la panadería.
 4. Al día siguiente Rosa lleva $6.200 en pan y pasteles y muestra el código antes de pagar.
 5. La cajera abre el validador del local en su celular (un enlace con clave), escribe 482913 y ve: *“Válido. $1.000 de descuento. Compra mínima $5.000.”*
 6. Confirma que la compra supera $5.000, cobra $5.200, emite la boleta por lo pagado y toca “Usar”. El código queda quemado.
-7. Rosa recibe: *“Canje usado en Panadería La Espiga. Saldo: 200 puntos. Manda la boleta de esta compra y suma más.”* Envía la boleta de $5.200 y suma 52 puntos: saldo 252.
+7. Rosa ve en su tarjeta: *“Canje usado en Panadería La Espiga. Saldo: 200 puntos. Manda la boleta de esta compra y suma más.”* Sube la boleta de $5.200 y suma 52 puntos: saldo 252.
 
 ### 7.3 Qué quedó registrado
 
@@ -256,9 +256,9 @@ Si Rosa vuelve a la panadería la semana siguiente sin código y manda la boleta
 
 ### 7.4 Lo que opera el equipo en el piloto
 
-- Boletas: revisión manual dos veces al día, por ejemplo a las 13:00 y a las 20:00.
-- Códigos: los genera la planilla o el backend simple. El validador web evita que el equipo tenga que responder en vivo a cada caja.
-- Plan B sin validador: el cajero manda el código por WhatsApp al operador. Esto exige un turno de respuesta en menos de 2 minutos durante el horario de los locales, así que conviene construir el validador.
+- Boletas: revisión en el panel dos veces al día, por ejemplo a las 13:00 y a las 20:00. El sistema lee cada foto y deja la decisión en un clic.
+- Códigos: los genera la web. El comercio los valida en su portal, sin que el equipo responda en vivo a cada caja.
+- Sin internet en el local: el comercio aplica el descuento y luego ingresa el código en “Códigos sin internet”, ese mismo día (sección 8).
 
 ## 8. Casos borde
 
@@ -347,9 +347,11 @@ Estas reglas modifican cinco puntos de la versión 1.0 de la propuesta y dejan c
 - [ ] **Piso de cupo.** Los $20.000 al mes son lo mínimo que todo socio acepta invertir. Conviene preguntarlo en la Parte C de la entrevista, junto a la pregunta sobre qué beneficio daría.
 - [ ] **Canje en el comercio de origen.** La regla B17 lo permite porque también fideliza. Prohibirlo daría una red más pura de derivación, pero menos opciones al vecino.
 - [x] **Quién construye el validador** y si la planilla basta para generar códigos, o hace falta un backend simple desde el primer día.
-- [ ] **Revisión legal.** No soy abogado y estos puntos necesitan validación antes del piloto: puntos y descuentos sobre alcohol si entra una botillería; exclusión de tabaco; consentimiento y uso de datos personales (leyes 19.628 y 21.719, ya citadas en la propuesta); condiciones del programa informadas al vecino según la Ley del Consumidor; y cómo se refleja el descuento en la boleta.
+- [ ] **Revisión legal.** Las condiciones publicadas en `/condiciones` son un borrador. No soy abogado y estos puntos necesitan validación antes del piloto: puntos y descuentos sobre alcohol si entra una botillería; exclusión de tabaco; consentimiento y uso de datos personales (leyes 19.628 y 21.719, ya citadas en la propuesta); condiciones del programa informadas al vecino según la Ley del Consumidor; y cómo se refleja el descuento en la boleta.
 
-**Para el prototipo en Lovable**, estas reglas agregan tres elementos a las pantallas ya definidas: la compra mínima y la vigencia en cada beneficio de la tarjeta del vecino, el estado “cupo agotado, vuelve el lunes”, y una pantalla de validador para el comercio.
+- [ ] **Cercanía entre vecino y comercios.** Hoy la red no usa ubicación: cada vecino ve todos los comercios de la red, ordenados por la sección 6.2. Si la red crece a varios barrios, hay que decidir cómo acotar lo que ve cada vecino (Anexo B.10).
+
+La web ya incluye lo que estas reglas pedían a las pantallas: la compra mínima y la vigencia en cada beneficio de la tarjeta, el estado “cupo agotado, vuelve el lunes” y el validador del comercio.
 
 ## Anexo A: aclaraciones
 
@@ -423,3 +425,29 @@ Nov 14, 2026. Respuestas del equipo a las ambigüedades detectadas al construir 
 - Si un cambio se aprueba cuando el lunes calculado desde la solicitud (A.14) ya pasó, rige desde el lunes siguiente a la aprobación.
 - Cada propuesta es el conjunto completo de beneficios del comercio (B1). Al regir, reemplaza entero al conjunto anterior. Una propuesta nueva reemplaza a la que seguía pendiente.
 - En la landing, el beneficio destacado de cada comercio es el del nivel obligatorio (P9).
+
+## Anexo B: ajustes al construir la web
+
+Nov 15, 2026. Decisiones tomadas al construir y probar la web. Ninguna cambia los valores de P1 a P20 ni de U1 a U25. Tienen la misma fuerza que el resto del documento.
+
+**B.1 Canales.** No hay chat automático. El vecino usa su tarjeta web, un enlace personal sin contraseña (`/t/<enlace>`). WhatsApp se usa sin su API: después de cada acción, el panel deja el mensaje redactado con los datos reales y los botones “Copiar” y “Abrir WhatsApp”. El equipo lo envía. Los textos son plantillas editables en `/admin/mensajes`.
+
+**B.2 Inscripción.** El vecino se inscribe al escanear el QR del afiche de un comercio. Esa página guarda el comercio de origen (A2). El equipo también puede inscribir a mano a un vecino que no puede hacerlo solo, después de leerle las condiciones. En ese caso el comercio de origen es opcional y la inscripción queda registrada con quién la hizo.
+
+**B.3 El afiche y su QR.** El QR apunta a la dirección pública de la web (`/unirme/<comercio>`), nunca a la del computador donde se trabaja. Esa dirección no cambia aunque el comercio cambie de nombre, porque el afiche ya está impreso.
+
+**B.4 Entrada y lectura de boletas.** La foto la sube el vecino desde su tarjeta o el equipo por él. Un modelo de visión lee RUT del emisor, folio, fecha, hora, total y productos. Si la lectura falla o no hay lector configurado, el operador usa “Leer ahora” o digita los campos mirando la foto. El comercio se reconoce por el RUT de la boleta.
+
+**B.5 Controles en la revisión.** El sistema contrasta cada boleta con las reglas y marca cada control en verde, ámbar o rojo (A3 a A15, P3 a P7). En pantalla quedan a la vista solo los ámbar y rojos; los verdes se pliegan. Si la foto no tiene RUT, folio, fecha ni total, el sistema avisa en ámbar que no parece una boleta. El operador siempre decide: nada se acredita solo.
+
+**B.6 Quién hace qué.** Se mantiene A.15. El **operador** revisa boletas, busca e inscribe vecinos, manda enlaces, ajusta saldos con motivo, ve canjes y aprueba beneficios. El **administrador** hace lo mismo y además da de alta comercios y sus usuarios, aplica sanciones, cambia el estado de un comercio, edita parámetros y plantillas, crea las cuentas del equipo y descarga los reportes. El **comercio** valida códigos, ingresa los que aplicó sin internet, ve su cupo, agrega cupo extra, propone beneficios, ve su reporte y descarga su afiche.
+
+**B.7 Ajustes de saldo y bajas.** Todo ajuste de saldo lleva un motivo y queda como movimiento del libro de puntos (gana, retiene, libera, canjea, vence, ajusta). Nunca se edita un saldo a mano.
+
+**B.8 Tareas del día.** El recálculo del lunes, el vencimiento de puntos y el de códigos corren solos con la primera visita del día. El administrador puede correrlas antes desde “Equipo y tareas”. No repiten lo ya hecho.
+
+**B.9 Datos de demostración.** Los comercios y vecinos de demostración (A.13) sirven para probar. En la web publicada, la landing no muestra comercios de demostración: solo los reales.
+
+**B.10 Cercanía.** La red no usa ubicación ni GPS. Todos los comercios del piloto están en el mismo grupo de comunas, así que cada vecino ve los beneficios de toda la red, ordenados por la sección 6.2 y A.8 (primero donde nunca ha comprado, luego por cupo libre). El comercio de origen solo sirve para medir clientes derivados (A.9); no decide qué ve el vecino. Ampliarlo queda como decisión pendiente (sección 11).
+
+**B.11 Reportes.** El administrador descarga en CSV las boletas (por fecha de recepción), los canjes (por fecha de emisión) y el reporte por comercio (ventana del cupo). Las fechas van en hora de Santiago.

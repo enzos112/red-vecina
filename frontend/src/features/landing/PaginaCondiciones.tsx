@@ -226,15 +226,6 @@ export function PaginaCondiciones() {
           Condiciones del programa y uso de datos
         </h1>
 
-        <Alert variant="alerta" className="mt-8">
-          <AlertTitle>Prototipo en piloto controlado</AlertTitle>
-          <AlertDescription>
-            Red Vecina funciona solo en {lista([...COMUNAS])}, con un grupo que acompaña el
-            equipo. Este texto explica cómo funciona el piloto; todavía no lo revisa un abogado y
-            puede cambiar.
-          </AlertDescription>
-        </Alert>
-
         {condiciones.isError && (
           <Alert variant="destructive" className="mt-4">
             <AlertTitle>Faltan algunas cifras</AlertTitle>
